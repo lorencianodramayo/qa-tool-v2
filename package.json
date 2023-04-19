@@ -5,6 +5,11 @@
   "repository": "https://github.com/SmartlyIODM/qa-tool.git",
   "author": "Denny Marc Maquiling",
   "license": "MIT",
+  "engines": {
+    "node": "^16.14.0",
+    "npm": "^6.14.15",
+    "yarn": "1.x"
+  },
   "dependencies": {
     "@google-cloud/storage": "^6.9.4",
     "@google-cloud/translate": "^7.1.1",
