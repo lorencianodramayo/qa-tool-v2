@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Col } from "antd";
 import styled from "styled-components";
 

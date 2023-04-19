@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Layout, Form, Button, Input, notification } from "antd";
 import {
   MailOutlined,

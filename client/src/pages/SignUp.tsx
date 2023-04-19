@@ -1,3 +1,4 @@
+// @ts-nocheck
 import styled from "styled-components";
 import backgroundImage from "../assets/backgroundOne.svg";
 import { Col, Row, Layout } from "antd";

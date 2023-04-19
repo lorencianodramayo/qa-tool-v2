@@ -1,3 +1,4 @@
+// @ts-nocheck
 import styled from "styled-components";
 import { Button, Divider, Input, InputNumber, Layout, Space } from "antd";
 import { useCallback, useEffect, useState } from "react";

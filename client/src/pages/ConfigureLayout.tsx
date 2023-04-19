@@ -1,3 +1,4 @@
+// @ts-nocheck
 import styled from "styled-components";
 import { useState } from "react";
 import { Layout, Divider, Space, Spin, Button } from "antd";

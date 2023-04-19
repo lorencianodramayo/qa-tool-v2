@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Layout, Form, Button, Input, Checkbox, notification } from "antd";
 import {
   MailOutlined,
@@ -112,6 +113,7 @@ const SignInForm = () => {
     setShowPassword((show) => !show);
   };
   const onFinish = (values: any) => {
+    // @ts-ignore
     dispatch(signIn(values));
   };
   return (

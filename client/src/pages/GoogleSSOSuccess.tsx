@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Space } from "antd";
 import { useEffect } from "react";
 

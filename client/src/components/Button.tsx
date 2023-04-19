@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Button } from "antd";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";

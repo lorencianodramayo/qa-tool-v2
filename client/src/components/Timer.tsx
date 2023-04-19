@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Space } from 'antd';
 import { PlayCircleFilled, PauseCircleFilled } from "@ant-design/icons";

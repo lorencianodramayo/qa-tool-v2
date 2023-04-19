@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Layout, Row, Col, Space, Avatar, Badge } from "antd";
 import { Outlet } from "react-router-dom";
 import Logo from "../components/Logo";

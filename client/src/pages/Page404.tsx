@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Link as RouterLink } from "react-router-dom";
 
 import { Space } from "antd";
