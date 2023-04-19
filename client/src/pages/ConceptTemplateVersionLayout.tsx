@@ -253,6 +253,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     }
   };
   useEffect(() => {
+    // @ts-ignore
     dispatch(getTemplatesVersions());
   }, [dispatch]);
   useEffect(() => {

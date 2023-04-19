@@ -65,7 +65,7 @@ const ConfigureLayout = () => {
   const [fetching, setFetching] = useState<boolean>(false);
   const [selectOptionTemplateVersions, setSelectOptionTemplateVersions] =
     useState([]);
-  const adLibSmartlyIo = async (adLibSmartlyIoPayload) => {
+  const adLibSmartlyIo = async (adLibSmartlyIoPayload:any) => {
     setFetching(true);
     const partner = await apiService.post(
       "/getPartnerId",

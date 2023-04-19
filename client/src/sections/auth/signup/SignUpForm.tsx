@@ -66,7 +66,7 @@ export default function SignUpForm() {
   const handleShowPassword = () => {
     setShowPassword((show) => !show);
   };
-  const onFinish = async (values) => {
+  const onFinish = async (values:any) => {
     try {
       const request = await apiService.post("/signup", values);
       if (request.data.success)
@@ -77,6 +77,7 @@ export default function SignUpForm() {
     } catch (error) {
       api["error"]({
         message: "Sign Up Failed",
+        // @ts-ignore
         description: error.response.data.error,
       });
     }
