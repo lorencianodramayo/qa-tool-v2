@@ -58,7 +58,7 @@ app.use(passport.session());
 
 // Step 3: Initialization
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static("client/build"));
+  app.use(express.static("client/dist"));
 }
 
 // Step 4: HTTP request logger
@@ -68,7 +68,7 @@ app.use(morgan("tiny"));
 app.use("/api/v1", api);
 
 app.get("/*", (req, res) => {
-  res.sendFile(path.join(__dirname, "build", "index.html"));
+  res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
 });
 
 app.listen(PORT, console.log(`Server is starting at ${PORT}`));
