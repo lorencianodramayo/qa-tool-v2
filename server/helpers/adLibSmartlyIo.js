@@ -19,22 +19,24 @@ const getAdlibToken = async (platform) => {
     // password: "W4d1w4dz",
     username: "integrations@ad-lib.io",
     password: "!Integrations2021",
+    // username: "denny-marc.maquiling@smartly.io",
+    // password: "123456abcdefghiJ",
   };
-  var formBody = [];
-  for (var property in details) {
-    var encodedKey = encodeURIComponent(property);
-    var encodedValue = encodeURIComponent(details[property]);
-    formBody.push(encodedKey + "=" + encodedValue);
-  }
-  formBody = formBody.join("&");
+  // var formBody = [];
+  // for (var property in details) {
+  //   var encodedKey = encodeURIComponent(property);
+  //   var encodedValue = encodeURIComponent(details[property]);
+  //   formBody.push(encodedKey + "=" + encodedValue);
+  // }
+  // formBody = formBody.join("&");
   var loginRequest = await fetch(
     `https://api-${platform}.ad-lib.io/auth/login`,
     {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "Content-Type": "application/json; charset=UTF-8",
       },
-      body: formBody,
+      body: JSON.stringify(details),
     }
   );
   var responseHeaders = loginRequest.headers;
