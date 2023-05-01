@@ -48,6 +48,7 @@ app.use(express.urlencoded({ limit: "100mb", extended: false }));
 
 app.use(
   cookieSession({
+    name: 'session',
     maxAge: 24 * 60 * 60 * 1000,
     keys: [process.env.COOKIE_KEY],
   })

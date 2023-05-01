@@ -5,6 +5,7 @@ const { Storage } = require("@google-cloud/storage");
 require("dotenv").config();
 const { Language } = require("../models/language");
 const { TemplateVersion } = require("../models/templateVersion");
+const templateVersion = require("../models/templateVersion");
 const storage = new Storage({
   projectId: process.env.GCLOUD_PROJECT_ID,
   credentials: {
@@ -19,22 +20,24 @@ const getAdlibToken = async (platform) => {
     // password: "W4d1w4dz",
     username: "integrations@ad-lib.io",
     password: "!Integrations2021",
+    // username: "denny-marc.maquiling@smartly.io",
+    // password: "123456abcdefghiJ",
   };
-  var formBody = [];
-  for (var property in details) {
-    var encodedKey = encodeURIComponent(property);
-    var encodedValue = encodeURIComponent(details[property]);
-    formBody.push(encodedKey + "=" + encodedValue);
-  }
-  formBody = formBody.join("&");
+  // var formBody = [];
+  // for (var property in details) {
+  //   var encodedKey = encodeURIComponent(property);
+  //   var encodedValue = encodeURIComponent(details[property]);
+  //   formBody.push(encodedKey + "=" + encodedValue);
+  // }
+  // formBody = formBody.join("&");
   var loginRequest = await fetch(
     `https://api-${platform}.ad-lib.io/auth/login`,
     {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "Content-Type": "application/json; charset=UTF-8",
       },
-      body: formBody,
+      body: JSON.stringify(details),
     }
   );
   var responseHeaders = loginRequest.headers;
@@ -204,7 +207,7 @@ const getLanguages = async (req, res) => {
     const languages = await Language.find();
     return res.status(200).json(languages);
   } catch (error) {
-    return res.status(400).json(error);
+    return res.status(500).json(error);
   }
 };
 const addLanguage = async (req, res) => {
@@ -231,7 +234,7 @@ const addLanguage = async (req, res) => {
     if (languageExists === null) {
       const language = new Language(detectLang);
       language.save((err) => {
-        if (err) return res.status(400).json({ language: err });
+        if (err) return res.status(500).json({ language: err });
         return res.status(200).json({ language: language });
       });
     } else {
@@ -239,7 +242,7 @@ const addLanguage = async (req, res) => {
         content: req.content,
       });
       return res.status(200).json({ language: language });
-      // return res.status(400).json({
+      // return res.status(500).json({
       //   language: `Language ${languageExists.language
       //     .charAt(0)
       //     .toUpperCase()}${languageExists.language
@@ -249,7 +252,7 @@ const addLanguage = async (req, res) => {
     }
     // }
   } catch (error) {
-    return res.status(400).json(error);
+    return res.status(500).json(error);
   }
 };
 const translate = async (req, res) => {
@@ -259,7 +262,7 @@ const translate = async (req, res) => {
       translate: language[0].content.substring(0, req.textHeadlineLegal.length),
     });
   } catch (error) {
-    return res.status(400).json(error);
+    return res.status(500).json(error);
   }
 };
 const getTemplatesVersions = async (req, res) => {
@@ -267,85 +270,103 @@ const getTemplatesVersions = async (req, res) => {
     const tempalateVersion = await TemplateVersion.find();
     return res.status(200).json(tempalateVersion);
   } catch (error) {
-    return res.status(400).json(error);
+    return res.status(500).json(error);
   }
 };
 const postTemplateVersion = async (req, res) => {
   try {
-    templatesVersions = {
-      templateId: req.templateId,
-      variants: req.variants,
-    };
     TemplateVersion.deleteMany({}, (err) => {
         if (err) {
-            res.status(500).send({error: err});           
+            res.status(500).json(error);           
         }
     });
-    const tempalateVersion = new TemplateVersion(templatesVersions);
-    tempalateVersion.save((err) => {
-      if (err) return res.status(400).json({ templatesVersions: err });
-      return res.status(200).json({ templatesVersions: tempalateVersion });
+    const request = req;
+    const templatesVersions = request;
+    delete templatesVersions.template;
+    TemplateVersion.insertMany(templatesVersions, (err, tempalateVersion) => {
+      if (err) res.status(500).json(error);
+      else {
+        res.status(200).json({ templatesVersions: tempalateVersion });
+        // for (let i = 0; i < tempalateVersion.length; i++) {
+        //   const templatesVersionsCloud = {
+        //     template: templatesVersions.template,
+        //     creativeId: tempalateVersion[i]._id,
+        //   }
+        //   postTemplateVersionCloud(templatesVersionsCloud).then((response) =>
+        //     console.log(response)
+        //   ).error((error) => console.log(error)); 
+        // }
+      }
     });
+    // const tempalateVersion = new TemplateVersion(templatesVersions);
+    // tempalateVersion.insertMany((err) => {
+    //   if (err) return res.status(500).json({ templatesVersions: err });
+    //   return res.status(200).json({ templatesVersions: tempalateVersion });
+    // });
   } catch (error) {
-    return res.status(400).json(error);
+    console.log(error);
+    return res.status(500).json(error);
   }
 };
 const postTemplateVersionCloud = async (req, res) => {
   try {
-    var pendingPromises = [],
-      counter = 0,
-      isIndexUploaded = false;
-    const response = await axios
-      .get(req.template, {
-        responseType: "arraybuffer",
-      })
-      .catch((err) => err.response);
-    const zip = new AdmZip(response.data);
-    for (let entry of zip.getEntries()) {
-      pendingPromises.push(
-        new Promise((resolve, reject) => {
-          if (entry.name === "index.html") {
-            entry.setData(
-              Buffer.from(
-                // .join(
-                //   `<script src="${req.origin}preview/lib.js"></script></html>`
-                // ),
-                entry.getData().toString("utf8").split("</html>").join(`<script>
-                    window.addEventListener("message", (event) => {
-                      if (typeof event.data.data === "object") {
-                        defaultValues = event.data.data;
-                      } else {
-                        if (event.data.data === "pause") {
-                          gwd.auto_PauseBtnClick();
-                        } else {
-                          gwd.auto_PlayBtnClick();
-                        }
-                      }
-                    }, false);
-                  </script></html>`),
-                "utf8"
-              )
-            );
-          }
-          bucket
-            .file(`${req.creativeId}/${entry.entryName}`)
-            .createWriteStream()
-            .on("error", (err) => reject(err))
-            .on("finish", () => {
-              resolve(entry.entryName);
-            })
-            .end(entry.getData());
+    for (let _template of req) {
+      console.log(_template.creativeId, " ", _template.templateUrl);
+      var pendingPromises = [],
+        counter = 0,
+        isIndexUploaded = false;
+      const response = await axios
+        .get(_template.templateUrl, {
+          responseType: "arraybuffer",
         })
-      );
+        .catch((err) => err.response);  
+      const zip = new AdmZip(response.data);
+      for (let entry of zip.getEntries()) {
+        pendingPromises.push(
+          new Promise((resolve, reject) => {
+            if (entry.name === "index.html") {
+              entry.setData(
+                Buffer.from(
+                  // .join(
+                  //   `<script src="${req.origin}preview/lib.js"></script></html>`
+                  // ),
+                  entry.getData().toString("utf8").split("</html>").join(`<script>
+                      window.addEventListener("message", (event) => {
+                        if (typeof event.data.data === "object") {
+                          defaultValues = event.data.data;
+                        } else {
+                          if (event.data.data === "pause") {
+                            gwd.auto_PauseBtnClick();
+                          } else {
+                            gwd.auto_PlayBtnClick();
+                          }
+                        }
+                      }, false);
+                    </script></html>`),
+                  "utf8"
+                )
+              );
+            }
+            bucket
+              .file(`${_template.creativeId}/${entry.entryName}`)
+              .createWriteStream()
+              .on("error", (err) => reject(err))
+              .on("finish", () => {
+                resolve(entry.entryName);
+              })
+              .end(entry.getData());
+          })
+        );
+      }
     }
     const final = Promise.all(pendingPromises)
       .then((names) =>
         names.length === zip.getEntries().length ? true : false
       )
-      .catch((err) => err);
-    return res.status(200).json({ final: final });
+      .catch((err) => err); 
+    res.status(200).json(final);
   } catch (error) {
-    return res.status(400).json(error);
+    res.status(500).json(error);
   }
 };
 module.exports = {

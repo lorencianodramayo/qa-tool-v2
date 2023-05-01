@@ -3,7 +3,7 @@ import Axios from "axios";
 const token = localStorage.getItem("token");
 
 const apiService = Axios.create({
-  baseURL: "/api/v1/",
+  baseURL: "/api/v1",
   withCredentials: true,
   headers: { Authorization: "Bearer " + token },
 });

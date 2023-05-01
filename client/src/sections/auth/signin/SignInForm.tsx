@@ -97,13 +97,14 @@ const SignInForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [api, contextHolder] = notification.useNotification();
   useEffect(() => {
-    if (isLoading) {
+    if (isSuccess) {
       api["success"]({
         message: "Sign In Successfully",
         description: "You are successfully sign in!",
       });
       navigate("/configure/generate");
-    } else if (message)
+    }
+    if (isError)
       api["error"]({
         message: message,
         description: message,
