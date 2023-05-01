@@ -476,7 +476,7 @@ const ConfigureLayout = () => {
           </ButtonGenerateStyled>
         </Space.Compact>
       </div>
-      {/* <Divider
+      <Divider
         type="horizontal"
         style={{
           width: "100%",
@@ -485,7 +485,7 @@ const ConfigureLayout = () => {
           marginBottom: 18,
         }}
       />
-      <Space
+      {/* <Space
         style={{
           width: "100%",
         }}
