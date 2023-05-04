@@ -66,18 +66,26 @@ const Timer: React.FC = () => {
                     <PauseCircleFilled style={{
                         color: "rgb(242,32,118)",
                         fontSize: 24
-                    }} onClick={stopTimer} onMouseLeave={() => setOnHover(false)} />
+                      }} 
+                      onClick={stopTimer} 
+                      onMouseLeave={() => setOnHover(false)} 
+                    />
                 :
                     <PlayCircleFilled style={{
                         color: "rgb(242,32,118)",
                         fontSize: 24
-                    }} onClick={startTimer} onMouseLeave={() => setOnHover(false)} />
+                      }} 
+                      onClick={startTimer} 
+                      onMouseLeave={() => setOnHover(false)} 
+                    />
             : 
-                <Space style={{
+                <div style={{
                     fontWeight: "400",
                     fontSize: 16,
-                    }} onMouseOver={() => setOnHover(!onHover)} onMouseLeave={() => setOnHover(false)} >{formatTime(time)}
-                </Space>
+                    }} 
+                  onMouseOver={() => setOnHover(!onHover)} 
+                  onMouseLeave={() => setOnHover(false)} >{formatTime(time)}
+                </div>
       }
       {/* <button onClick={resetTimer}>Reset</button> */}
     </Space>

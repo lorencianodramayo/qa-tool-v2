@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import {
   PlaySquareOutlined,
@@ -14,6 +14,7 @@ import {
   CheckOutlined,
   CloseOutlined,
   PlayCircleTwoTone,
+  PauseCircleTwoTone,
   RedoOutlined,
   CaretRightOutlined,
   FileImageFilled,
@@ -24,7 +25,7 @@ import {
   PauseCircleFilled,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { Badge, Card, Col, Menu, Row, Space, Typography } from "antd";
+import { Badge, Card, Col, Menu, Row, Space, Spin, Typography } from "antd";
 import type { MenuProps, MenuTheme } from "antd/es/menu";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Layout } from "antd";
@@ -34,6 +35,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { Collapse } from "antd";
 import Timer from "../components/Timer";
+import { ThunkDispatch } from 'redux-thunk';
 type MenuItem = Required<MenuProps>["items"][number];
 function getItem(
   label: React.ReactNode,
@@ -57,7 +59,14 @@ const SiderStyled = styled(Sider)`
   background: #fff !important;
   border-inline-end: 1px solid rgba(5, 5, 5, 0.06);
 `;
-const MenuStyled = styled(Menu)`
+interface MenuStyledProps {
+  windowinnerheight?: number;
+}
+const MenuStyled = styled(Menu)<MenuStyledProps>`
+  &.ant-menu-light.ant-menu-inline .ant-menu-sub.ant-menu-inline {
+    overflow-y: scroll;
+    height: calc(${props => props.windowinnerheight} - 64)px;
+  }
   &.ant-menu-inline {
     border-inline-end: unset !important;
   }
@@ -193,11 +202,6 @@ const LabelStyled = styled.label`
   }
 `;
 const { Panel } = Collapse;
-const text = `
-  A dog is a type of domesticated animal.
-  Known for its loyalty and faithfulness,
-  it can be found as a welcome guest in many households across the world.
-`;
 const CollapseStyled = styled(Collapse)`
   &.ant-collapse > .ant-collapse-item > .ant-collapse-header {
     border-radius: 8px 8px 0 0;
@@ -211,81 +215,161 @@ const CollapseStyled = styled(Collapse)`
 const ConceptTemplateVersionLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
-  const [templates, setTemplates] = useState(location.state.templates);
-  const [mode, setMode] = useState<"vertical" | "inline">("inline");
-  const [theme, setTheme] = useState<MenuTheme>("light");
-  const [variants, setVariants] = useState<any>([]);
-  const [selected, setSelected] = useState<{ option: string }[]>([]);
-  const { templatesVersions } = useSelector(
+  const templateName:string = location.state.templateName;
+  const templates:any = location.state.templates;
+  const dispatch: ThunkDispatch<undefined, undefined, undefined> = useDispatch();
+  const { 
+    isTemplatesVersionsSuccess, 
+    templatesVersions
+  } = useSelector(
     (state: any) => state.templateVersion
   );
+  const [loading, setLoading] = useState<boolean>(false);
+  const [mode, setMode] = useState<"vertical" | "inline">("inline");
+  const [theme, setTheme] = useState<MenuTheme>("light");
+  const [variantsLoading, setVariantsLoading] = useState<{ loading: boolean }[]>([]);
+  const iframeRef = useRef<HTMLIFrameElement[]>([]);
   const [templateId, setTemplateId] = useState<string>("");
-  const [play, setPlay] = useState<boolean>(false);
-  const [variantPlay, setVarianPlay] = useState<any>({});
-  const [refresh, setRefresh] = useState<number>(0);
-  const [isPause, setPause] = useState<boolean>(true);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const items: MenuItem[] = [
-    getItem(
-      <Space>Pame Brilliance</Space>,
-      "sub2",
-      <PlaySquareOutlined />,
+  const [variants, setVariants] = useState<any>([]);
+  const [switches, setSwitches] = useState<{ option: string }[]>([]);
+  const [refreshes, setRefreshes] = useState<{ refresh: number }[]>([]);
+  const [_PlayPause, setPlayPause] = useState<{ play: boolean, pause: boolean }[]>([]);
+  const [isPause, setPause] = useState<{ isPause: boolean }[]>([]);
+  const [isShowPlay, setShowPlay] = useState<{ isShowPlay: boolean }[]>([]);
+  // const [variantsRefreshes, setVariantsRefreshes] = useState<{ refresh: number }[]>([]);
+  // const [variantPlay, setVarianPlay] = useState<any>({});
+  // const [_play, _setPlay] = useState<boolean>(false);
+  // const [_pause, _setPause] = useState<boolean>(false);
+  // const [_replay, _setReplay] = useState<boolean>(false);
+  const items: MenuProps['items'] = [
+    getItem(<Space>{templateName}</Space>, 'sub1', <PlaySquareOutlined />, 
       templates.map(
         (template: {
           size: string;
           name: string;
           _id: React.Key | null | undefined;
-        }) => getItem(template.size + "-" + template.name, template._id)
-      )
+        }, i: number) => getItem(template.size + "-" + template.name, template._id)
+      ),    
     ),
     getItem(<Space>Add New</Space>, "", <PlusOutlined />),
   ];
-  const onClick: MenuProps["onClick"] = (e) => {
-    if (e.key !== "") {
-      setTemplateId(e.key);
-      setVariants(
+  useEffect(() => {
+    setLoading(!loading);
+    dispatch(getTemplatesVersions());
+  }, [
+    dispatch,
+  ]);
+  useEffect(() => {
+    if (isTemplatesVersionsSuccess) {
+      setTemplateId(templates[0]._id);
+      if (templatesVersions.length > 1)
+        setVariants(
+          templatesVersions.filter(
+            (templateVersion: { templateId: string }) =>
+              templateVersion.templateId === templates[0]._id
+          )[0]?.variants
+        );
+      else setVariants(
+          templatesVersions.filter(
+            (templateVersion: { templateId: string }) =>
+              templateVersion.templateId === templates[0]._id
+          )[0]
+        );
+      let switches = [];
+      let refreshes = [];
+      templatesVersions.filter(
+          (templateVersion: { templateId: string }) =>
+            templateVersion.templateId === templates[0]._id
+        )[0]?.variants.map((variant: any) => {
+        switches.push({
+          option: 'disable'
+        });
+        refreshes.push({
+          refresh: 0
+        });
+      });
+      setSwitches(switches);
+      setRefreshes(refreshes);
+      const interval = setInterval(() => {
+        setLoading(false);
+      }, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [
+    templatesVersions,
+    setPause,
+    setShowPlay
+  ]);
+  useEffect(() => {
+    if (isTemplatesVersionsSuccess) {
+      let isPause = [];
+      let isShowPlay = [];
+      templatesVersions.filter(
+          (templateVersion: { templateId: string }) =>
+            templateVersion.templateId === templates[0]._id
+        )[0]?.variants.map((variant: any) => {
+        isPause.push({
+          isPause: true
+        });
+        isShowPlay.push({
+          isShowPlay: false
+        });
+      });
+      setPause(isPause);
+      setShowPlay(isShowPlay);
+    }
+  }, [
+    templatesVersions,
+    setPause,
+    setShowPlay
+  ]);
+  const onClick: MenuProps["onClick"] = e => {
+    setTemplateId(e.key);
+    setVariants(
         templatesVersions.filter(
           (templateVersion: { templateId: string }) =>
             templateVersion.templateId === e.key
         )[0]
       );
-      setPlay(false);
-    }
-  };
-  useEffect(() => {
-    // @ts-ignore
-    dispatch(getTemplatesVersions());
-  }, [dispatch]);
-  useEffect(() => {
-    if (variants !== undefined) {
-      let newOption: { option: string }[] = [];
-      variants.variants?.forEach(() => {
-        newOption.push({ option: "check" });
+    let switches = [];
+    let refreshes = [];
+    let isPause = [];
+    let isShowPlay = [];
+    templatesVersions.filter(
+        (templateVersion: { templateId: string }) =>
+          templateVersion.templateId === e.key
+      )[0]?.variants.map((variant: any) => {
+      switches.push({
+        option: 'disable'
       });
-      setSelected(newOption);
-    }
-  }, [variants]);
-  const handleChange = (i: number, val: string) => {
-    let data = [...selected];
-    data[i]["option"] = val;
-    setSelected(data);
-  };
-  const handleClickPlay = (i: number, variants: any) => {
-    setVarianPlay({
-      variantIndex: i,
-      variants: variants,
+      refreshes.push({
+        refresh: 0
+      });
+      isPause.push({
+        isPause: true
+      });
+      isShowPlay.push({
+        isShowPlay: false
+      });
     });
-    setPlay(!play);
+    setSwitches(switches);
+    setRefreshes(refreshes);
+    setPause(isPause);
+    setShowPlay(isShowPlay);
+  };
+  const handleChange = (i: number, val: string) => {
+    let data = [...switches];
+    data[i]["option"] = val;
+    setSwitches(data);
   };
   const switchStyle = (i: number) => {
     return {
       backgroundColor: `${
-        selected[i]?.option === "check"
+        switches[i]?.option === "check"
           ? "#F22076"
-          : selected[i]?.option === "disable"
+          : switches[i]?.option === "disable"
           ? "#BFBFBF"
-          : selected[i]?.option === "close"
+          : switches[i]?.option === "close"
           ? "#29125F"
           : "unset"
       }`,
@@ -294,30 +378,30 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const switchCheckIconStyle = (i: number) => {
     return {
       color: `${
-        selected[i]?.option === "close"
+        switches[i]?.option === "close"
           ? "#fff"
-          : selected[i]?.option === "check"
+          : switches[i]?.option === "check"
           ? "#F22076"
-          : selected[i]?.option === "disable"
+          : switches[i]?.option === "disable"
           ? "#BFBFBF"
           : "unset"
       }`,
-      marginLeft: selected[i]?.option === "close" ? 4.8 : 0,
+      marginLeft: switches[i]?.option === "close" ? 4.8 : 0,
       fontSize: 8.8,
     };
   };
   const switchClosedIconStyle = (i: number) => {
     return {
       color: `${
-        selected[i]?.option === "close"
+        switches[i]?.option === "close"
           ? "#29125F"
-          : selected[i]?.option === "check"
+          : switches[i]?.option === "check"
           ? "#fff"
-          : selected[i]?.option === "disable"
+          : switches[i]?.option === "disable"
           ? "#BFBFBF"
           : "unset"
       }`,
-      marginLeft: selected[i]?.option === "check" ? 0.4 : 0,
+      marginLeft: switches[i]?.option === "check" ? 0.4 : 0,
       fontSize: 8.8,
     };
   };
@@ -325,11 +409,11 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     return {
       top: 1.2,
       left:
-        selected[i]?.option === "check"
+        switches[i]?.option === "check"
           ? 2
-          : selected[i]?.option === "disable"
+          : switches[i]?.option === "disable"
           ? 9
-          : selected[i]?.option === "close"
+          : switches[i]?.option === "close"
           ? 16
           : 0,
     };
@@ -343,23 +427,28 @@ const ConceptTemplateVersionLayout: React.FC = () => {
       </Space.Compact>
     </LabelStyled>
   );
-  const onLoad = (e: any, data: any) => {
+  const onLoad = (e: any, i: number, data: any) => {
     e.preventDefault();
+    let dataIsPause = [...isPause];
+    let dataIsShowPlay = [...isShowPlay];
     window.addEventListener(
       "message",
       (event) => {
         switch (event?.data?.type) {
           case "SCREENSHOT_START":
-            console.log("DEBUG SCREENSHOT_START");
-            break;
           case "SCREENSHOT":
-            console.log("DEBUG SCREENSHOT");
+            dataIsShowPlay[i]["isShowPlay"] = true
+            dataIsPause[i]["isPause"] = false;
+            setShowPlay(dataIsShowPlay);
+            setPause(dataIsPause);
             break;
           case "SCREENSHOT_STOP":
-            console.log("DEBUG SCREENSHOT_STOP");
+            dataIsShowPlay[i]["isShowPlay"] = false
+            dataIsPause[i]["isPause"] = true;
+            setShowPlay(dataIsShowPlay);
+            setPause(dataIsPause);
             break;
           default:
-            console.log("DEBUG default", event?.data?.type);
             break;
         }
       },
@@ -373,11 +462,34 @@ const ConceptTemplateVersionLayout: React.FC = () => {
       e.target.src
     );
     document.addEventListener("visibilitychange", () => {
-      console.log("");
+      dataIsPause[i]["isPause"] = false;
+      setPause(dataIsPause);
     });
   };
   return (
     <Layout style={{ height: "calc(100vh - 64px)" }}>
+      {loading && (
+        <Space
+          style={{
+            zIndex: 10,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          <Spin
+            size="large"
+            style={{
+              top: "50%",
+              left: "50%",
+              position: "absolute",
+              transform: "translate(-50%, -50%)",
+            }}
+          />
+        </Space>
+      )}
       <SiderStyled
         breakpoint="lg"
         collapsedWidth="0"
@@ -387,668 +499,403 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         // onCollapse={(collapsed, type) => {
         //   // console.log(collapsed, type);
         // }}
+        style={{
+          pointerEvents: loading ? 'none' : 'unset',
+        }}
       >
         <MenuStyled
+          windowinnerheight={window.innerHeight}
           theme={theme}
           mode={mode}
-          defaultSelectedKeys={["1"]}
+          defaultOpenKeys={['sub1']}
+          defaultSelectedKeys={[templates[0]._id]}
           items={items}
           onClick={onClick}
         />
       </SiderStyled>
-      {templateId !== "" ? (
-        <Layout>
-          <Space
-            direction="vertical"
-            size={0}
-            style={{ backgroundColor: "#fff" }}
-          >
-            <Space
-              style={{
-                fontStyle: "normal",
-                fontWeight: 400,
-                fontSize: 14,
-                color: "rgba(0, 0, 0, 0.45)",
-                marginBottom: 8.7,
-                marginLeft: 15.8,
-                marginTop: 9.5,
-              }}
-            >
-              Version
-              {templates.filter((template: { _id: string }) => {
-                return template._id === templateId;
-              })[0].defaultVersion + 1}
-            </Space>
-            <div style={{ marginLeft: 15.8, marginBottom: 47.5 }}>
-              <Space
-                style={{
-                  float: "left",
-                  fontStyle: "normal",
-                  fontWeight: 500,
-                  fontSize: 20,
-                  color: "#000",
-                }}
-              >
-                {templates.filter((template: { _id: string }) => {
-                  return template._id === templateId;
-                })[0].size +
-                  "-" +
-                  templates.filter((template: { _id: string }) => {
-                    return template._id === templateId;
-                  })[0].name}
-              </Space>
-              {variants &&
-                // (play ? (
-                //   <></>
-                // ) : (
-                  <>
-                    <Space
-                      style={{
-                        float: "right",
-                        color: "#000",
-                      }}
-                      size={0}
-                    >
-                      <Space
-                        style={{
-                          padding: "0 19.3px",
-                        }}
-                      >
-                        <Badge
-                          size="small"
-                          count={11}
-                          offset={[11, 1.5]}
-                          style={{
-                            padding: "0 5.7px",
-                            fontWeight: "400",
-                            fontSize: 12,
-                          }}
-                        >
-                          <MessageOutlined
-                            style={{ fontSize: 11.2, color: "#000" }}
-                          />
-                        </Badge>
-                      </Space>
-                      <Space
-                        style={{
-                          padding: "0 19.3px",
-                          borderLeft: "1px solid #F0F0F0",
-                          borderRight: "1px solid #F0F0F0",
-                        }}
-                      >
-                        <DesktopOutlined
-                          style={{ fontSize: 11.2, color: "#000" }}
-                        />
-                      </Space>
-                      <Space
-                        style={{
-                          padding: "0 19.3px",
-                          borderRight: "1px solid #F0F0F0",
-                        }}
-                      >
-                        <ExpandOutlined
-                          style={{ fontSize: 11.2, color: "#000" }}
-                        />
-                      </Space>
-                      <Space
-                        style={{
-                          padding: "0 19.3px",
-                        }}
-                      >
-                        <ShareAltOutlined
-                          style={{ fontSize: 11.2, color: "#000" }}
-                        />
-                      </Space>
-                    </Space>
-                    <Space style={{ clear: "both" }}></Space>
-                  </>
-                // ))
-                }
-            </div>
-          </Space>
-          {play ? (
-            <AnimatePresence>
-              {play && (
-                <motion.aside
-                  initial={{ width: 0 }}
-                  animate={{
-                    width: "100%",
-                  }}
-                  exit={{
-                    width: 0,
-                    transition: { delay: 0.7, duration: 0.3 },
-                  }}
-                >
-                  <motion.div
-                    style={{
-                      color: "#000",
-                      backgroundColor: "#fff",
-                      height: "calc(100vh - 154px)",
-                    }}
-                    initial="closed"
-                    animate="open"
-                    exit="closed"
-                    variants={{
-                      closed: {
-                        transition: {
-                          staggerChildren: 0.2,
-                          staggerDirection: -1,
-                        },
-                      },
-                      open: {
-                        transition: {
-                          staggerChildren: 0.2,
-                          staggerDirection: 1,
-                        },
-                      },
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        width: "100%",
-                        overflow: "scroll",
-                      }}
-                    >
-                      <div style={{
-                        borderRadius: "8px 8px 0 0",
-                        background: "linear-gradient( 90.03deg, rgb(242,32,118) 0.03%, rgb(41,18,95) 100.05% )",
-                        display: "flex",
-                        justifyContent: "center",
-                        margin: "0px 20px 24px"
-                      }}>
-                        <Space style={{color: "#FFF"}}>
-                          {variantPlay.variants.variants[variantPlay.variantIndex].variantName}
-                        </Space>
-                      </div>
-                      <Space
-                        style={{
-                          justifyContent: "center",
-                          display: "flex",
-                        }}
-                      >
-                        <iframe
-                          ref={iframeRef}
-                          key={refresh}
-                          width={variantPlay.variants.variants[variantPlay.variantIndex].size.split("x")[0]}
-                          height={variantPlay.variants.variants[variantPlay.variantIndex].size.split("x")[1]}
-                          src={`https://storage.googleapis.com/creative-templates/${variantPlay.variants._id}/${variantPlay.variants.variants[variantPlay.variantIndex].size}-${variantPlay.variants.variants[variantPlay.variantIndex]?.templateName}/index.html`}
-                          // title={name}
-                          onLoad={(e) =>
-                            onLoad(e, variantPlay.variants.variants[variantPlay.variantIndex].defaultValues)
-                          }
-                        />
-                      </Space>
-                      <Space.Compact
-                        block
-                        style={{
-                          margin: "20px 0",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Space
-                        >
-                          <PlayCircleFilled style={{
-                            color: "rgb(242,32,118)",
-                            fontSize: 24
-                          }} onClick={() => {
-                            let data = "play";
-                              const iframe = iframeRef.current;
-                              if (iframe) {
-                                 iframe?.contentWindow?.postMessage(
-                                  {
-                                    data,
-                                    type: "setDefaultValues",
-                                  },
-                                  iframe.src
-                                );
-                              }
-                          }} />
-                          <PauseCircleFilled style={{
-                            color: "rgb(242,32,118)",
-                            fontSize: 24
-                          }} onClick={() => {
-                              let data = "pause";
-                              const iframe = iframeRef.current;
-                              if (iframe) {
-                                 iframe?.contentWindow?.postMessage(
-                                  {
-                                    data,
-                                    type: "setDefaultValues",
-                                  },
-                                  iframe.src
-                                );
-                              }
-                          }} />
-                          <ReloadOutlined style={{
-                            color: "rgb(242,32,118)",
-                            fontSize: 24
-                          }} onClick={() => setRefresh(refresh + 1)} />
-                        </Space>
-                      </Space.Compact>
-                      <div style={{ margin: "0 20px", marginBottom: 24 }}>
-                        <CollapseStyled
-                          bordered={false}
-                          defaultActiveKey={["1"]}
-                          expandIcon={({ isActive }) => (
-                            <>
-                              <CaretRightOutlined rotate={isActive ? 90 : 0} />
-                              <FileImageFilled
-                                style={{ fontSize: 30, marginLeft: 10 }}
-                              />
-                            </>
-                          )}
-                        >
-                          <Panel
-                            header={
-                              <Typography.Text
-                                strong={true}
-                                style={{ fontSize: 16 }}
-                              >
-                                Preview
-                              </Typography.Text>
-                            }
-                            key="1"
-                          >
-                            <Collapse
-                              bordered={false}
-                              defaultActiveKey={["1"]}
-                              expandIcon={({ isActive }) => (
-                                <CaretRightOutlined
-                                  rotate={isActive ? 90 : 0}
-                                />
-                              )}
-                            >
-                              <Panel
-                                header={
-                                  <Typography.Text
-                                    strong={true}
-                                    style={{ fontSize: 16 }}
-                                  >
-                                    {
-                                      Object.keys(
-                                        variantPlay.variants.variants[variantPlay.variantIndex].defaultValues
-                                      ).length
-                                    }{" "}
-                                    Dynamic elements
-                                  </Typography.Text>
-                                }
-                                key="1"
-                              >
-                                <>
-                                  {Object.entries(
-                                    variantPlay.variants.variants[variantPlay.variantIndex].defaultValues
-                                  )
-                                    .sort()
-                                    .map(([key, value]: any) => (
-                                      <Space.Compact block>
-                                        <Space>
-                                          {key.includes("logo") ||
-                                          key.includes("Background") ||
-                                          key.includes("Image") ||
-                                          key.includes("roundel") ||
-                                          key.includes("packshot") ? (
-                                            <FileImageOutlined
-                                              style={{ fontSize: 16 }}
-                                            />
-                                          ) : key.includes("Headline") ||
-                                            key.includes("Text") ||
-                                            key.includes("legal") ||
-                                            key.includes("Subheadline") ? (
-                                            <FontSizeOutlined
-                                              style={{ fontSize: 16 }}
-                                            />
-                                          ) : key.includes("Color") ||
-                                            key.includes("Element") ? (
-                                            <BgColorsOutlined
-                                              style={{ fontSize: 16 }}
-                                            />
-                                          ) : (
-                                            <></>
-                                          )}
-                                          <Typography.Text
-                                            strong={true}
-                                            style={{ fontSize: 16 }}
-                                          >
-                                            {key}
-                                          </Typography.Text>
-                                        </Space>
-                                        <Space>: {value}</Space>
-                                      </Space.Compact>
-                                    ))}
-                                </>
-                              </Panel>
-                            </Collapse>
-                          </Panel>
-                        </CollapseStyled>
-                      </div>
-                    </div>
-                  </motion.div>
-                </motion.aside>
-              )}
-            </AnimatePresence>
-          ) : (
-            variants && (
+      <Layout style={{
+        pointerEvents: loading ? 'none' : 'unset',
+      }}>
+        <Space
+          direction="vertical"
+          size={0}
+          style={{ backgroundColor: "#fff" }}
+        >
+          {
+            !loading && variants?.variants && (
               <>
-                <div
+                <Space
                   style={{
-                    margin: "0 16px 0px",
-                    marginTop: 24.6,
+                    fontStyle: "normal",
+                    fontWeight: 400,
+                    fontSize: 14,
+                    color: "rgba(0, 0, 0, 0.45)",
+                    marginBottom: 8.7,
+                    marginLeft: 15.8,
+                    marginTop: 9.5,
                   }}
                 >
+                  Version
+                  {templates.filter((template: { _id: string }) => {
+                    return template._id === templateId;
+                  })[0].defaultVersion + 1}
+                </Space>
+                <div style={{ marginLeft: 15.8, marginBottom: 47.5 }}>
                   <Space
                     style={{
                       float: "left",
+                      fontStyle: "normal",
+                      fontWeight: 500,
+                      fontSize: 20,
+                      color: "#000",
                     }}
                   >
-                    <Space
-                      style={{
-                        backgroundColor: "#1890FF",
-                        height: 21,
-                        width: 21,
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <BarsOutlined style={{ fontSize: 10.9, color: "#fff" }} />
-                    </Space>
+                    {templates.filter((template: { _id: string }) => {
+                      return template._id === templateId;
+                    })[0].size +
+                      "-" +
+                      templates.filter((template: { _id: string }) => {
+                        return template._id === templateId;
+                      })[0].name}
                   </Space>
-                  <Space
-                    size={0}
-                    style={{
-                      float: "right",
-                    }}
-                  >
-                    <Space>
-                      <Badge
-                        count={40}
-                        color="#6F7782"
+                  {variants &&
+                    <>
+                      <Space
                         style={{
-                          fontStyle: "normal",
-                          fontWeight: 400,
-                          fontSize: 11,
-                          color: "#fff",
-                          borderRadius: 5,
-                          padding: 0,
+                          float: "right",
+                          color: "#000",
                         }}
-                      />
-                    </Space>
-                    <Space
-                      style={{
-                        fontStyle: "normal",
-                        fontWeight: 500,
-                        fontSize: 16,
-                        color: "rgba(33, 37, 41, 0.5)",
-                        marginLeft: 6.8,
-                      }}
-                    >
-                      Combinations
-                    </Space>
-                  </Space>
-                  <Space style={{ clear: "both" }}></Space>
+                        size={0}
+                      >
+                        {/* <Space
+                          style={{
+                            padding: "0 19.3px",
+                          }}
+                        >
+                          <Badge
+                            size="small"
+                            count={11}
+                            offset={[11, 1.5]}
+                            style={{
+                              padding: "0 5.7px",
+                              fontWeight: "400",
+                              fontSize: 12,
+                            }}
+                          >
+                            <MessageOutlined
+                              style={{ fontSize: 11.2, color: "#000" }}
+                            />
+                          </Badge>
+                        </Space>
+                        <Space
+                          style={{
+                            padding: "0 19.3px",
+                            borderLeft: "1px solid #F0F0F0",
+                            borderRight: "1px solid #F0F0F0",
+                          }}
+                        >
+                          <DesktopOutlined
+                            style={{ fontSize: 11.2, color: "#000" }}
+                          />
+                        </Space>
+                        <Space
+                          style={{
+                            padding: "0 19.3px",
+                            borderRight: "1px solid #F0F0F0",
+                          }}
+                        >
+                          <ExpandOutlined
+                            style={{ fontSize: 11.2, color: "#000" }}
+                          />
+                        </Space> */}
+                        <Space
+                          style={{
+                            padding: "0 19.3px",
+                          }}
+                        >
+                          <ShareAltOutlined
+                            style={{ fontSize: 11.2, color: "#000" }}
+                          />
+                        </Space>
+                      </Space>
+                      <Space style={{ clear: "both" }}></Space>
+                    </>
+                  }
                 </div>
-                <ContentStyled
+              </>
+            )
+          }
+        </Space>
+        <>
+          {!loading && variants?.variants && (
+            <div
+              style={{
+                margin: "0 16px 0px",
+                marginTop: 24.6,
+              }}
+            >
+              <Space
+                style={{
+                  float: "left",
+                }}
+              >
+                <Space
                   style={{
-                    margin: "24px 16px",
-                    overflowY: "scroll",
+                    backgroundColor: "#1890FF",
+                    height: 21,
+                    width: 21,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  <Row gutter={[15.9, 22.4]} style={{ width: "100%" }}>
-                    {variants &&
-                      variants.variants?.map(
-                        (variant: { variantName: string }, i: number) => (
-                          <Col>
+                  <BarsOutlined style={{ fontSize: 10.9, color: "#fff" }} />
+                </Space>
+              </Space>
+              <Space
+                size={0}
+                style={{
+                  float: "right",
+                }}
+              >
+                <Space>
+                  <Badge
+                    count={
+                      variants.variants?.length 
+                    }
+                    color="#6F7782"
+                    style={{
+                      fontStyle: "normal",
+                      fontWeight: 400,
+                      fontSize: 11,
+                      color: "#fff",
+                      borderRadius: 5,
+                      padding: 0,
+                    }}
+                  />
+                </Space>
+                <Space
+                  style={{
+                    fontStyle: "normal",
+                    fontWeight: 500,
+                    fontSize: 16,
+                    color: "rgba(33, 37, 41, 0.5)",
+                    marginLeft: 6.8,
+                  }}
+                >
+                  Combinations
+                </Space>
+              </Space>
+              <Space style={{ clear: "both" }}></Space>
+            </div>
+          )}
+          <ContentStyled
+            style={{
+              margin: "24px 16px",
+              overflowY: "scroll",
+            }}
+          >
+            <Row gutter={[15.9, 22.4]} style={{ width: "100%", justifyContent: 'center' }}>
+              {!loading && variants?.variants &&
+                variants?.variants.map(
+                  (variant: {
+                    defaultValues(e: React.SyntheticEvent<HTMLIFrameElement, Event>, defaultValues: any, arg2: string, arg3: string, arg4: string): void; variantName: string 
+}, i: number) => (
+                    <Col>
+                      <Space.Compact
+                        block
+                        style={{
+                          background:
+                            "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",
+                          borderTopLeftRadius: "5px",
+                          borderTopRightRadius: "5px",
+                          height: "5px",
+                        }}
+                      >
+                        {" "}
+                      </Space.Compact>
+                      <CardStyled
+                        extra={
+                          <div>
+                            <div
+                              style={{
+                                display: "inline-block",
+                                float: "left",
+                              }}
+                            >
+                              <SpaceCompactCardHeaderTitleStyled
+                                block
+                                style={{
+                                  fontWeight: "500",
+                                  fontSize: 13,
+                                  height: "20.42px",
+                                  overflow: "auto",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {variant.variantName}
+                              </SpaceCompactCardHeaderTitleStyled>
+                            </div>
+                            <div
+                              style={{
+                                display: "inline-block",
+                                float: "right",
+                              }}
+                            >
+                              <DeleteOutlined
+                                style={{
+                                  color: "#1890FF",
+                                  fontSize: 14.6,
+                                }}
+                              />
+                            </div>
+                            <div style={{ clear: "both" }}></div>
+                          </div>
+                        }
+                        cover={
+                          <div>
+                            <iframe
+                              ref={ref => {
+                                iframeRef.current[i] = ref
+                              }}
+                              key={refreshes[i]?.refresh}
+                              width={
+                                templates.filter(
+                                  (template: { _id: string }) => {
+                                    return (
+                                      template._id === templateId
+                                    );
+                                  }
+                                )[0].size.split("x")[0]
+                              }
+                              height={
+                                templates.filter(
+                                  (template: { _id: string }) => {
+                                    return (
+                                      template._id === templateId
+                                    );
+                                  }
+                                )[0].size.split("x")[1]
+                              }
+                              src={`https://storage.googleapis.com/creative-templates/${
+                                variants._id
+                              }/${
+                                templates.filter(
+                                  (template: { _id: string }) => {
+                                    return template._id === templateId;
+                                  }
+                                )[0].size +
+                                "-" +
+                                templates.filter(
+                                  (template: { _id: string }) => {
+                                    return template._id === templateId;
+                                  }
+                                )[0].name
+                              }/index.html`}
+                              style={{
+                                border: 0
+                              }}
+                              onLoad={(e) => {
+                                onLoad(e, i, variant.defaultValues)
+                              }}
+                            />
+                          </div>
+                        }
+                        actions={[
+                          <Timer />,
+                          <EditOutlined
+                            style={{ color: "#1890FF", fontSize: 10 }}
+                          />,
+                          <div style={{ position: "relative" }}>
+                            <span
+                              style={{
+                                position: "absolute",
+                                top: -5.7,
+                                right: 12.7,
+                                borderRadius: 50,
+                                backgroundColor: "#FF4D4F",
+                                color: "#fff",
+                                fontWeight: "400",
+                                fontSize: 12,
+                                width: 21.8,
+                                height: 18,
+                              }}
+                            >
+                              11
+                            </span>
+                            <MessageOutlined
+                              style={{
+                                color: "#1890FF",
+                                fontSize: 10,
+                              }}
+                            />
+                          </div>,
+                        ]}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            height: 34.6,
+                          }}
+                        >
+                          <DivStyled style={switchStyle(i)}>
                             <Space.Compact
                               block
                               style={{
-                                background:
-                                  "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",
-                                borderTopLeftRadius: "5px",
-                                borderTopRightRadius: "5px",
-                                height: "5px",
+                                lineHeight: 0.8,
+                                zIndex: 1,
+                                position: "absolute",
+                                alignItems: "center",
                               }}
                             >
-                              {" "}
+                              <CheckOutlined
+                                style={switchCheckIconStyle(i)}
+                              />
+                              <span>&nbsp;</span>
+                              <CloseOutlined
+                                style={switchClosedIconStyle(i)}
+                              />
                             </Space.Compact>
-                            <CardStyled
-                              extra={
-                                <div>
-                                  <div
-                                    style={{
-                                      display: "inline-block",
-                                      float: "left",
-                                      width: 218,
-                                    }}
-                                  >
-                                    <SpaceCompactCardHeaderTitleStyled
-                                      block
-                                      style={{
-                                        fontWeight: "500",
-                                        fontSize: 13,
-                                        height: "20.42px",
-                                        overflow: "auto",
-                                        whiteSpace: "nowrap",
-                                      }}
-                                    >
-                                      {variant.variantName}
-                                    </SpaceCompactCardHeaderTitleStyled>
-                                  </div>
-                                  <div
-                                    style={{
-                                      display: "inline-block",
-                                      float: "right",
-                                    }}
-                                  >
-                                    <DeleteOutlined
-                                      style={{
-                                        color: "#1890FF",
-                                        fontSize: 14.6,
-                                      }}
-                                    />
-                                  </div>
-                                  <div style={{ clear: "both" }}></div>
-                                </div>
-                              }
-                              cover={
-                                // <div
-                                //   style={{
-                                //     height: 210,
-                                //     overflow: "hidden",
-                                //     position: "relative",
-                                //     background:
-                                //       "linear-gradient(90.03deg, rgb(242, 32, 118) 0.03%, rgb(41, 18, 95) 100.05%)",
-                                //   }}
-                                // >
-                                //   <iframe
-                                //     width={
-                                //       templates
-                                //         .filter((template: { _id: string }) => {
-                                //           return template._id === templateId;
-                                //         })[0]
-                                //         .size.split("x")[0] > 464
-                                //         ? 464
-                                //         : templates
-                                //             .filter(
-                                //               (template: { _id: string }) => {
-                                //                 return (
-                                //                   template._id === templateId
-                                //                 );
-                                //               }
-                                //             )[0]
-                                //             .size.split("x")[0]
-                                //     }
-                                //     height={420}
-                                //     src={`https://storage.googleapis.com/creative-templates/${
-                                //       variants?._id
-                                //     }/${
-                                //       templates.filter(
-                                //         (template: { _id: string }) => {
-                                //           return template._id === templateId;
-                                //         }
-                                //       )[0].size +
-                                //       "-" +
-                                //       templates.filter(
-                                //         (template: { _id: string }) => {
-                                //           return template._id === templateId;
-                                //         }
-                                //       )[0].name
-                                //     }/index.html`}
-                                //     style={{
-                                //       transform:
-                                //         "scale(0.5) translate(-50%, -50%)",
-                                //       position: "absolute",
-                                //       top: "50%",
-                                //       left: "50%",
-                                //       transformOrigin: "0 0",
-                                //     }}
-                                //   />
-                                // </div>
-                                <div style={{
-                                  height: 210,
-                                  overflow: "hidden",
-                                  background: "linear-gradient(90.03deg, rgb(242, 32, 118) 0.03%, rgb(41, 18, 95) 100.05%)",
-                                  position: "relative",
-                                }}>
-                                  <iframe
-                                    width={
-                                      templates
-                                        .filter((template: { _id: string }) => {
-                                          return template._id === templateId;
-                                        })[0]
-                                        .size.split("x")[0] > 464
-                                        ? 464
-                                        : templates
-                                            .filter(
-                                              (template: { _id: string }) => {
-                                                return (
-                                                  template._id === templateId
-                                                );
-                                              }
-                                            )[0]
-                                            .size.split("x")[0]
-                                    }
-                                    height={
-                                      templates
-                                        .filter((template: { _id: string }) => {
-                                          return template._id === templateId;
-                                        })[0]
-                                        .size.split("x")[0] > 464
-                                        ? 464
-                                        : templates
-                                            .filter(
-                                              (template: { _id: string }) => {
-                                                return (
-                                                  template._id === templateId
-                                                );
-                                              }
-                                            )[0]
-                                            .size.split("x")[1]
-                                    }
-                                    src={`https://storage.googleapis.com/creative-templates/${
-                                      variants?._id
-                                    }/${
-                                      templates.filter(
-                                        (template: { _id: string }) => {
-                                          return template._id === templateId;
-                                        }
-                                      )[0].size +
-                                      "-" +
-                                      templates.filter(
-                                        (template: { _id: string }) => {
-                                          return template._id === templateId;
-                                        }
-                                      )[0].name
-                                    }/index.html`}
-                                    style={{
-                                      transform:
-                                        "scale(0.5) translate(-50%, -50%)",
-                                      position: "absolute",
-                                      top: "50%",
-                                      left: "50%",
-                                      transformOrigin: "0 0",
-                                    }}
+                            {["check", "disable", "close"].map((val) => {
+                              return (
+                                <span>
+                                  <ClickableLabel
+                                    onChange={() => handleChange(i, val)}
                                   />
-                                </div>
-                              }
-                              actions={[
-                                // <Space
-                                //   style={{
-                                //     fontWeight: "400",
-                                //     fontSize: 16,
-                                //   }}
-                                // >
-                                  <Timer />,
-                                // </Space>,
-                                <EditOutlined
-                                  style={{ color: "#1890FF", fontSize: 10 }}
-                                />,
-                                <div style={{ position: "relative" }}>
-                                  <span
-                                    style={{
-                                      position: "absolute",
-                                      top: -5.7,
-                                      right: 12.7,
-                                      borderRadius: 50,
-                                      backgroundColor: "#FF4D4F",
-                                      color: "#fff",
-                                      fontWeight: "400",
-                                      fontSize: 12,
-                                      width: 21.8,
-                                      height: 18,
-                                    }}
-                                  >
-                                    11
-                                  </span>
-                                  <MessageOutlined
-                                    style={{
-                                      color: "#1890FF",
-                                      fontSize: 10,
-                                    }}
-                                  />
-                                </div>,
-                              ]}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                  height: 34.6,
-                                }}
-                              >
-                                <DivStyled style={switchStyle(i)}>
-                                  <Space.Compact
-                                    block
-                                    style={{
-                                      lineHeight: 0.8,
-                                      zIndex: 1,
-                                      position: "absolute",
-                                      alignItems: "center",
-                                    }}
-                                  >
-                                    <CheckOutlined
-                                      style={switchCheckIconStyle(i)}
-                                    />
-                                    <span>&nbsp;</span>
-                                    <CloseOutlined
-                                      style={switchClosedIconStyle(i)}
-                                    />
-                                  </Space.Compact>
-                                  {["check", "disable", "close"].map((val) => {
-                                    return (
-                                      <span>
-                                        <ClickableLabel
-                                          onChange={() => handleChange(i, val)}
-                                        />
-                                      </span>
+                                </span>
+                              );
+                            })}
+                            <SpanStyled style={selectionStyle(i)} />
+                          </DivStyled>
+                          <div>
+                            {
+                              isPause[i]?.isPause ? 
+                                <PlayCircleTwoTone
+                                  twoToneColor="#1890FF"
+                                  style={{
+                                    fontSize: 18,
+                                    position: "relative",
+                                    top: "50%",
+                                    left: "50%",
+                                    transform: "translate(-50%, -50%)",
+                                  }}
+                                  onClick={() => {
+                                    let data = "play"
+                                    let dataIsPause = [...isPause];
+                                    dataIsPause[i]["isPause"] = data !== 'play';
+                                    setPause(dataIsPause);
+                                    iframeRef.current[i].contentWindow.postMessage(
+                                      {
+                                        data,
+                                        type: "setDefaultValues",
+                                      },
+                                      iframeRef.current[i].src
                                     );
-                                  })}
-                                  <SpanStyled style={selectionStyle(i)} />
-                                </DivStyled>
-                                <div>
-                                  <PlayCircleTwoTone
-                                    twoToneColor="#1890FF"
+                                  }}
+                                /> : <PauseCircleTwoTone
+                                  twoToneColor="#1890FF"
                                     style={{
                                       fontSize: 18,
                                       position: "relative",
@@ -1056,35 +903,54 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                                       left: "50%",
                                       transform: "translate(-50%, -50%)",
                                     }}
-                                    onClick={() => handleClickPlay(i, variants)}
-                                  />
-                                </div>
-                                <div>
-                                  <RedoOutlined
-                                    style={{
-                                      color: "#1890FF",
-                                      fontSize: 18,
-                                      position: "relative",
-                                      top: "50%",
-                                      left: "50%",
-                                      transform: "translate(-50%, -50%)",
+                                    onClick={() => {
+                                      let data = "pause"
+                                      let dataIsPause = [...isPause];
+                                      dataIsPause[i]["isPause"] = data !== 'play';
+                                      setPause(dataIsPause);
+                                      iframeRef.current[i].contentWindow.postMessage(
+                                        {
+                                          data,
+                                          type: "setDefaultValues",
+                                        },
+                                        iframeRef.current[i].src
+                                      );
+                                      iframeRef.current[i].src;
                                     }}
-                                  />
-                                </div>
-                              </div>
-                            </CardStyled>
-                          </Col>
-                        )
-                      )}
-                  </Row>
-                </ContentStyled>
-              </>
-            )
-          )}
-        </Layout>
-      ) : (
-        <></>
-      )}
+                                />
+                            }
+                          </div>
+                          <div>
+                            <RedoOutlined
+                              style={{
+                                color: "#1890FF",
+                                fontSize: 18,
+                                position: "relative",
+                                top: "50%",
+                                left: "50%",
+                                transform: "translate(-50%, -50%)",
+                              }}
+                              onClick={() => {
+                                const newRefreshes = refreshes.map((variantRefresh, n) => {
+                                  if (n === i) {
+                                    return { ...variantRefresh, refresh: variantRefresh.refresh + 1 };
+                                  } else {
+                                    return variantRefresh;
+                                  }
+                                });
+                                setRefreshes(newRefreshes);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </CardStyled>
+                    </Col>
+                  )
+                )}
+            </Row>
+          </ContentStyled>
+        </>
+      </Layout>
     </Layout>
   );
 };

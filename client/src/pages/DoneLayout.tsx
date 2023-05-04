@@ -1,6 +1,6 @@
 // @ts-nocheck
 import styled from "styled-components";
-import { Button, Divider, Input, InputNumber, Layout, Space } from "antd";
+import { Button, Divider, Input, InputNumber, Spin, Layout, Space, notification } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import {
   CheckOutlined,
@@ -197,40 +197,57 @@ export default function DoneLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const [templates, setTemplates] = useState(location.state.templates);
+  const templateName:string = location.state.templateName;
+  const templates:any = location.state.templates;
   const [templateIndex, setTemplateIndex] = useState<number>(0);
   const {
     addTemplateVersion,
     isAddTemplateVersionSuccess,
     isAddTemplateVersionCloudSuccess,
+    isAddTemplateVersionCloudError,
   } = useSelector((state: any) => state.templateVersion);
-  const [index, setIndex] = useState<number>(0);
-  const [_templates, _setTemplates] = useState([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [_templates, _setTemplates] = useState<any>([]);
+  const [api, contextHolder] = notification.useNotification();
   useEffect(() => {
     if (isAddTemplateVersionSuccess) {
-      setIndex(index - 1);
+      let templatesVersions = [];
+      addTemplateVersion.templatesVersions.map((templatesVersion, i) => {
+        let data = {
+          creativeId: templatesVersion._id,
+          templateUrl: _templates[i].url,
+        }
+        templatesVersions.push(data);
+      });
       dispatch(
-        postTemplateVersionCloud({
-          template: _templates[index].url,
-          creativeId: addTemplateVersion.templatesVersions._id,
-          origin: "",
-        })
+        postTemplateVersionCloud(templatesVersions)
       );
     }
-  }, [isAddTemplateVersionSuccess, addTemplateVersion]);
-  const _postTemplateVersion = useCallback(
-    (templatesVersions) => {
-      dispatch(postTemplateVersion(templatesVersions));
-    },
-    [dispatch]
-  );
+  }, [
+    isAddTemplateVersionSuccess, 
+    addTemplateVersion
+  ]);
   useEffect(() => {
-    if (isAddTemplateVersionCloudSuccess)
+    if (isAddTemplateVersionCloudSuccess) {
+      setLoading(!loading);
       navigate("/concept_template_version", {
-        state: { templates: templates },
+        state: { 
+          templateName: templateName, 
+          templates: templates },
         replace: true,
       });
-  }, [isAddTemplateVersionCloudSuccess]);
+    }
+    if (isAddTemplateVersionCloudError) {
+      setLoading(!loading);
+      api["error"]({
+        message: "Done",
+        description: "Error Generating Templates, please try again!",
+      });
+    }
+  }, [
+    isAddTemplateVersionCloudSuccess,
+    isAddTemplateVersionCloudError
+  ])
   const activeStyle = {
     backgroundColor: "#1890ff",
     borderRadius: 5,
@@ -412,321 +429,410 @@ export default function DoneLayout() {
     },
   };
   return (
-    <LayoutStyled>
-      <Space
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginTop: 42.1,
-        }}
-      >
+    <>
+      <LayoutStyled>
+        {contextHolder}
+        {loading && (
+          <Space
+            style={{
+              zIndex: 10,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            <Spin
+              size="large"
+              style={{
+                top: "50%",
+                left: "50%",
+                position: "absolute",
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          </Space>
+        )}
         <Space
           style={{
-            border: "1px solid #1890FF",
-            backgroundColor: "#FFF",
-            height: "27.6px",
-            width: "27.6px",
-            borderRadius: "50%",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            marginRight: 6.6,
-            color: "#1890FF",
+            marginTop: 42.1,
+            pointerEvents: loading ? 'none' : 'unset',
           }}
         >
-          <CheckOutlined />
+          <Space
+            style={{
+              border: "1px solid #1890FF",
+              backgroundColor: "#FFF",
+              height: "27.6px",
+              width: "27.6px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 6.6,
+              color: "#1890FF",
+            }}
+          >
+            <CheckOutlined />
+          </Space>
+          <Space
+            style={{
+              color: "rgba(0, 0, 0, 0.85)",
+              fontWeight: 400,
+              fontSize: 16,
+            }}
+          >
+            Configure
+          </Space>
+          <Divider
+            type="horizontal"
+            style={{
+              width: "118.4px",
+              margin: "0 14px 0 14px",
+              minWidth: "unset",
+              backgroundColor: "#F0F0F0",
+            }}
+          />
+          <Space
+            style={{
+              border: "1px solid #1890FF",
+              backgroundColor: "#FFF",
+              height: "27.6px",
+              width: "27.6px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 6.6,
+              color: "#1890FF",
+            }}
+          >
+            <CheckOutlined />
+          </Space>
+          <Space
+            style={{
+              color: "rgba(0, 0, 0, 0.45)",
+              fontWeight: 400,
+              fontSize: 16,
+            }}
+          >
+            Generate
+          </Space>
+          <Divider
+            type="horizontal"
+            style={{
+              width: "118.4px",
+              margin: "0 14px 0 14px",
+              minWidth: "unset",
+              backgroundColor: "#F0F0F0",
+            }}
+          />
+          <Space
+            style={{
+              backgroundColor: "#1890FF",
+              height: "27.6px",
+              width: "27.6px",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#FFF",
+              marginRight: 6.6,
+            }}
+          >
+            3
+          </Space>
+          <Space
+            style={{
+              color: "rgba(0, 0, 0, 0.45)",
+              fontWeight: 400,
+              fontSize: 16,
+            }}
+          >
+            Done
+          </Space>
         </Space>
-        <Space
-          style={{
-            color: "rgba(0, 0, 0, 0.85)",
-            fontWeight: 400,
-            fontSize: 16,
-          }}
-        >
-          Configure
-        </Space>
-        <Divider
-          type="horizontal"
-          style={{
-            width: "118.4px",
-            margin: "0 14px 0 14px",
-            minWidth: "unset",
-            backgroundColor: "#F0F0F0",
-          }}
-        />
-        <Space
-          style={{
-            border: "1px solid #1890FF",
-            backgroundColor: "#FFF",
-            height: "27.6px",
-            width: "27.6px",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginRight: 6.6,
-            color: "#1890FF",
-          }}
-        >
-          <CheckOutlined />
-        </Space>
-        <Space
-          style={{
-            color: "rgba(0, 0, 0, 0.45)",
-            fontWeight: 400,
-            fontSize: 16,
-          }}
-        >
-          Generate
-        </Space>
-        <Divider
-          type="horizontal"
-          style={{
-            width: "118.4px",
-            margin: "0 14px 0 14px",
-            minWidth: "unset",
-            backgroundColor: "#F0F0F0",
-          }}
-        />
-        <Space
-          style={{
-            backgroundColor: "#1890FF",
-            height: "27.6px",
-            width: "27.6px",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#FFF",
-            marginRight: 6.6,
-          }}
-        >
-          3
-        </Space>
-        <Space
-          style={{
-            color: "rgba(0, 0, 0, 0.45)",
-            fontWeight: 400,
-            fontSize: 16,
-          }}
-        >
-          Done
-        </Space>
-      </Space>
-      <div
-        style={{
-          marginTop: 42.4,
-          color: "#000",
-          marginBottom: 42.4,
-        }}
-      >
-        <DivMenuStyled>
-          {templates.map((template, i) => (
-            <DivMenuItemStyled
-              key={i}
-              onClick={() => setTemplateIndex(i)}
-              style={templateIndex === i ? activeStyle : {}}
-            >
-              <ProfileFilled style={{ marginRight: 4, fontSize: "18px" }} />
-              {template.size} - {template.name}
-            </DivMenuItemStyled>
-          ))}
-        </DivMenuStyled>
         <div
           style={{
-            float: "left",
-            width: "76%",
-            borderLeft: "1px solid #F0F0F0",
+            marginTop: 42.4,
+            color: "#000",
+            marginBottom: 42.4,
+            pointerEvents: loading ? 'none' : 'unset',
           }}
         >
-          {renderTemplateConfigurations(templates[templateIndex])}
-        </div>
-        <Space style={{ width: "100%", justifyContent: "right" }}>
-          <Space style={{ margin: "10px 20px 0 0" }}>
-            <ButtonDoneStyled
-              type="primary"
-              onClick={() => {
-                let __templates = [];
-                templates.map((template) => {
-                  let templateVariants = [];
-                  if (template.hasOwnProperty("possibleValues")) {
-                    // let possibleValues = {
-                    //   trigger: ["4 Frames", "3 Frames", "2 Frames"],
-                    //   trigger2: [
-                    //     "logo",
-                    //     "sublogo",
-                    //     // , "logo logo"
-                    //   ],
-                    //   customValue: [
-                    //     "with logo1",
-                    //     "without logo1",
-                    //     // "with logo1 logo1",
-                    //   ],
-                    //   customValue1: [
-                    //     "with logo2",
-                    //     "without logo2",
-                    //     // "with logo2 logo2",
-                    //   ],
-                    //   customValue2: [
-                    //     "with logo3",
-                    //     "without logo3",
-                    //     // "with logo3 logo3",
-                    //   ],
-                    // };
-                    let possibleValues = template.possibleValues;
-                    let possibleValuesKeys = Object.keys(possibleValues);
-                    let possibleValuesRowLength = [];
-                    possibleValuesKeys.map((key, i) => {
-                      if (i === 1)
-                        if (i < possibleValuesKeys.length - 1)
-                          possibleValuesRowLength.push(
-                            possibleValues[key].length
-                          );
-                    });
-                    if (possibleValuesKeys.length > 2) {
-                      let g = 0;
-                      while (g < 2) {
-                        let t = 0;
-                        while (
-                          t < possibleValues[possibleValuesKeys[0]].length
-                        ) {
-                          let i = 0;
-                          while (i < Math.max(...possibleValuesRowLength)) {
-                            let n = 1;
-                            let variants_1 =
-                              g === 1
-                                ? "MIN-" +
-                                  possibleValues[possibleValuesKeys[0]][t]
-                                : "MAX-" +
-                                  possibleValues[possibleValuesKeys[0]][t];
-                            while (n < possibleValuesKeys.length - 1) {
-                              if (
-                                possibleValues[possibleValuesKeys[n]][i] !==
-                                undefined
-                              ) {
-                                variants_1 +=
-                                  "-" +
-                                  possibleValues[possibleValuesKeys[n]][i];
-                              }
-                              n++;
-                              if (n === possibleValuesKeys.length - 1) {
-                                let e = 0;
-                                while (
-                                  e <
-                                  possibleValues[
-                                    possibleValuesKeys[
-                                      possibleValuesKeys.length - 1
-                                    ]
-                                  ].length
+          <DivMenuStyled style={{ width: "20%" }}>
+            {templates.map((template, i) => (
+              <DivMenuItemStyled
+                key={i}
+                onClick={() => setTemplateIndex(i)}
+                style={templateIndex === i ? activeStyle : {}}
+              >
+                <ProfileFilled style={{ marginRight: 4, fontSize: "18px" }} />
+                {template.size} - {template.name}
+              </DivMenuItemStyled>
+            ))}
+          </DivMenuStyled>
+          <div
+            style={{
+              float: "left",
+              width: "76%",
+              borderLeft: "1px solid #F0F0F0",
+            }}
+          >
+            {renderTemplateConfigurations(templates[templateIndex])}
+          </div>
+          <Space style={{ width: "100%", justifyContent: "right" }}>
+            <Space style={{ margin: "10px 20px 0 0" }}>
+              <ButtonDoneStyled
+                type="primary"
+                onClick={() => {
+                  let _templatesVersions = [];
+                  let __templates = [];
+                  templates.map((template) => {
+                    let templateVariants = [];
+                    if (template.hasOwnProperty("possibleValues")) {
+                      // let possibleValues = {
+                      //   trigger: ["4 Frames", "3 Frames", "2 Frames"],
+                      //   trigger2: [
+                      //     "logo",
+                      //     "sublogo",
+                      //     // , "logo logo"
+                      //   ],
+                      //   customValue: [
+                      //     "with logo1",
+                      //     "without logo1",
+                      //     // "with logo1 logo1",
+                      //   ],
+                      //   customValue1: [
+                      //     "with logo2",
+                      //     "without logo2",
+                      //     // "with logo2 logo2",
+                      //   ],
+                      //   customValue2: [
+                      //     "with logo3",
+                      //     "without logo3",
+                      //     // "with logo3 logo3",
+                      //   ],
+                      // };
+                      let possibleValues = template.possibleValues;
+                      let possibleValuesKeys = Object.keys(possibleValues);
+                      let possibleValuesRowLength = [];
+                      possibleValuesKeys.map((key, i) => {
+                        if (i === 1)
+                          if (i < possibleValuesKeys.length - 1)
+                            possibleValuesRowLength.push(
+                              possibleValues[key].length
+                            );
+                      });
+                      if (possibleValuesKeys.length > 2) {
+                        let g = 0;
+                        while (g < 2) {
+                          let t = 0;
+                          while (
+                            t < possibleValues[possibleValuesKeys[0]].length
+                          ) {
+                            let i = 0;
+                            while (i < Math.max(...possibleValuesRowLength)) {
+                              let n = 1;
+                              let variants_1 =
+                                g === 1
+                                  ? "MIN-" +
+                                    possibleValues[possibleValuesKeys[0]][t]
+                                  : "MAX-" +
+                                    possibleValues[possibleValuesKeys[0]][t];
+                              while (n < possibleValuesKeys.length - 1) {
+                                if (
+                                  possibleValues[possibleValuesKeys[n]][i] !==
+                                  undefined
                                 ) {
-                                  let variants_2 = "";
-                                  variants_2 +=
-                                    variants_1 +
+                                  variants_1 +=
                                     "-" +
-                                    possibleValues[possibleValuesKeys[n]][e];
-                                  if (variants_2.includes("MIN")) {
-                                    template.defaultDynamicFieldsValues;
-                                    let defaultValues = {};
-                                    for (const [key, value] of Object.entries(
-                                      template.defaultDynamicFieldsValues
-                                    )) {
-                                      if (
-                                        key.toLowerCase().includes("text") ||
-                                        key
-                                          .toLowerCase()
-                                          .includes("headline") ||
-                                        key.toLowerCase().includes("legal")
-                                      ) {
-                                        let html = `${value}`;
-                                        let div = document.createElement("div");
-                                        div.innerHTML = html;
-                                        let textLegalHeading =
-                                          div.textContent ||
-                                          div.innerText ||
-                                          "";
-                                        defaultValues[key] =
-                                          textLegalHeading.slice(
-                                            0,
-                                            Math.round(
-                                              textLegalHeading.length / 2
-                                            )
-                                          );
-                                      } else defaultValues[key] = value;
-                                    }
-                                    templateVariants.push({
-                                      variantName: variants_2,
-                                      size: template.size,
-                                      templateName: template.name,
-                                      defaultValues: {
-                                        ...defaultValues,
-                                        trigger:
-                                          possibleValues[possibleValuesKeys[0]][
-                                            t
-                                          ],
-                                      },
-                                    });
-                                  } else
-                                    templateVariants.push({
-                                      variantName: variants_2,
-                                      size: template.size,
-                                      templateName: template.name,
-                                      defaultValues: {
-                                        ...template.defaultDynamicFieldsValues,
-                                        trigger:
-                                          possibleValues[possibleValuesKeys[0]][
-                                            t
-                                          ],
-                                      },
-                                    });
-                                  e++;
+                                    possibleValues[possibleValuesKeys[n]][i];
+                                }
+                                n++;
+                                if (n === possibleValuesKeys.length - 1) {
+                                  let e = 0;
+                                  while (
+                                    e <
+                                    possibleValues[
+                                      possibleValuesKeys[
+                                        possibleValuesKeys.length - 1
+                                      ]
+                                    ].length
+                                  ) {
+                                    let variants_2 = "";
+                                    variants_2 +=
+                                      variants_1 +
+                                      "-" +
+                                      possibleValues[possibleValuesKeys[n]][e];
+                                    if (variants_2.includes("MIN")) {
+                                      template.defaultDynamicFieldsValues;
+                                      let defaultValues = {};
+                                      for (const [key, value] of Object.entries(
+                                        template.defaultDynamicFieldsValues
+                                      )) {
+                                        if (
+                                          key.toLowerCase().includes("text") ||
+                                          key
+                                            .toLowerCase()
+                                            .includes("headline") ||
+                                          key.toLowerCase().includes("legal")
+                                        ) {
+                                          let html = `${value}`;
+                                          let div = document.createElement("div");
+                                          div.innerHTML = html;
+                                          let textLegalHeading =
+                                            div.textContent ||
+                                            div.innerText ||
+                                            "";
+                                          defaultValues[key] =
+                                            textLegalHeading.slice(
+                                              0,
+                                              Math.round(
+                                                textLegalHeading.length / 2
+                                              )
+                                            );
+                                        } else defaultValues[key] = value;
+                                      }
+                                      templateVariants.push({
+                                        variantName: variants_2,
+                                        size: template.size,
+                                        templateName: template.name,
+                                        defaultValues: {
+                                          ...defaultValues,
+                                          trigger:
+                                            possibleValues[possibleValuesKeys[0]][
+                                              t
+                                            ],
+                                        },
+                                      });
+                                    } else
+                                      templateVariants.push({
+                                        variantName: variants_2,
+                                        size: template.size,
+                                        templateName: template.name,
+                                        defaultValues: {
+                                          ...template.defaultDynamicFieldsValues,
+                                          trigger:
+                                            possibleValues[possibleValuesKeys[0]][
+                                              t
+                                            ],
+                                        },
+                                      });
+                                    e++;
+                                  }
                                 }
                               }
+                              i++;
                             }
-                            i++;
+                            t++;
                           }
-                          t++;
+                          g++;
                         }
-                        g++;
-                      }
-                    } else {
-                      let g = 0;
-                      while (g < 2) {
-                        let t = 0;
-                        while (
-                          t <
-                          possibleValues[
-                            possibleValuesKeys[possibleValuesKeys.length - 1]
-                          ].length
-                        ) {
-                          let variants_1 = "";
-                          if (possibleValuesKeys.length > 1) {
-                            let i = 0;
-                            variants_1 +=
-                              g === 1
-                                ? "MIN-" +
-                                  possibleValues[possibleValuesKeys[0]][t]
-                                : "MAX-" +
-                                  possibleValues[possibleValuesKeys[0]][t];
-                            while (
-                              i <
-                              possibleValues[
-                                possibleValuesKeys[
-                                  possibleValuesKeys.length - 1
-                                ]
-                              ].length
-                            ) {
-                              let variants_2 = "";
-                              variants_2 +=
-                                variants_1 +
-                                "-" +
+                      } else {
+                        let g = 0;
+                        while (g < 2) {
+                          let t = 0;
+                          while (
+                            t <
+                            possibleValues[
+                              possibleValuesKeys[possibleValuesKeys.length - 1]
+                            ].length
+                          ) {
+                            let variants_1 = "";
+                            if (possibleValuesKeys.length > 1) {
+                              let i = 0;
+                              variants_1 +=
+                                g === 1
+                                  ? "MIN-" +
+                                    possibleValues[possibleValuesKeys[0]][t]
+                                  : "MAX-" +
+                                    possibleValues[possibleValuesKeys[0]][t];
+                              while (
+                                i <
                                 possibleValues[
                                   possibleValuesKeys[
                                     possibleValuesKeys.length - 1
                                   ]
-                                ][i];
+                                ].length
+                              ) {
+                                let variants_2 = "";
+                                variants_2 +=
+                                  variants_1 +
+                                  "-" +
+                                  possibleValues[
+                                    possibleValuesKeys[
+                                      possibleValuesKeys.length - 1
+                                    ]
+                                  ][i];
+                                // templateVariants.push({
+                                //   variantName: variants_2,
+                                //   size: template.size,
+                                //   templateName: template.name,
+                                //   defaultValues: {
+                                //     ...template.defaultDynamicFieldsValues,
+                                //     trigger:
+                                //       possibleValues[possibleValuesKeys[0]][t],
+                                //   },
+                                // });
+                                if (variants_2.includes("MIN")) {
+                                  template.defaultDynamicFieldsValues;
+                                  let defaultValues = {};
+                                  for (const [key, value] of Object.entries(
+                                    template.defaultDynamicFieldsValues
+                                  )) {
+                                    if (
+                                      key.toLowerCase().includes("text") ||
+                                      key.toLowerCase().includes("headline") ||
+                                      key.toLowerCase().includes("legal")
+                                    ) {
+                                      let html = `${value}`;
+                                      let div = document.createElement("div");
+                                      div.innerHTML = html;
+                                      let textLegalHeading =
+                                        div.textContent || div.innerText || "";
+                                      defaultValues[key] = textLegalHeading.slice(
+                                        0,
+                                        Math.round(textLegalHeading.length / 2)
+                                      );
+                                    } else defaultValues[key] = value;
+                                  }
+                                  templateVariants.push({
+                                    variantName: variants_2,
+                                    size: template.size,
+                                    templateName: template.name,
+                                    defaultValues: {
+                                      ...defaultValues,
+                                      trigger:
+                                        possibleValues[possibleValuesKeys[0]][t],
+                                    },
+                                  });
+                                } else
+                                  templateVariants.push({
+                                    variantName: variants_2,
+                                    size: template.size,
+                                    templateName: template.name,
+                                    defaultValues: {
+                                      ...template.defaultDynamicFieldsValues,
+                                      trigger:
+                                        possibleValues[possibleValuesKeys[0]][t],
+                                    },
+                                  });
+                                i++;
+                              }
+                            } else {
+                              variants_1 +=
+                                g === 1
+                                  ? "MIN-" +
+                                    possibleValues[possibleValuesKeys[0]][t]
+                                  : "MAX-" +
+                                    possibleValues[possibleValuesKeys[0]][t];
                               // templateVariants.push({
-                              //   variantName: variants_2,
+                              //   variantName: variants_1,
                               //   size: template.size,
                               //   templateName: template.name,
                               //   defaultValues: {
@@ -735,7 +841,7 @@ export default function DoneLayout() {
                               //       possibleValues[possibleValuesKeys[0]][t],
                               //   },
                               // });
-                              if (variants_2.includes("MIN")) {
+                              if (variants_1.includes("MIN")) {
                                 template.defaultDynamicFieldsValues;
                                 let defaultValues = {};
                                 for (const [key, value] of Object.entries(
@@ -758,7 +864,7 @@ export default function DoneLayout() {
                                   } else defaultValues[key] = value;
                                 }
                                 templateVariants.push({
-                                  variantName: variants_2,
+                                  variantName: variants_1,
                                   size: template.size,
                                   templateName: template.name,
                                   defaultValues: {
@@ -769,7 +875,7 @@ export default function DoneLayout() {
                                 });
                               } else
                                 templateVariants.push({
-                                  variantName: variants_2,
+                                  variantName: variants_1,
                                   size: template.size,
                                   templateName: template.name,
                                   defaultValues: {
@@ -778,91 +884,31 @@ export default function DoneLayout() {
                                       possibleValues[possibleValuesKeys[0]][t],
                                   },
                                 });
-                              i++;
                             }
-                          } else {
-                            variants_1 +=
-                              g === 1
-                                ? "MIN-" +
-                                  possibleValues[possibleValuesKeys[0]][t]
-                                : "MAX-" +
-                                  possibleValues[possibleValuesKeys[0]][t];
-                            // templateVariants.push({
-                            //   variantName: variants_1,
-                            //   size: template.size,
-                            //   templateName: template.name,
-                            //   defaultValues: {
-                            //     ...template.defaultDynamicFieldsValues,
-                            //     trigger:
-                            //       possibleValues[possibleValuesKeys[0]][t],
-                            //   },
-                            // });
-                            if (variants_1.includes("MIN")) {
-                              template.defaultDynamicFieldsValues;
-                              let defaultValues = {};
-                              for (const [key, value] of Object.entries(
-                                template.defaultDynamicFieldsValues
-                              )) {
-                                if (
-                                  key.toLowerCase().includes("text") ||
-                                  key.toLowerCase().includes("headline") ||
-                                  key.toLowerCase().includes("legal")
-                                ) {
-                                  let html = `${value}`;
-                                  let div = document.createElement("div");
-                                  div.innerHTML = html;
-                                  let textLegalHeading =
-                                    div.textContent || div.innerText || "";
-                                  defaultValues[key] = textLegalHeading.slice(
-                                    0,
-                                    Math.round(textLegalHeading.length / 2)
-                                  );
-                                } else defaultValues[key] = value;
-                              }
-                              templateVariants.push({
-                                variantName: variants_1,
-                                size: template.size,
-                                templateName: template.name,
-                                defaultValues: {
-                                  ...defaultValues,
-                                  trigger:
-                                    possibleValues[possibleValuesKeys[0]][t],
-                                },
-                              });
-                            } else
-                              templateVariants.push({
-                                variantName: variants_1,
-                                size: template.size,
-                                templateName: template.name,
-                                defaultValues: {
-                                  ...template.defaultDynamicFieldsValues,
-                                  trigger:
-                                    possibleValues[possibleValuesKeys[0]][t],
-                                },
-                              });
+                            t++;
                           }
-                          t++;
+                          g++;
                         }
-                        g++;
                       }
+                      let templatesVersions = {
+                        templateId: template._id,
+                        variants: templateVariants,
+                      };
+                      _templatesVersions.push(templatesVersions);
+                      __templates.push(template);
                     }
-                    let templatesVersions = {
-                      templateId: template._id,
-                      variants: templateVariants,
-                    };
-                    _postTemplateVersion(templatesVersions);
-                    __templates.push(template);
-                  }
-                });
-                _setTemplates(__templates);
-                setIndex(__templates.length - 1);
-              }}
-            >
-              Done
-            </ButtonDoneStyled>
+                  });
+                  setLoading(!loading);
+                  dispatch(postTemplateVersion(_templatesVersions));
+                  _setTemplates(__templates);
+                }}
+              >
+                Done
+              </ButtonDoneStyled>
+            </Space>
           </Space>
-        </Space>
-      </div>
-    </LayoutStyled>
+        </div>
+      </LayoutStyled>
+    </>
   );
 }

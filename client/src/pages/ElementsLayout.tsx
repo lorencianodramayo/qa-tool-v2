@@ -254,7 +254,8 @@ export default function ElementsLayout() {
   const { languages, isLanguagesSuccess, addLanguage, isAddLanguageSuccess } =
     useSelector((state: any) => state.language);
   const [languagesList, setLanguagesList] = useState<any>([]);
-  const [templates, setTemplates] = useState(location.state.templates);
+  const templateName:string = location.state.templateName;
+  const [templates, setTemplates] = useState<any>(location.state.templates);
   const [templateIndex, setTemplateIndex] = useState<number>(0);
   const [showLanguageModal, setShowLanguageModal] = useState<boolean>(false);
   const [form] = Form.useForm();
@@ -535,14 +536,14 @@ export default function ElementsLayout() {
                     value={textHeadingLegalMaxValue(
                       template.defaultDynamicFieldsValues[dynamicElement]
                     )}
-                    onChange={() => {
+                    onChange={(value) => {
                       let newTextLegalHeading = "";
                       let html =
                         template.defaultDynamicFieldsValues[dynamicElement];
                       let div = document.createElement("div");
                       div.innerHTML = html;
                       let text = div.textContent || div.innerText || "";
-                      newTextLegalHeading = text.substring(0, text.length - 1);
+                      newTextLegalHeading = text.substring(0, value - 1);
                       let defaultDynamicFieldsValues =
                         templates[templateIndex].defaultDynamicFieldsValues;
                       const newDefaultDynamicFieldsValues = {
@@ -1072,7 +1073,7 @@ export default function ElementsLayout() {
           marginBottom: 42.4,
         }}
       >
-        <DivMenuStyled>
+        <DivMenuStyled style={{ width: "20%" }}>
           {templates.map((template, i) => (
             <DivMenuItemStyled
               key={i}
@@ -1099,7 +1100,10 @@ export default function ElementsLayout() {
               type="primary"
               onClick={() => {
                 navigate("/configure/generate/elements/done", {
-                  state: { templates: templates },
+                  state: { 
+                    templateName: templateName, 
+                    templates: templates 
+                  },
                   replace: true,
                 });
               }}

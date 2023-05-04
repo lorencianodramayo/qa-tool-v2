@@ -1,11 +1,12 @@
 // @ts-nocheck
 import styled from "styled-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Layout, Divider, Space, Spin, Button } from "antd";
 import FloatLabel from "../components/FloatLabel/FloatLabel";
 import { DeleteFilled } from "@ant-design/icons";
 import apiService from "../api/apiService";
 import { useNavigate } from "react-router-dom";
+import Cookies from 'js-cookie';
 const LayoutStyled = styled(Layout)`
   width: 71.7em;
   border-radius: 10px;
@@ -62,10 +63,25 @@ const ConfigureLayout = () => {
   const [conceptLinkError, setConceptLinkError] = useState<boolean>(false);
   const [templateValue, setTemplateValue] = useState<string>("");
   const [versionValue, setVersionValue] = useState<string>("");
+  const [templateName, setTemplateName] = useState<string>("");
   const [loadTemplatesVersions, setLoadTemplatesVersions] = useState([]);
   const [fetching, setFetching] = useState<boolean>(false);
   const [selectOptionTemplateVersions, setSelectOptionTemplateVersions] =
     useState([]);
+  const [authToken, setAuthToken] = useState(null);
+  useEffect(() => {
+    const handleCookieChange = () => {
+      const authToken = Cookies.get('session');
+      setAuthToken(authToken);
+    };
+    window.addEventListener('load', handleCookieChange);
+    window.addEventListener('cookiechange', handleCookieChange);
+    return () => {
+      window.removeEventListener('load', handleCookieChange);
+      window.removeEventListener('cookiechange', handleCookieChange);
+    };
+  }, []);
+  console.log(authToken)
   const adLibSmartlyIo = async (adLibSmartlyIoPayload:any) => {
     setFetching(true);
     const partner = await apiService.post(
@@ -82,6 +98,7 @@ const ConfigureLayout = () => {
       template["defaultVersion"] = template.templateVersion.length - 1;
       newTemplates.push(template);
     });
+    setTemplateName(templates.data.body.name);
     setLoadTemplatesVersions(newTemplates);
     setFetching(false);
   };
@@ -450,7 +467,7 @@ const ConfigureLayout = () => {
             htmlType="submit"
             onClick={() => {
               navigate("/configure/generate/elements", {
-                state: { templates: loadTemplatesVersions },
+                state: { templateName: templateName, templates: loadTemplatesVersions },
                 replace: true,
               });
             }}
@@ -468,7 +485,7 @@ const ConfigureLayout = () => {
           marginBottom: 18,
         }}
       />
-      <Space
+      {/* <Space
         style={{
           width: "100%",
         }}
@@ -528,7 +545,7 @@ const ConfigureLayout = () => {
             tenetur nam dolore voluptas ut assumenda tempora!
           </Space>
         </Space>
-      </Space>
+      </Space> */}
     </LayoutStyled>
   );
 };
