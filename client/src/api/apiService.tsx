@@ -1,13 +1,10 @@
-import Axios from "axios";
-
+import axios from "axios";
 const token = localStorage.getItem("token");
-
-const apiService = Axios.create({
+const apiService = axios.create({
   baseURL: "/api/v1",
   withCredentials: true,
   headers: { Authorization: "Bearer " + token },
 });
-
 apiService.interceptors.response.use(
   function (response) {
     return response;

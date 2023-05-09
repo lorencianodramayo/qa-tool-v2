@@ -14,6 +14,8 @@ import { message, Upload } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   postTemplateVersion,
+  postShareTemplateVersion,
+  getShareTemplateVersionTempUrl,
   postTemplateVersionCloud,
 } from "../features/templateVersion/templateVersionSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -203,6 +205,8 @@ export default function DoneLayout() {
   const {
     addTemplateVersion,
     isAddTemplateVersionSuccess,
+    isAddShareTemplateVersionSuccess,
+    addShareTemplateVersion,
     isAddTemplateVersionCloudSuccess,
     isAddTemplateVersionCloudError,
   } = useSelector((state: any) => state.templateVersion);
@@ -220,16 +224,29 @@ export default function DoneLayout() {
         templatesVersions.push(data);
       });
       dispatch(
-        postTemplateVersionCloud(templatesVersions)
+        postShareTemplateVersion(addTemplateVersion.templatesVersions)
       );
+      // dispatch(
+      //   postTemplateVersionCloud(addTemplateVersion.templatesVersions)
+      // );
+      setLoading(false);
     }
   }, [
     isAddTemplateVersionSuccess, 
-    addTemplateVersion
+    addTemplateVersion,
+  ]);
+  useEffect(() => {
+    if (isAddShareTemplateVersionSuccess) {
+      dispatch(
+        getShareTemplateVersionTempUrl(addShareTemplateVersion.shareTemplateVersion._id)
+      );
+    }
+  }, [
+    isAddShareTemplateVersionSuccess,
+    addShareTemplateVersion,
   ]);
   useEffect(() => {
     if (isAddTemplateVersionCloudSuccess) {
-      setLoading(!loading);
       navigate("/concept_template_version", {
         state: { 
           templateName: templateName, 
@@ -238,7 +255,6 @@ export default function DoneLayout() {
       });
     }
     if (isAddTemplateVersionCloudError) {
-      setLoading(!loading);
       api["error"]({
         message: "Done",
         description: "Error Generating Templates, please try again!",

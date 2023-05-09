@@ -5,7 +5,8 @@ const { Storage } = require("@google-cloud/storage");
 require("dotenv").config();
 const { Language } = require("../models/language");
 const { TemplateVersion } = require("../models/templateVersion");
-const templateVersion = require("../models/templateVersion");
+const { ShareTemplateVersion } = require("../models/shareTemplateVersion");
+const jwt = require("jsonwebtoken");
 const storage = new Storage({
   projectId: process.env.GCLOUD_PROJECT_ID,
   credentials: {
@@ -207,6 +208,7 @@ const getLanguages = async (req, res) => {
     const languages = await Language.find();
     return res.status(200).json(languages);
   } catch (error) {
+    console.log(error);
     return res.status(500).json(error);
   }
 };
@@ -252,6 +254,7 @@ const addLanguage = async (req, res) => {
     }
     // }
   } catch (error) {
+    console.log(error);
     return res.status(500).json(error);
   }
 };
@@ -262,6 +265,7 @@ const translate = async (req, res) => {
       translate: language[0].content.substring(0, req.textHeadlineLegal.length),
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json(error);
   }
 };
@@ -270,6 +274,7 @@ const getTemplatesVersions = async (req, res) => {
     const tempalateVersion = await TemplateVersion.find();
     return res.status(200).json(tempalateVersion);
   } catch (error) {
+    console.log(error);
     return res.status(500).json(error);
   }
 };
@@ -303,6 +308,45 @@ const postTemplateVersion = async (req, res) => {
     //   if (err) return res.status(500).json({ templatesVersions: err });
     //   return res.status(200).json({ templatesVersions: tempalateVersion });
     // });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(error);
+  }
+};
+const postShareTemplateVersion = async (req, res) => {
+  try {
+    ShareTemplateVersion.deleteMany({}, (err) => {
+        if (err) {
+            res.status(500).json(error);           
+        }
+    });
+    const shareTemplateVersion = new ShareTemplateVersion({ shareTemplatesVersions: req });
+    shareTemplateVersion.save((err) => {
+      if (err) return res.status(500).json({ language: err });
+      return res.status(200).json({ shareTemplateVersion: shareTemplateVersion });
+    });
+    // const request = req;
+    // const templatesVersions = request;
+    // delete templatesVersions.template;
+    // TemplateVersion.insertMany(templatesVersions, (err, tempalateVersion) => {
+    //   if (err) res.status(500).json(error);
+    //   else {
+    //     res.status(200).json({ templatesVersions: tempalateVersion });
+    //   }
+    // });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(error);
+  }
+};
+const getShareTemplateVersionTempUrl = async (req, res) => {
+  try {
+    const shareTemplateVersion = await ShareTemplateVersion.findOne({
+      _id: req.params.id,
+    });
+    const token = jwt.sign({ id: shareTemplateVersion._id }, 'mysecret', { expiresIn: '1h' });
+    const tempUrl = `http://example.com/data/${req.params.id}?token=${encodeURIComponent(token)}`;
+    res.status(200).json({ tempUrl: tempUrl });
   } catch (error) {
     console.log(error);
     return res.status(500).json(error);
@@ -366,6 +410,7 @@ const postTemplateVersionCloud = async (req, res) => {
       .catch((err) => err); 
     res.status(200).json(final);
   } catch (error) {
+    console.log(error);
     res.status(500).json(error);
   }
 };
@@ -378,5 +423,7 @@ module.exports = {
   translate,
   getTemplatesVersions,
   postTemplateVersion,
+  postShareTemplateVersion,
+  getShareTemplateVersionTempUrl,
   postTemplateVersionCloud,
 };
