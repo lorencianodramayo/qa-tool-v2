@@ -270,7 +270,8 @@ const ConfigureLayout = () => {
       </Space>
       <div
         style={{
-          margin: "35.8px auto 0 auto",
+          // margin: "35.8px auto 0 auto",
+          margin: "35.8px auto 36px auto",
         }}
       >
         {fetching && (
@@ -476,7 +477,7 @@ const ConfigureLayout = () => {
           </ButtonGenerateStyled>
         </Space.Compact>
       </div>
-      <Divider
+      {/* <Divider
         type="horizontal"
         style={{
           width: "100%",
@@ -485,7 +486,7 @@ const ConfigureLayout = () => {
           marginBottom: 18,
         }}
       />
-      {/* <Space
+      <Space
         style={{
           width: "100%",
         }}

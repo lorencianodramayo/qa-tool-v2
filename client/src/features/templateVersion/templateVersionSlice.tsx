@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import templateVersionService from "./templateVersionService";
-
 const initialState = {
   templatesVersions: null,
   isTemplatesVersionsError: false,
@@ -13,13 +12,22 @@ const initialState = {
   isAddTemplateVersionSuccess: false,
   isAddTemplateVersionLoading: false,
   addTemplateVersionMessage: "",
+  addShareTemplateVersion: null,
+  isAddShareTemplateVersionError: false,
+  isAddShareTemplateVersionSuccess: false,
+  isAddShareTemplateVersionLoading: false,
+  addShareTemplateVersionMessage: "",
+  shareTemplateVersion: null,
+  isShareTemplateVersionError: false,
+  isShareTemplateVersionSuccess: false,
+  isShareTemplateVersionLoading: false,
+  shareTemplateVersionMessage: "",
   addTemplateVersionCloud: null,
   isAddTemplateVersionCloudError: false,
   isAddTemplateVersionCloudSuccess: false,
   isAddTemplateVersionCloudLoading: false,
   addTemplateVersionCloudMessage: "",
 };
-
 export const getTemplatesVersions = createAsyncThunk(
   "templateVersion/getTemplatesVersions",
   async (templateVersion, thunkAPI) => {
@@ -31,7 +39,6 @@ export const getTemplatesVersions = createAsyncThunk(
     }
   }
 );
-
 export const postTemplateVersion = createAsyncThunk(
   "templateVersion/postTemplateVersion",
   async (templateVersion, thunkAPI) => {
@@ -43,7 +50,28 @@ export const postTemplateVersion = createAsyncThunk(
     }
   }
 );
-
+export const getShareTemplateVersionTempUrl = createAsyncThunk(
+  "templateVersion/getShareTemplateVersionTempUrl",
+  async (templateVersion, thunkAPI) => {
+    try {
+      return await templateVersionService.getShareTemplateVersionTempUrl(templateVersion);
+    } catch (error) {
+      const message = error;
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+export const postShareTemplateVersion = createAsyncThunk(
+  "templateVersion/postShareTemplateVersion",
+  async (templateVersion, thunkAPI) => {
+    try {
+      return await templateVersionService.postShareTemplateVersion(templateVersion);
+    } catch (error) {
+      const message = error;
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
 export const postTemplateVersionCloud = createAsyncThunk(
   "templateVersion/postTemplateVersionCloud",
   async (templateVersion, thunkAPI) => {
@@ -57,7 +85,6 @@ export const postTemplateVersionCloud = createAsyncThunk(
     }
   }
 );
-
 export const templateVersionSlice = createSlice({
   name: "templateVersion",
   initialState,
@@ -73,6 +100,16 @@ export const templateVersionSlice = createSlice({
         (state.isAddTemplateVersionSuccess = false),
         (state.isAddTemplateVersionLoading = false),
         (state.addTemplateVersionMessage = ""),
+        (state.addShareTemplateVersion = null),
+        (state.isAddShareTemplateVersionError = false),
+        (state.isAddShareTemplateVersionSuccess = false),
+        (state.isAddShareTemplateVersionLoading = false),
+        (state.addShareTemplateVersionMessage = ""),
+        (state.shareTemplateVersion = null),
+        (state.isShareTemplateVersionError = false),
+        (state.isShareTemplateVersionSuccess = false),
+        (state.isShareTemplateVersionLoading = false),
+        (state.shareTemplateVersionMessage = ""),
         (state.addTemplateVersionCloud = null),
         (state.isAddTemplateVersionCloudError = false),
         (state.isAddTemplateVersionCloudSuccess = false),
@@ -116,6 +153,40 @@ export const templateVersionSlice = createSlice({
           (state.addTemplateVersionMessage = action.payload),
           (state.addTemplateVersion = null);
       })
+      .addCase(postShareTemplateVersion.pending, (state) => {
+        state.isAddShareTemplateVersionLoading = true;
+      })
+      .addCase(postShareTemplateVersion.fulfilled, (state, action) => {
+        (state.isAddShareTemplateVersionLoading = false),
+          (state.isAddShareTemplateVersionError = false),
+          (state.isAddShareTemplateVersionSuccess = true),
+          (state.addShareTemplateVersionMessage = ""),
+          (state.addShareTemplateVersion = action.payload);
+      })
+      .addCase(postShareTemplateVersion.rejected, (state, action) => {
+        (state.isAddShareTemplateVersionLoading = false),
+          (state.isAddShareTemplateVersionError = true),
+          (state.isAddShareTemplateVersionSuccess = false),
+          (state.addShareTemplateVersionMessage = action.payload),
+          (state.addShareTemplateVersion = null);
+      })
+      .addCase(getShareTemplateVersionTempUrl.pending, (state) => {
+        state.isShareTemplateVersionLoading = true;
+      })
+      .addCase(getShareTemplateVersionTempUrl.fulfilled, (state, action) => {
+        (state.isShareTemplateVersionLoading = false),
+          (state.isShareTemplateVersionError = false),
+          (state.isShareTemplateVersionSuccess = true),
+          (state.shareTemplateVersionMessage = ""),
+          (state.shareTemplateVersion = action.payload);
+      })
+      .addCase(getShareTemplateVersionTempUrl.rejected, (state, action) => {
+        (state.isShareTemplateVersionLoading = false),
+          (state.isShareTemplateVersionError = true),
+          (state.isShareTemplateVersionSuccess = false),
+          (state.shareTemplateVersionMessage = action.payload),
+          (state.shareTemplateVersion = null);
+      })
       .addCase(postTemplateVersionCloud.pending, (state) => {
         state.isAddTemplateVersionCloudLoading = true;
       })
@@ -135,6 +206,5 @@ export const templateVersionSlice = createSlice({
       });
   },
 });
-
 export const { reset } = templateVersionSlice.actions;
 export default templateVersionSlice.reducer;
