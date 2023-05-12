@@ -19,23 +19,23 @@ export default function DashboardLayout() {
   } = useSelector(
     (state: any) => state.auth
   );
-  useEffect(() => {
-    dispatch(authUser());
-  }, []);
-  useEffect(() => {
-    if (isUserAuthenticatedSuccess)
-      if (userAuthenticated !== "Unauthenticated") navigate("/configure/generate");
-      else {
-        notification.error({
-          message: 'Sign In Failed',
-          description: 'Sign in first!',
-        });
-        navigate("/signin");
-      }
-  }, [
-    userAuthenticated, 
-    isUserAuthenticatedSuccess, 
-  ]);
+  // useEffect(() => {
+  //   dispatch(authUser());
+  // }, []);
+  // useEffect(() => {
+  //   if (isUserAuthenticatedSuccess)
+  //     if (userAuthenticated !== "Unauthenticated") navigate("/configure/generate");
+  //     else {
+  //       notification.error({
+  //         message: 'Sign In Failed',
+  //         description: 'Sign in first!',
+  //       });
+  //       navigate("/signin");
+  //     }
+  // }, [
+  //   userAuthenticated, 
+  //   isUserAuthenticatedSuccess, 
+  // ]);
   return (
     <Layout>
       <Header>
