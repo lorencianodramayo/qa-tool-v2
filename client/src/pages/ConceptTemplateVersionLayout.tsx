@@ -188,6 +188,9 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   }, [
     templatesVersions,
   ]);
+  // useEffect(() => {
+  //   if (isTemplatesVersionsSuccess) console.log(templatesVersions);
+  // }, [isTemplatesVersionsSuccess, templatesVersions]);
   const onClick: MenuProps["onClick"] = e => {
     setLoading(!loading);
     setTemplateId(e.key);
