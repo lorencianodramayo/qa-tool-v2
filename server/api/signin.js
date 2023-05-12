@@ -3,9 +3,7 @@ const { User } = require("../models/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const passport = require("passport");
-
 const router = express.Router();
-
 // router.
 // post(
 //   "/signin",
@@ -50,12 +48,13 @@ const router = express.Router();
 //   }
 // );
 router.post("/signin", (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, remember } = req.body;
   passport.authenticate("local", { session: true }, function (err, user) {
     if (err) {
       return res.status(400).json({ err });
     }
     req.login(user, async () => {
+      if (remember) res.cookie('remember_me', true, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
       res.status(200).json({ user });
     });
   })(req, res, next);

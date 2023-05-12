@@ -8,8 +8,12 @@ const initialState = {
   isSuccess: false,
   isLoading: false,
   message: "",
+  userAuthenticated: null,
+  isUserAuthenticatedError: false,
+  isUserAuthenticatedSuccess: false,
+  isUserAuthenticatedLoading: false,
+  userAuthenticatedmessage: "",
 };
-
 export const signIn = createAsyncThunk(
   "auth/signIn",
   async (user, thunkAPI) => {
@@ -21,7 +25,17 @@ export const signIn = createAsyncThunk(
     }
   }
 );
-
+export const authUser = createAsyncThunk(
+  "auth/authUser",
+  async (user, thunkAPI) => {
+    try {
+      return await authService.authUser();
+    } catch (error) {
+      const message = error;
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
 export const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -30,7 +44,11 @@ export const authSlice = createSlice({
       (state.isLoading = false),
         (state.isSuccess = false),
         (state.isError = false),
-        (state.message = "");
+        (state.message = ""),
+        (state.isUserAuthenticatedLoading = false),
+        (state.isUserAuthenticatedSuccess = false),
+        (state.isUserAuthenticatedError = false),
+        (state.userAuthenticatedMessage = "");
     },
   },
   extraReducers: (builder) => {
@@ -51,6 +69,23 @@ export const authSlice = createSlice({
           (state.isSuccess = false),
           (state.message = action.payload.response.data.err),
           (state.user = null);
+      })
+      .addCase(authUser.pending, (state) => {
+        state.isUserAuthenticatedLoading = true;
+      })
+      .addCase(authUser.fulfilled, (state, action) => {
+        (state.isUserAuthenticatedLoading = false),
+          (state.isUserAuthenticatedError = false),
+          (state.isUserAuthenticatedSuccess = true),
+          (state.userAuthenticatedMessage = ""),
+          (state.userAuthenticated = action.payload);
+      })
+      .addCase(authUser.rejected, (state, action) => {
+        (state.isUserAuthenticatedLoading = false),
+          (state.isUserAuthenticatedError = true),
+          (state.isUserAuthenticatedSuccess = false),
+          (state.userAuthenticatedMessage = action.payload),
+          (state.userAuthenticated = null);
       });
   },
 });

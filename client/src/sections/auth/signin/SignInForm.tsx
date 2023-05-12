@@ -10,7 +10,10 @@ import styled from "styled-components";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { signIn } from "../../../features/auth/authSlice";
+import { 
+  signIn, 
+  authUser,
+} from "../../../features/auth/authSlice";
 const LayoutStyled = styled(Layout)`
   background: transparent;
 `;
@@ -91,11 +94,28 @@ const ButtonStyled = styled(Button)`
 const SignInForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user, isLoading, isError, isSuccess, message } = useSelector(
+  const { 
+    user, 
+    isError, 
+    isSuccess, 
+    message,
+    userAuthenticated,
+    isUserAuthenticatedSuccess,
+  } = useSelector(
     (state: any) => state.auth
   );
   const [showPassword, setShowPassword] = useState(false);
   const [api, contextHolder] = notification.useNotification();
+  useEffect(() => {
+    dispatch(authUser());
+  }, []);
+  useEffect(() => {
+    if (isUserAuthenticatedSuccess)
+      if (userAuthenticated !== "Unauthenticated") navigate("/configure/generate");
+  }, [
+    userAuthenticated, 
+    isUserAuthenticatedSuccess, 
+  ]);
   useEffect(() => {
     if (isSuccess) {
       api["success"]({
@@ -109,7 +129,12 @@ const SignInForm = () => {
         message: message,
         description: message,
       });
-  }, [dispatch, user, isLoading, isError, isSuccess, message]);
+  }, [
+    user, 
+    isError, 
+    isSuccess, 
+    message
+  ]);
   const handleShowPassword = () => {
     setShowPassword((show) => !show);
   };

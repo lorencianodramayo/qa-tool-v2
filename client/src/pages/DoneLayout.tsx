@@ -223,28 +223,28 @@ export default function DoneLayout() {
         }
         templatesVersions.push(data);
       });
-      dispatch(
-        postShareTemplateVersion(addTemplateVersion.templatesVersions)
-      );
       // dispatch(
-      //   postTemplateVersionCloud(addTemplateVersion.templatesVersions)
+      //   postShareTemplateVersion(addTemplateVersion.templatesVersions)
       // );
+      dispatch(
+        postTemplateVersionCloud(addTemplateVersion.templatesVersions)
+      );
       setLoading(false);
     }
   }, [
     isAddTemplateVersionSuccess, 
     addTemplateVersion,
   ]);
-  useEffect(() => {
-    if (isAddShareTemplateVersionSuccess) {
-      dispatch(
-        getShareTemplateVersionTempUrl(addShareTemplateVersion.shareTemplateVersion._id)
-      );
-    }
-  }, [
-    isAddShareTemplateVersionSuccess,
-    addShareTemplateVersion,
-  ]);
+  // useEffect(() => {
+  //   if (isAddShareTemplateVersionSuccess) {
+  //     dispatch(
+  //       getShareTemplateVersionTempUrl(addShareTemplateVersion.shareTemplateVersion._id)
+  //     );
+  //   }
+  // }, [
+  //   isAddShareTemplateVersionSuccess,
+  //   addShareTemplateVersion,
+  // ]);
   useEffect(() => {
     if (isAddTemplateVersionCloudSuccess) {
       navigate("/concept_template_version", {

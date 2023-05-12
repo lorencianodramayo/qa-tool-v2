@@ -1,7 +1,4 @@
 module.exports.isUserAuthenticated = (req, res, next) => {
-  if (req.user) {
-    next();
-  } else {
-    res.status(401).send("You must login first!");
-  }
+  if (req.cookies.remember_me) next();
+  else res.status(401).json("You must login first!");
 };
