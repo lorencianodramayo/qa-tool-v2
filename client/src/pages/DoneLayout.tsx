@@ -223,13 +223,14 @@ export default function DoneLayout() {
         }
         templatesVersions.push(data);
       });
+      dispatch(
+        postTemplateVersionCloud(templatesVersions)
+      );
+      //
       // dispatch(
       //   postShareTemplateVersion(addTemplateVersion.templatesVersions)
       // );
       // setLoading(false);
-      dispatch(
-        postTemplateVersionCloud(templatesVersions)
-      );
     }
   }, [
     isAddTemplateVersionSuccess, 
