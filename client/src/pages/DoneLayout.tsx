@@ -226,10 +226,10 @@ export default function DoneLayout() {
       // dispatch(
       //   postShareTemplateVersion(addTemplateVersion.templatesVersions)
       // );
+      // setLoading(false);
       dispatch(
-        postTemplateVersionCloud(addTemplateVersion.templatesVersions)
+        postTemplateVersionCloud(templatesVersions)
       );
-      setLoading(false);
     }
   }, [
     isAddTemplateVersionSuccess, 
@@ -259,6 +259,7 @@ export default function DoneLayout() {
         message: "Done",
         description: "Error Generating Templates, please try again!",
       });
+      setLoading(false);
     }
   }, [
     isAddTemplateVersionCloudSuccess,
