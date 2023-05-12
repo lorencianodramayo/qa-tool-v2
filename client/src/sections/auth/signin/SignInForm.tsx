@@ -106,16 +106,16 @@ const SignInForm = () => {
   );
   const [showPassword, setShowPassword] = useState(false);
   const [api, contextHolder] = notification.useNotification();
-  useEffect(() => {
-    dispatch(authUser());
-  }, []);
-  useEffect(() => {
-    if (isUserAuthenticatedSuccess)
-      if (userAuthenticated !== "Unauthenticated") navigate("/configure/generate");
-  }, [
-    userAuthenticated, 
-    isUserAuthenticatedSuccess, 
-  ]);
+  // useEffect(() => {
+  //   dispatch(authUser());
+  // }, []);
+  // useEffect(() => {
+  //   if (isUserAuthenticatedSuccess)
+  //     if (userAuthenticated !== "Unauthenticated") navigate("/configure/generate");
+  // }, [
+  //   userAuthenticated, 
+  //   isUserAuthenticatedSuccess, 
+  // ]);
   useEffect(() => {
     if (isSuccess) {
       api["success"]({
