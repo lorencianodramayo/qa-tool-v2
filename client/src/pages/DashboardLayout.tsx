@@ -1,10 +1,41 @@
 // @ts-nocheck
-import { Layout, Row, Col, Space, Avatar, Badge } from "antd";
+import { Layout, Row, Col, Space, Avatar, Badge, notification } from "antd";
 import { Outlet } from "react-router-dom";
 import Logo from "../components/Logo";
 import { BellOutlined, UserOutlined } from "@ant-design/icons";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { 
+  authUser,
+} from "../features/auth/authSlice";
 const { Header, Content } = Layout;
 export default function DashboardLayout() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const {
+    userAuthenticated,
+    isUserAuthenticatedSuccess,
+  } = useSelector(
+    (state: any) => state.auth
+  );
+  useEffect(() => {
+    dispatch(authUser());
+  }, []);
+  useEffect(() => {
+    if (isUserAuthenticatedSuccess)
+      if (userAuthenticated !== "Unauthenticated") navigate("/configure/generate");
+      else {
+        notification.error({
+          message: 'Sign In Failed',
+          description: 'Sign in first!',
+        });
+        navigate("/signin");
+      }
+  }, [
+    userAuthenticated, 
+    isUserAuthenticatedSuccess, 
+  ]);
   return (
     <Layout>
       <Header>

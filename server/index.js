@@ -1,4 +1,5 @@
 const express = require("express");
+const cookieParser = require('cookie-parser');
 const cookieSession = require("cookie-session");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -34,6 +35,7 @@ mongoose.connection.on("connected", () => {
 // Data parsing
 
 app.use(express.json({ limit: "100mb" }));
+app.use(cookieParser());
 app.use(
   cors({
     allowedHeaders: ["sessionId", "Content-Type"],
