@@ -355,7 +355,6 @@ const getShareTemplateVersionTempUrl = async (req, res) => {
 const postTemplateVersionCloud = async (req, res) => {
   try {
     for (let _template of req) {
-      console.log(_template.creativeId, " ", _template.templateUrl);
       var pendingPromises = [],
         counter = 0,
         isIndexUploaded = false;
