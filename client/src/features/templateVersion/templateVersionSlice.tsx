@@ -12,16 +12,16 @@ const initialState = {
   isAddTemplateVersionSuccess: false,
   isAddTemplateVersionLoading: false,
   addTemplateVersionMessage: "",
-  addShareTemplateVersion: null,
-  isAddShareTemplateVersionError: false,
-  isAddShareTemplateVersionSuccess: false,
-  isAddShareTemplateVersionLoading: false,
-  addShareTemplateVersionMessage: "",
-  shareTemplateVersion: null,
-  isShareTemplateVersionError: false,
-  isShareTemplateVersionSuccess: false,
-  isShareTemplateVersionLoading: false,
-  shareTemplateVersionMessage: "",
+  addSharedVariant: null,
+  isAddSharedVariantError: false,
+  isAddSharedVariantSuccess: false,
+  isAddSharedVariantLoading: false,
+  addSharedVariantMessage: "",
+  sharedVariant: null,
+  isSharedVariantError: false,
+  isSharedVariantSuccess: false,
+  isSharedVariantLoading: false,
+  sharedVariantMessage: "",
   addTemplateVersionCloud: null,
   isAddTemplateVersionCloudError: false,
   isAddTemplateVersionCloudSuccess: false,
@@ -50,22 +50,22 @@ export const postTemplateVersion = createAsyncThunk(
     }
   }
 );
-export const getShareTemplateVersionTempUrl = createAsyncThunk(
-  "templateVersion/getShareTemplateVersionTempUrl",
+export const getSharedVariants = createAsyncThunk(
+  "templateVersion/getSharedVariants",
   async (templateVersion, thunkAPI) => {
     try {
-      return await templateVersionService.getShareTemplateVersionTempUrl(templateVersion);
+      return await templateVersionService.getSharedVariants(templateVersion);
     } catch (error) {
       const message = error;
       return thunkAPI.rejectWithValue(message);
     }
   }
 );
-export const postShareTemplateVersion = createAsyncThunk(
-  "templateVersion/postShareTemplateVersion",
+export const postSharedVariants = createAsyncThunk(
+  "templateVersion/postSharedVariants",
   async (templateVersion, thunkAPI) => {
     try {
-      return await templateVersionService.postShareTemplateVersion(templateVersion);
+      return await templateVersionService.postSharedVariants(templateVersion);
     } catch (error) {
       const message = error;
       return thunkAPI.rejectWithValue(message);
@@ -100,16 +100,16 @@ export const templateVersionSlice = createSlice({
         (state.isAddTemplateVersionSuccess = false),
         (state.isAddTemplateVersionLoading = false),
         (state.addTemplateVersionMessage = ""),
-        (state.addShareTemplateVersion = null),
-        (state.isAddShareTemplateVersionError = false),
-        (state.isAddShareTemplateVersionSuccess = false),
-        (state.isAddShareTemplateVersionLoading = false),
-        (state.addShareTemplateVersionMessage = ""),
-        (state.shareTemplateVersion = null),
-        (state.isShareTemplateVersionError = false),
-        (state.isShareTemplateVersionSuccess = false),
-        (state.isShareTemplateVersionLoading = false),
-        (state.shareTemplateVersionMessage = ""),
+        (state.addSharedVariant = null),
+        (state.isAddSharedVariantError = false),
+        (state.isAddSharedVariantSuccess = false),
+        (state.isAddSharedVariantLoading = false),
+        (state.addSharedVariantMessage = ""),
+        (state.sharedVariant = null),
+        (state.isSharedVariantError = false),
+        (state.isSharedVariantSuccess = false),
+        (state.isSharedVariantLoading = false),
+        (state.sharedVariantMessage = ""),
         (state.addTemplateVersionCloud = null),
         (state.isAddTemplateVersionCloudError = false),
         (state.isAddTemplateVersionCloudSuccess = false),
@@ -153,39 +153,39 @@ export const templateVersionSlice = createSlice({
           (state.addTemplateVersionMessage = action.payload),
           (state.addTemplateVersion = null);
       })
-      .addCase(postShareTemplateVersion.pending, (state) => {
-        state.isAddShareTemplateVersionLoading = true;
+      .addCase(postSharedVariants.pending, (state) => {
+        state.isAddSharedVariantLoading = true;
       })
-      .addCase(postShareTemplateVersion.fulfilled, (state, action) => {
-        (state.isAddShareTemplateVersionLoading = false),
-          (state.isAddShareTemplateVersionError = false),
-          (state.isAddShareTemplateVersionSuccess = true),
-          (state.addShareTemplateVersionMessage = ""),
-          (state.addShareTemplateVersion = action.payload);
+      .addCase(postSharedVariants.fulfilled, (state, action) => {
+        (state.isAddSharedVariantLoading = false),
+          (state.isAddSharedVariantError = false),
+          (state.isAddSharedVariantSuccess = true),
+          (state.addSharedVariantMessage = ""),
+          (state.addSharedVariant = action.payload);
       })
-      .addCase(postShareTemplateVersion.rejected, (state, action) => {
-        (state.isAddShareTemplateVersionLoading = false),
-          (state.isAddShareTemplateVersionError = true),
-          (state.isAddShareTemplateVersionSuccess = false),
-          (state.addShareTemplateVersionMessage = action.payload),
-          (state.addShareTemplateVersion = null);
+      .addCase(postSharedVariants.rejected, (state, action) => {
+        (state.isAddSharedVariantLoading = false),
+          (state.isAddSharedVariantError = true),
+          (state.isAddSharedVariantSuccess = false),
+          (state.addSharedVariantMessage = action.payload),
+          (state.addSharedVariant = null);
       })
-      .addCase(getShareTemplateVersionTempUrl.pending, (state) => {
-        state.isShareTemplateVersionLoading = true;
+      .addCase(getSharedVariants.pending, (state) => {
+        state.isSharedVariantLoading = true;
       })
-      .addCase(getShareTemplateVersionTempUrl.fulfilled, (state, action) => {
-        (state.isShareTemplateVersionLoading = false),
-          (state.isShareTemplateVersionError = false),
-          (state.isShareTemplateVersionSuccess = true),
-          (state.shareTemplateVersionMessage = ""),
-          (state.shareTemplateVersion = action.payload);
+      .addCase(getSharedVariants.fulfilled, (state, action) => {
+        (state.isSharedVariantLoading = false),
+          (state.isSharedVariantError = false),
+          (state.isSharedVariantSuccess = true),
+          (state.sharedVariantMessage = ""),
+          (state.sharedVariant = action.payload);
       })
-      .addCase(getShareTemplateVersionTempUrl.rejected, (state, action) => {
-        (state.isShareTemplateVersionLoading = false),
-          (state.isShareTemplateVersionError = true),
-          (state.isShareTemplateVersionSuccess = false),
-          (state.shareTemplateVersionMessage = action.payload),
-          (state.shareTemplateVersion = null);
+      .addCase(getSharedVariants.rejected, (state, action) => {
+        (state.isSharedVariantLoading = false),
+          (state.isSharedVariantError = true),
+          (state.isSharedVariantSuccess = false),
+          (state.sharedVariantMessage = action.payload),
+          (state.sharedVariant = null);
       })
       .addCase(postTemplateVersionCloud.pending, (state) => {
         state.isAddTemplateVersionCloudLoading = true;

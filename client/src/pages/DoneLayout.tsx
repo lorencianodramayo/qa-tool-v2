@@ -14,8 +14,8 @@ import { message, Upload } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   postTemplateVersion,
-  postShareTemplateVersion,
-  getShareTemplateVersionTempUrl,
+  postSharedVariants,
+  getSharedVariants,
   postTemplateVersionCloud,
 } from "../features/templateVersion/templateVersionSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -88,7 +88,7 @@ const InputNumberStyled = styled(InputNumber)`
   }
   &.ant-input-number .ant-input-number-input {
     vertical-align: text-top;
-    height: unset;
+    height: 18px;
     font-size: 14px;
     font-weight: 400;
     padding: 1.9px 10.6px;
@@ -205,8 +205,8 @@ export default function DoneLayout() {
   const {
     addTemplateVersion,
     isAddTemplateVersionSuccess,
-    isAddShareTemplateVersionSuccess,
-    addShareTemplateVersion,
+    isAddSharedVariantSuccess,
+    addSharedVariant,
     isAddTemplateVersionCloudSuccess,
     isAddTemplateVersionCloudError,
   } = useSelector((state: any) => state.templateVersion);
@@ -223,28 +223,29 @@ export default function DoneLayout() {
         }
         templatesVersions.push(data);
       });
+      // dispatch(
+      //   postSharedVariants({
+      //     templateName: templateName,
+      //     templatesVersions: addTemplateVersion.templatesVersions,
+      //   })
+      // );
       dispatch(
         postTemplateVersionCloud(templatesVersions)
       );
-      //
-      // dispatch(
-      //   postShareTemplateVersion(addTemplateVersion.templatesVersions)
-      // );
-      // setLoading(false);
     }
   }, [
     isAddTemplateVersionSuccess, 
     addTemplateVersion,
   ]);
   // useEffect(() => {
-  //   if (isAddShareTemplateVersionSuccess) {
+  //   if (isAddSharedVariantSuccess) {
   //     dispatch(
-  //       getShareTemplateVersionTempUrl(addShareTemplateVersion.shareTemplateVersion._id)
+  //       getSharedVariantTempUrl(addSharedVariant.SharedVariant._id)
   //     );
   //   }
   // }, [
-  //   isAddShareTemplateVersionSuccess,
-  //   addShareTemplateVersion,
+  //   isAddSharedVariantSuccess,
+  //   addSharedVariant,
   // ]);
   useEffect(() => {
     if (isAddTemplateVersionCloudSuccess) {

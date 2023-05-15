@@ -28,10 +28,13 @@ const TemplateVersionSchema = new Schema({
   variants: [VariantSchema],
 }, { _id: false });
 
-const ShareTemplateVersiontSchema = new Schema({
-  shareTemplatesVersions: [TemplateVersionSchema],
+const SharedVariantSchema = new Schema({
+  variantsName: {
+    type: String,
+  },
+  sharedVariants: [TemplateVersionSchema],
 });
 
 module.exports = {
-  ShareTemplateVersion: mongoose.model("shareTemplateVersion", ShareTemplateVersiontSchema),
+  SharedVariant: mongoose.model("sharedVariant", SharedVariantSchema),
 };

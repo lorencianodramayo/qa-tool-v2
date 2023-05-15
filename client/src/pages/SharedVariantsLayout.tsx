@@ -162,7 +162,7 @@ const FloatButtonMobileShareStyled = styled(FloatButton)`
     background: #1677ff;
   }
 `;
-const ConceptTemplateVersionLayout: React.FC = () => {
+const SharedVariantsLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const templateName:string = location.state.templateName;
@@ -807,4 +807,4 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     </Layout>
   );
 };
-export default ConceptTemplateVersionLayout;
+export default SharedVariantsLayout;

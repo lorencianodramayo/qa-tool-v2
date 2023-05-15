@@ -99,7 +99,7 @@ const InputNumberStyled = styled(InputNumber)`
   }
   &.ant-input-number .ant-input-number-input {
     vertical-align: text-top;
-    height: unset;
+    height: 18px;
     font-size: 14px;
     font-weight: 400;
     padding: 1.9px 10.6px;
