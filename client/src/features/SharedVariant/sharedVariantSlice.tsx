@@ -5,7 +5,7 @@ const initialState = {
   isSharedVariantError: false,
   isSharedVariantSuccess: false,
   isSharedVariantLoading: false,
-  sharedVariantMessage: "",
+  sharedVariantMessage: null,
 };
 export const getSharedVariants = createAsyncThunk(
   "sharedVariant/getSharedVariants",
