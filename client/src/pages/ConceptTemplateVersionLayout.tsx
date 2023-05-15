@@ -20,7 +20,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from "@ant-design/icons";
-import { Badge, Card, Col, Menu, Row, Space, Spin, Typography, FloatButton, Select, Button } from "antd";
+import { Badge, Card, Col, Menu, Row, Space, Spin, Typography, FloatButton, Select, Button, Modal } from "antd";
 import type { MenuProps, MenuTheme } from "antd/es/menu";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Layout } from "antd";
@@ -188,6 +188,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const filteredOptionsVariantsName = variantsName.filter((o) => !selectedVariantNames.includes(o.value));
   const [selectedVariantSizes, setSelectedVariantSizes] = useState<any>([]);
   const filteredOptionsVariantSizes = variantSizes.filter((o) => !selectedVariantSizes.includes(o.value));
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   // const [variantsRefreshes, setVariantsRefreshes] = useState<{ refresh: number }[]>([]);
   // const [variantPlay, setVarianPlay] = useState<any>({});
   // const [_play, _setPlay] = useState<boolean>(false);
@@ -511,7 +512,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           type="primary"
           icon={<ShareAltOutlined />}
           tooltip={<Space>Share</Space>}
-          onClick={() => {}}
+          onClick={() => setIsModalOpen(!isModalOpen)}
         />
       </FloatButton.Group>  
       {loading && (
@@ -804,6 +805,17 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           } */}
         </ContentStyled>
       </Layout>
+      <Modal title="Shared Variants" open={isModalOpen} onOk={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)}>
+        <Space style={{fontWeight: 'bold'}}>Shared Variants Id:</Space>
+        {' '}
+        <Space>
+          {
+            location.state.sharedVariants.sharedVariants !== null 
+              ? location.state.sharedVariants.sharedVariants._id 
+              : "Not Generated"
+          }
+        </Space>
+      </Modal>
     </Layout>
   );
 };

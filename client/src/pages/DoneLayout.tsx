@@ -1,7 +1,7 @@
 // @ts-nocheck
 import styled from "styled-components";
 import { Button, Divider, Input, InputNumber, Spin, Layout, Space, notification } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CheckOutlined,
   CaretUpOutlined,
@@ -15,7 +15,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   postTemplateVersion,
   postSharedVariants,
-  getSharedVariants,
   postTemplateVersionCloud,
 } from "../features/templateVersion/templateVersionSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -205,7 +204,6 @@ export default function DoneLayout() {
   const {
     addTemplateVersion,
     isAddTemplateVersionSuccess,
-    isAddSharedVariantSuccess,
     addSharedVariant,
     isAddTemplateVersionCloudSuccess,
     isAddTemplateVersionCloudError,
@@ -223,12 +221,12 @@ export default function DoneLayout() {
         }
         templatesVersions.push(data);
       });
-      // dispatch(
-      //   postSharedVariants({
-      //     templateName: templateName,
-      //     templatesVersions: addTemplateVersion.templatesVersions,
-      //   })
-      // );
+      dispatch(
+        postSharedVariants({
+          templateName: templateName,
+          templatesVersions: addTemplateVersion.templatesVersions,
+        })
+      );
       dispatch(
         postTemplateVersionCloud(templatesVersions)
       );
@@ -237,22 +235,14 @@ export default function DoneLayout() {
     isAddTemplateVersionSuccess, 
     addTemplateVersion,
   ]);
-  // useEffect(() => {
-  //   if (isAddSharedVariantSuccess) {
-  //     dispatch(
-  //       getSharedVariantTempUrl(addSharedVariant.SharedVariant._id)
-  //     );
-  //   }
-  // }, [
-  //   isAddSharedVariantSuccess,
-  //   addSharedVariant,
-  // ]);
   useEffect(() => {
     if (isAddTemplateVersionCloudSuccess) {
       navigate("/concept_template_version", {
         state: { 
           templateName: templateName, 
-          templates: templates },
+          templates: templates,
+          sharedVariants: addSharedVariant, 
+        },
         replace: true,
       });
     }
@@ -266,7 +256,7 @@ export default function DoneLayout() {
   }, [
     isAddTemplateVersionCloudSuccess,
     isAddTemplateVersionCloudError
-  ])
+  ]);
   const activeStyle = {
     backgroundColor: "#1890ff",
     borderRadius: 5,

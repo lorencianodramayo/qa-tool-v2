@@ -321,12 +321,12 @@ const postSharedVariants = async (req, res) => {
         }
     });
     const sharedVariant = new SharedVariant({ 
-      variantsName: req.body.templateName,
-      sharedVariants: req.body.templatesVersions,
+      variantsName: req.templateName,
+      sharedVariants: req.templatesVersions,
     });
     sharedVariant.save((err) => {
       if (err) return res.status(500).json({ language: err });
-      return res.status(200).json({ sharedVariant: sharedVariant });
+      return res.status(200).json({ sharedVariants: sharedVariant });
     });
   } catch (error) {
     console.log(error);
@@ -335,12 +335,10 @@ const postSharedVariants = async (req, res) => {
 };
 const getSharedVariants = async (req, res) => {
   try {
-    const SharedVariant = await SharedVariant.findOne({
+    const sharedVariants = await SharedVariant.findOne({
       _id: req.params.id,
     });
-    const token = jwt.sign({ id: SharedVariant._id }, 'mysecret', { expiresIn: '1h' });
-    const tempUrl = `http://example.com/data/${req.params.id}?token=${encodeURIComponent(token)}`;
-    res.status(200).json({ tempUrl: tempUrl });
+    res.status(200).json({ sharedVariants: sharedVariants });
   } catch (error) {
     console.log(error);
     return res.status(500).json(error);
