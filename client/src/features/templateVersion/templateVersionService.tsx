@@ -8,12 +8,12 @@ const postTemplateVersion = async (payload) => {
   const response = await apiService.post("/postTemplateVersion", payload);
   return response.data;
 };
-const postShareTemplateVersion = async (payload) => {
-  const response = await apiService.post("/postShareTemplateVersion", payload);
+const postSharedVariants = async (payload) => {
+  const response = await apiService.post("/postSharedVariants", payload);
   return response.data;
 };
-const getShareTemplateVersionTempUrl = async (id) => {
-  const response = await axios.get(`http://localhost:5000/api/v1/getShareTemplateVersionTempUrl/${id}`);
+const getSharedVariants = async (id) => {
+  const response = await axios.get(`/getSharedVariants/${id}`);
   return response.data;
 };
 const postTemplateVersionCloud = async (payload) => {
@@ -23,8 +23,8 @@ const postTemplateVersionCloud = async (payload) => {
 const templateVersionService = {
   getTemplatesVersions,
   postTemplateVersion,
-  postShareTemplateVersion,
-  getShareTemplateVersionTempUrl,
+  postSharedVariants,
+  getSharedVariants,
   postTemplateVersionCloud,
 };
 export default templateVersionService;

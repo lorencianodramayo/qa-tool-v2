@@ -5,7 +5,7 @@ const { Storage } = require("@google-cloud/storage");
 require("dotenv").config();
 const { Language } = require("../models/language");
 const { TemplateVersion } = require("../models/templateVersion");
-const { ShareTemplateVersion } = require("../models/shareTemplateVersion");
+const { SharedVariant } = require("../models/sharedVariants");
 const jwt = require("jsonwebtoken");
 const storage = new Storage({
   projectId: process.env.GCLOUD_PROJECT_ID,
@@ -313,38 +313,32 @@ const postTemplateVersion = async (req, res) => {
     return res.status(500).json(error);
   }
 };
-const postShareTemplateVersion = async (req, res) => {
+const postSharedVariants = async (req, res) => {
   try {
-    ShareTemplateVersion.deleteMany({}, (err) => {
+    SharedVariant.deleteMany({}, (err) => {
         if (err) {
             res.status(500).json(error);           
         }
     });
-    const shareTemplateVersion = new ShareTemplateVersion({ shareTemplatesVersions: req });
-    shareTemplateVersion.save((err) => {
-      if (err) return res.status(500).json({ language: err });
-      return res.status(200).json({ shareTemplateVersion: shareTemplateVersion });
+    const sharedVariant = new SharedVariant({ 
+      variantsName: req.body.templateName,
+      sharedVariants: req.body.templatesVersions,
     });
-    // const request = req;
-    // const templatesVersions = request;
-    // delete templatesVersions.template;
-    // TemplateVersion.insertMany(templatesVersions, (err, tempalateVersion) => {
-    //   if (err) res.status(500).json(error);
-    //   else {
-    //     res.status(200).json({ templatesVersions: tempalateVersion });
-    //   }
-    // });
+    sharedVariant.save((err) => {
+      if (err) return res.status(500).json({ language: err });
+      return res.status(200).json({ sharedVariant: sharedVariant });
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json(error);
   }
 };
-const getShareTemplateVersionTempUrl = async (req, res) => {
+const getSharedVariants = async (req, res) => {
   try {
-    const shareTemplateVersion = await ShareTemplateVersion.findOne({
+    const SharedVariant = await SharedVariant.findOne({
       _id: req.params.id,
     });
-    const token = jwt.sign({ id: shareTemplateVersion._id }, 'mysecret', { expiresIn: '1h' });
+    const token = jwt.sign({ id: SharedVariant._id }, 'mysecret', { expiresIn: '1h' });
     const tempUrl = `http://example.com/data/${req.params.id}?token=${encodeURIComponent(token)}`;
     res.status(200).json({ tempUrl: tempUrl });
   } catch (error) {
@@ -422,7 +416,7 @@ module.exports = {
   translate,
   getTemplatesVersions,
   postTemplateVersion,
-  postShareTemplateVersion,
-  getShareTemplateVersionTempUrl,
+  postSharedVariants,
+  getSharedVariants,
   postTemplateVersionCloud,
 };

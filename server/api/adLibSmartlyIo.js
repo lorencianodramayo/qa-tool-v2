@@ -27,11 +27,11 @@ router.get("/getTemplatesVersions", async (req, res) => {
 router.post("/postTemplateVersion", async (req, res) => {
   await adLibSmartlyIo.postTemplateVersion(req.body, res);
 });
-router.post("/postShareTemplateVersion", async (req, res) => {
-  await adLibSmartlyIo.postShareTemplateVersion(req.body, res);
+router.post("/postSharedVariants", async (req, res) => {
+  await adLibSmartlyIo.postSharedVariants(req.body, res);
 });
-router.get("/getShareTemplateVersionTempUrl/:id", async (req, res) => {
-  await adLibSmartlyIo.getShareTemplateVersionTempUrl(req, res);
+router.get("/getSharedVariants/:id", async (req, res) => {
+  await adLibSmartlyIo.getSharedVariants(req, res);
 })
 router.post("/postTemplateVersionCloud", async (req, res) => {
   await adLibSmartlyIo.postTemplateVersionCloud(req.body, res);

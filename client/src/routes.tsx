@@ -8,6 +8,7 @@ import ConfigureLayout from "./pages/ConfigureLayout";
 import ElementsLayout from "./pages/ElementsLayout";
 import DoneLayout from "./pages/DoneLayout";
 import ConceptTemplateVersionLayout from "./pages/ConceptTemplateVersionLayout";
+import SharedVariantsLayout from "./pages/SharedVariantsLayout";
 
 import GoogleSSOSuccess from "./pages/GoogleSSOSuccess";
 import GoogleSSOError from "./pages/GoogleSSOError";
@@ -31,6 +32,10 @@ export default function Router() {
         {
           path: "concept_template_version",
           element: <ConceptTemplateVersionLayout />,
+        },
+        {
+          path: "/:sharedVariantsId",
+          element: <SharedVariantsLayout />,
         },
       ],
     },
