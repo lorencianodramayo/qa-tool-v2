@@ -33,15 +33,12 @@ export default function Router() {
           path: "concept_template_version",
           element: <ConceptTemplateVersionLayout />,
         },
-        {
-          path: "/:sharedVariantsId",
-          element: <SharedVariantsLayout />,
-        },
       ],
     },
 
     { path: "signin", element: <SignIn /> },
     { path: "signup", element: <SignUp /> },
+    { path: "/:sharedVariantsId", element: <SharedVariantsLayout /> },
 
     { path: "googleSSOSuccess", element: <GoogleSSOSuccess /> },
     { path: "googleSSOError", element: <GoogleSSOError /> },

@@ -17,11 +17,6 @@ const initialState = {
   isAddSharedVariantSuccess: false,
   isAddSharedVariantLoading: false,
   addSharedVariantMessage: "",
-  sharedVariant: null,
-  isSharedVariantError: false,
-  isSharedVariantSuccess: false,
-  isSharedVariantLoading: false,
-  sharedVariantMessage: "",
   addTemplateVersionCloud: null,
   isAddTemplateVersionCloudError: false,
   isAddTemplateVersionCloudSuccess: false,
@@ -44,17 +39,6 @@ export const postTemplateVersion = createAsyncThunk(
   async (templateVersion, thunkAPI) => {
     try {
       return await templateVersionService.postTemplateVersion(templateVersion);
-    } catch (error) {
-      const message = error;
-      return thunkAPI.rejectWithValue(message);
-    }
-  }
-);
-export const getSharedVariants = createAsyncThunk(
-  "templateVersion/getSharedVariants",
-  async (templateVersion, thunkAPI) => {
-    try {
-      return await templateVersionService.getSharedVariants(templateVersion);
     } catch (error) {
       const message = error;
       return thunkAPI.rejectWithValue(message);
@@ -105,11 +89,6 @@ export const templateVersionSlice = createSlice({
         (state.isAddSharedVariantSuccess = false),
         (state.isAddSharedVariantLoading = false),
         (state.addSharedVariantMessage = ""),
-        (state.sharedVariant = null),
-        (state.isSharedVariantError = false),
-        (state.isSharedVariantSuccess = false),
-        (state.isSharedVariantLoading = false),
-        (state.sharedVariantMessage = ""),
         (state.addTemplateVersionCloud = null),
         (state.isAddTemplateVersionCloudError = false),
         (state.isAddTemplateVersionCloudSuccess = false),
@@ -169,23 +148,6 @@ export const templateVersionSlice = createSlice({
           (state.isAddSharedVariantSuccess = false),
           (state.addSharedVariantMessage = action.payload),
           (state.addSharedVariant = null);
-      })
-      .addCase(getSharedVariants.pending, (state) => {
-        state.isSharedVariantLoading = true;
-      })
-      .addCase(getSharedVariants.fulfilled, (state, action) => {
-        (state.isSharedVariantLoading = false),
-          (state.isSharedVariantError = false),
-          (state.isSharedVariantSuccess = true),
-          (state.sharedVariantMessage = ""),
-          (state.sharedVariant = action.payload);
-      })
-      .addCase(getSharedVariants.rejected, (state, action) => {
-        (state.isSharedVariantLoading = false),
-          (state.isSharedVariantError = true),
-          (state.isSharedVariantSuccess = false),
-          (state.sharedVariantMessage = action.payload),
-          (state.sharedVariant = null);
       })
       .addCase(postTemplateVersionCloud.pending, (state) => {
         state.isAddTemplateVersionCloudLoading = true;

@@ -81,7 +81,6 @@ const ConfigureLayout = () => {
       window.removeEventListener('cookiechange', handleCookieChange);
     };
   }, []);
-  console.log(authToken)
   const adLibSmartlyIo = async (adLibSmartlyIoPayload:any) => {
     setFetching(true);
     const partner = await apiService.post(

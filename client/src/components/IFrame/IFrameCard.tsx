@@ -129,68 +129,26 @@ const IFrameCard = (
         (state: any) => state.templateVersion
     );
     useEffect(() => {
-        if (isTemplatesVersionsSuccess) {
-            let switches = [];
-            let refreshes = [];
-            let isPause = [];
-            let timers = [];
-            variant.variants.map(variant => {
-                refreshes.push({
-                    refresh: 0
-                });
-                isPause.push({
-                    isPause: false
-                });
-                isDone.push({
-                    isDone: false
-                });
+        let refreshes = [];
+        let isPause = [];
+        variant.variants.map(variant => {
+            refreshes.push({
+                refresh: 0
             });
-            setRefreshes(refreshes);
-            setPause(isPause);
-            setDone(isDone);
-            //
-            // templatesVersions.filter(
-            //     (templateVersion: { templateId: string }) =>
-            //         templateVersion.templateId === templates[0]._id
-            //     )[0]?.variants.map((variant: any) => {
-            //     switches.push({
-            //         option: 'disable'
-            //     });
-            //     refreshes.push({
-            //         refresh: 0
-            //     });
-            //     isPause.push({
-            //         isPause: false
-            //     });
-            //     timers.push({
-            //          startTime: 0, 
-            //          isPlaying: false
-            //     });
-            // });
-            // setSwitches(switches);
-            // setRefreshes(refreshes);
-            // setPause(isPause);
-            // setTimers(timers);
-        }
-    }, [
-        templatesVersions,
-        // setPause,
-        // setTimers,
-    ]);
+            isPause.push({
+                isPause: false
+            });
+            isDone.push({
+                isDone: false
+            });
+        });
+        setRefreshes(refreshes);
+        setPause(isPause);
+        setDone(isDone);
+    }, []);
     const onLoad = (e, data) => {
         e.preventDefault();
-        window.addEventListener("message", (event) => { 
-            // console.log(event?.data);
-            // switch(event?.data?.type){
-            //     case "SCREENSHOT_START":
-            //     case "SCREENSHOT":
-            //         break;
-            //     case "SCREENSHOT_STOP":
-            //         break;
-            //     default:
-            //         console.log(event?.data?.type)
-            //         break;
-            // }
+        window.addEventListener("message", (event) => {
             const iframeIndex = iframeRefs.current.findIndex((ref) => ref?.contentWindow === event.source);
             if (iframeIndex >= 0 && event.data.type === 'SCREENSHOT_STOP') {
                 let dataIsDone = [...isDone];
@@ -205,78 +163,7 @@ const IFrameCard = (
             },
             e.target.src
         );
-        document.addEventListener("visibilitychange", () => {});
     };
-    // const switchStyle = (i: number) => {
-    //     return {
-    //     backgroundColor: `${
-    //         switches[i]?.option === "check"
-    //         ? "#F22076"
-    //         : switches[i]?.option === "disable"
-    //         ? "#BFBFBF"
-    //         : switches[i]?.option === "close"
-    //         ? "#29125F"
-    //         : "unset"
-    //     }`,
-    //     };
-    // };
-    // const switchCheckIconStyle = (i: number) => {
-    //     return {
-    //     color: `${
-    //         switches[i]?.option === "close"
-    //         ? "#fff"
-    //         : switches[i]?.option === "check"
-    //         ? "#F22076"
-    //         : switches[i]?.option === "disable"
-    //         ? "#BFBFBF"
-    //         : "unset"
-    //     }`,
-    //     marginLeft: switches[i]?.option === "close" ? 4.8 : 0,
-    //     fontSize: 8.8,
-    //     };
-    // };
-    // const switchClosedIconStyle = (i: number) => {
-    //     return {
-    //     color: `${
-    //         switches[i]?.option === "close"
-    //         ? "#29125F"
-    //         : switches[i]?.option === "check"
-    //         ? "#fff"
-    //         : switches[i]?.option === "disable"
-    //         ? "#BFBFBF"
-    //         : "unset"
-    //     }`,
-    //     marginLeft: switches[i]?.option === "check" ? 0.4 : 0,
-    //     fontSize: 8.8,
-    //     };
-    // };
-    // const selectionStyle = (i: number) => {
-    //     return {
-    //     top: 1.2,
-    //     left:
-    //         switches[i]?.option === "check"
-    //         ? 2
-    //         : switches[i]?.option === "disable"
-    //         ? 9
-    //         : switches[i]?.option === "close"
-    //         ? 16
-    //         : 0,
-    //     };
-    // };
-    // const handleChange = (i: number, val: string) => {
-    //     let data = [...switches];
-    //     data[i]["option"] = val;
-    //     setSwitches(data);
-    // };
-    // const ClickableLabel: React.FunctionComponent<{ onChange: () => void }> = ({
-    //     onChange,
-    // }) => (
-    //     <LabelStyled onClick={onChange}>
-    //     <Space.Compact block style={{ width: 7.9, height: 10.7 }}>
-    //         &nbsp;
-    //     </Space.Compact>
-    //     </LabelStyled>
-    // );
     return (
         <CardStyled
             extra={
@@ -297,9 +184,7 @@ const IFrameCard = (
                                 whiteSpace: "nowrap",
                             }}
                             >
-                            {variant.variants[i].variantName}    
-                            {/*  */}
-                            {/* {variant.variantName} */}
+                            {variant.variants[i].variantName}
                         </SpaceCompactCardHeaderTitleStyled>
                     </div>
                     <div
@@ -308,12 +193,6 @@ const IFrameCard = (
                             float: "right",
                         }}
                     >
-                        {/* <DeleteOutlined
-                            style={{
-                                color: "#1890FF",
-                                fontSize: 14.6,
-                            }}
-                        /> */}
                     </div>
                     <div style={{ clear: "both" }}></div>
                 </div>
@@ -323,7 +202,8 @@ const IFrameCard = (
                     display: 'flex',
                     justifyContent: 'center',
                 }}>
-                    <iframe   
+                    <iframe
+                        style={{ border: 'unset' }}   
                         id="my-iframe"     
                         ref={ref => (iframeRefs.current[i] = ref)}
                         key={refreshes[i]?.refresh}
@@ -338,129 +218,10 @@ const IFrameCard = (
                         }/index.html`}
                         onLoad={(e) => {
                             onLoad(e, variant.variants[i].defaultValues);
-                            //
-                            // window.addEventListener(
-                            //     "message",
-                            //     (event) => {
-                            //         const iframeIndex = iframeRefs.current.findIndex((ref) => ref?.contentWindow === event.source);
-                            //         // if (iframeIndex >= 0 && event.data.type === 'SCREENSHOT_START') {
-                            //         //     setTimers((prevTimers) =>
-                            //         //         prevTimers.map((timer, i) => 
-                            //         //             i === iframeIndex ? { ...timer, isPlaying: true } : timer
-                            //         //         )
-                            //         //     );
-                            //         // }
-                            //         if (iframeIndex >= 0 && event.data.type === 'SCREENSHOT_STOP') {
-                            //             let dataIsPause = [...isPause];
-                            //             dataIsPause[iframeIndex]["isPause"] = true;
-                            //             setPause(dataIsPause);
-                            //             // setTimers((prevTimers) =>
-                            //             //     prevTimers.map((timer, i) =>
-                            //             //         i === iframeIndex ? { ...timer, isPlaying: false } : timer
-                            //             //     )
-                            //             // );
-                            //         }
-                            //     },
-                            //     false
-                            // );
                         }}
-                        //
-                        // width={
-                        // templates.filter(
-                        //     (template: { _id: string }) => {
-                        //     return (
-                        //         template._id === templateId
-                        //     );
-                        //     }
-                        // )[0].size.split("x")[0]
-                        // }
-                        // height={
-                        // templates.filter(
-                        //     (template: { _id: string }) => {
-                        //     return (
-                        //         template._id === templateId
-                        //     );
-                        //     }
-                        // )[0].size.split("x")[1]
-                        // }
-                        // src={`https://storage.googleapis.com/creative-templates/${
-                        // variants._id
-                        // }/${
-                        // templates.filter(
-                        //     (template: { _id: string }) => {
-                        //     return template._id === templateId;
-                        //     }
-                        // )[0].size +
-                        // "-" +
-                        // templates.filter(
-                        //     (template: { _id: string }) => {
-                        //     return template._id === templateId;
-                        //     }
-                        // )[0].name
-                        // }/index.html`}
-                        // onLoad={(e) => {
-                        //     window.addEventListener(
-                        //         "message",
-                        //         (event) => {
-                        //             const iframeIndex = iframeRefs.current.findIndex((ref) => ref?.contentWindow === event.source);
-                        //             // if (iframeIndex >= 0 && event.data.type === 'SCREENSHOT_START') {
-                        //             //     setTimers((prevTimers) =>
-                        //             //         prevTimers.map((timer, i) => 
-                        //             //             i === iframeIndex ? { ...timer, isPlaying: true } : timer
-                        //             //         )
-                        //             //     );
-                        //             // }
-                        //             if (iframeIndex >= 0 && event.data.type === 'SCREENSHOT_STOP') {
-                        //                 let dataIsPause = [...isPause];
-                        //                 dataIsPause[iframeIndex]["isPause"] = true;
-                        //                 setPause(dataIsPause);
-                        //                 // setTimers((prevTimers) =>
-                        //                 //     prevTimers.map((timer, i) =>
-                        //                 //         i === iframeIndex ? { ...timer, isPlaying: false } : timer
-                        //                 //     )
-                        //                 // );
-                        //             }
-                        //         },
-                        //         false
-                        //     );
-                        // }}
                     />
                 </div>
-            }
-            // actions={[
-            //     // <Timer 
-            //     //     startTime={timers[i]?.startTime} 
-            //     //     isPlaying={timers[i]?.isPlaying}
-            //     // />,
-            //     <EditOutlined
-            //     style={{ color: "#1890FF", fontSize: 10 }}
-            //     />,
-            //     <div style={{ position: "relative" }}>
-            //     <span
-            //         style={{
-            //             position: "absolute",
-            //             top: -5.7,
-            //             right: 12.7,
-            //             borderRadius: 50,
-            //             backgroundColor: "#FF4D4F",
-            //             color: "#fff",
-            //             fontWeight: "400",
-            //             fontSize: 12,
-            //             width: 21.8,
-            //             height: 18,
-            //         }}
-            //     >
-            //         11
-            //     </span>
-            //     <MessageOutlined
-            //         style={{
-            //             color: "#1890FF",
-            //             fontSize: 10,
-            //         }}
-            //     />
-            //     </div>,
-            // ]}
-            >
+            }>
             <div
                 style={{
                     display: "flex",
@@ -468,92 +229,63 @@ const IFrameCard = (
                     height: 34.6,
                 }}
             >
-                {/* <DivStyled style={switchStyle(i)}>
-                    <Space.Compact
-                        block
-                        style={{
-                            lineHeight: 0.8,
-                            zIndex: 1,
-                            position: "absolute",
-                            alignItems: "center",
-                        }}
-                    >
-                        <CheckOutlined
-                            style={switchCheckIconStyle(i)}
-                        />
-                        <span>&nbsp;</span>
-                        <CloseOutlined
-                        style={switchClosedIconStyle(i)}
-                        />
-                    </Space.Compact>
-                    {["check", "disable", "close"].map((val) => {
-                        return (
-                            <span>
-                                <ClickableLabel
-                                    onChange={() => handleChange(i, val)}
-                                />
-                            </span>
-                        );
-                    })}
-                    <SpanStyled style={selectionStyle(i)} />
-                </DivStyled> */}
                 <div style={{
                     width: 26,
                 }}></div> 
                 <div>
-                {
-                    !isDone[i]?.isDone 
-                        ? 
-                            isPause[i]?.isPause 
-                                ? 
-                                    <PlayCircleTwoTone
-                                        twoToneColor="#1890FF"
-                                        style={{
-                                        fontSize: 18,
-                                        position: "relative",
-                                        top: "50%",
-                                        left: "50%",
-                                        transform: "translate(-50%, -50%)",
-                                        }}
-                                        onClick={() => {
-                                            let data = "play"
-                                            let dataIsPause = [...isPause];
-                                            dataIsPause[i]["isPause"] = data !== 'play';
-                                            setPause(dataIsPause);
-                                            iframeRefs.current[i].contentWindow.postMessage(
-                                                {
-                                                data,
-                                                type: "setDefaultValues",
-                                                },
-                                                iframeRefs.current[i].src
-                                            );
-                                        }}
-                                    /> 
-                                :   <PauseCircleTwoTone
-                                        twoToneColor="#1890FF"
-                                        style={{
+                    {
+                        !isDone[i]?.isDone 
+                            ? 
+                                isPause[i]?.isPause 
+                                    ? 
+                                        <PlayCircleTwoTone
+                                            twoToneColor="#1890FF"
+                                            style={{
                                             fontSize: 18,
                                             position: "relative",
                                             top: "50%",
                                             left: "50%",
                                             transform: "translate(-50%, -50%)",
-                                        }}
-                                        onClick={() => {
-                                            let data = "pause"
-                                            let dataIsPause = [...isPause];
-                                            dataIsPause[i]["isPause"] = data !== 'play';
-                                            setPause(dataIsPause);
-                                            iframeRefs.current[i].contentWindow.postMessage(
-                                            {
-                                                data,
-                                                type: "setDefaultValues",
-                                            },
-                                            iframeRefs.current[i].src
-                                            );
-                                        }}
-                                    /> 
-                        : <></>
-                }
+                                            }}
+                                            onClick={() => {
+                                                let data = "play"
+                                                let dataIsPause = [...isPause];
+                                                dataIsPause[i]["isPause"] = data !== 'play';
+                                                setPause(dataIsPause);
+                                                iframeRefs.current[i].contentWindow.postMessage(
+                                                    {
+                                                    data,
+                                                    type: "setDefaultValues",
+                                                    },
+                                                    iframeRefs.current[i].src
+                                                );
+                                            }}
+                                        /> 
+                                    :   <PauseCircleTwoTone
+                                            twoToneColor="#1890FF"
+                                            style={{
+                                                fontSize: 18,
+                                                position: "relative",
+                                                top: "50%",
+                                                left: "50%",
+                                                transform: "translate(-50%, -50%)",
+                                            }}
+                                            onClick={() => {
+                                                let data = "pause"
+                                                let dataIsPause = [...isPause];
+                                                dataIsPause[i]["isPause"] = data !== 'play';
+                                                setPause(dataIsPause);
+                                                iframeRefs.current[i].contentWindow.postMessage(
+                                                    {
+                                                        data,
+                                                        type: "setDefaultValues",
+                                                    },
+                                                    iframeRefs.current[i].src
+                                                );
+                                            }}
+                                        /> 
+                            : <></>
+                    }
                 </div>
                 <div>
                 <RedoOutlined
@@ -577,17 +309,9 @@ const IFrameCard = (
                         dataIsPause[i]["isPause"] = false;
                         let dataIsDone = [...isDone];
                         dataIsDone[i]["isDone"] = false;
-                    //    
-                    //     let dataTimers = [...timers];
-                    //     dataTimers[i] = {
-                    //         startTime: 0, 
-                    //         isPlaying: false
-                    //     };
                         setRefreshes(newRefreshes);
                         setPause(dataIsPause);
                         setDone(dataIsDone);
-                    //    
-                    //     setTimers(dataTimers);
                     }}
                 />
                 </div>

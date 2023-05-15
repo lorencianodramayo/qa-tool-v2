@@ -12,10 +12,6 @@ const postSharedVariants = async (payload) => {
   const response = await apiService.post("/postSharedVariants", payload);
   return response.data;
 };
-const getSharedVariants = async (id) => {
-  const response = await axios.get(`/getSharedVariants/${id}`);
-  return response.data;
-};
 const postTemplateVersionCloud = async (payload) => {
   const response = await apiService.post("/postTemplateVersionCloud", payload);
   return response.data;
@@ -24,7 +20,6 @@ const templateVersionService = {
   getTemplatesVersions,
   postTemplateVersion,
   postSharedVariants,
-  getSharedVariants,
   postTemplateVersionCloud,
 };
 export default templateVersionService;
