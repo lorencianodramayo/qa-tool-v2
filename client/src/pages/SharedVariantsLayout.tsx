@@ -1,4 +1,4 @@
-// //@ts-nocheck
+//@ts-nocheck
 import styled from "styled-components";
 import { Badge, Col, Layout, notification, Row, Space } from "antd";
 import { Content, Header } from "antd/es/layout/layout";
