@@ -20,7 +20,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from "@ant-design/icons";
-import { Badge, Card, Col, Menu, Row, Space, Spin, Typography, FloatButton, Select, Button, Modal } from "antd";
+import { Badge, Card, Col, Menu, Row, Space, Spin, Typography, FloatButton, Select, Button, Modal, Drawer, } from "antd";
 import type { MenuProps, MenuTheme } from "antd/es/menu";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Layout } from "antd";
@@ -56,6 +56,32 @@ const SiderStyled = styled(Sider)`
 interface MenuStyledProps {
   windowinnerheight?: number;
 }
+const ButtonMenuStyled = styled(Button)`
+  color: #fff;
+  border: unset;
+  &.ant-btn-text:not(:disabled):hover {
+    color: #fff;
+    background-color: unset;
+  }
+  &.ant-btn-compact-item:focus, 
+  .ant-btn:not(:disabled):focus-visible {
+    outline: unset;
+  }
+`;
+const DrawerStyled = styled(Drawer)`
+  background: #001529 !important;
+  .header {
+    color: #fff !important;
+  }
+  .name {
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
+  }
+  .variant, .size {
+    font-weight: bold;
+  }
+`;
 // const MenuStyled = styled(Menu)<MenuStyledProps>`
 //   &.ant-menu-light.ant-menu-inline .ant-menu-sub.ant-menu-inline {
 //     overflow-y: scroll;
@@ -125,22 +151,22 @@ interface MenuStyledProps {
 //   }
 // `;
 //
-const MenuStyled = styled(Menu)<MenuStyledProps>`
-  &.ant-menu-dark.ant-menu-inline .ant-menu-sub.ant-menu-inline li {
-    height: 72px;
-    padding-left: 0 !important;
-    padding-right: 0;
-    :active {
-      background-color: unset;
-    }
-    span > div > div:nth-child(1) {
-      font-weight: bold;
-    }
-  }
-  &.ant-menu-dark .ant-menu-item-selected {
-    background-color: unset;
-  }
-`;
+// const MenuStyled = styled(Menu)<MenuStyledProps>`
+//   &.ant-menu-dark.ant-menu-inline .ant-menu-sub.ant-menu-inline li {
+//     height: 72px;
+//     padding-left: 0 !important;
+//     padding-right: 0;
+//     :active {
+//       background-color: unset;
+//     }
+//     span > div > div:nth-child(1) {
+//       font-weight: bold;
+//     }
+//   }
+//   &.ant-menu-dark .ant-menu-item-selected {
+//     background-color: unset;
+//   }
+// `;
 const ButtonStyled = styled(Button)`
   border: unset;
   :focus {
@@ -174,7 +200,9 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   } = useSelector(
     (state: any) => state.templateVersion
   );
-  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [drawerVisible, setDrawerVisible] = useState<boolean>(false);
+  //
+  // const [collapsed, setCollapsed] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   // const [mode, setMode] = useState<"vertical" | "inline">("inline");
@@ -504,8 +532,8 @@ const ConceptTemplateVersionLayout: React.FC = () => {
       <FloatButton.Group shape="square">
         <FloatButtonMobileShareStyled
           type="primary"
-          icon={<MobileOutlined />}
-          tooltip={<Space>Mobile View</Space>}
+          icon={!isMobile ? <MobileOutlined /> : <DesktopOutlined />}
+          tooltip={<Space>{!isMobile ? 'Mobile' : 'Desktop'} View</Space>}
           onClick={() => setIsMobile(!isMobile)}
         />
         <FloatButtonMobileShareStyled
@@ -537,6 +565,53 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           />
         </Space>
       )}
+      <DrawerStyled
+        title={
+          <Space.Compact block className="header">
+            Filters <Space.Compact block style={{
+              justifyContent: 'right',
+              alignItems: 'center',
+            }}>
+              <MenuFoldOutlined 
+                onClick={() => setDrawerVisible(false)}
+              />
+            </Space.Compact>
+          </Space.Compact>
+        }
+        placement="left"
+        closable={false}
+        onClose={() => setDrawerVisible(false)}
+        visible={drawerVisible}
+      >
+        <Space.Compact block className="name">{templateName}</Space.Compact>
+        <Space.Compact block className="variant">Variants</Space.Compact>
+        <Space.Compact block>
+          <Select
+            size="small"
+            mode="multiple"
+            allowClear
+            style={{ width: '100%', padding: 4 }}
+            value={selectedVariantNames}
+            onChange={setSelectedVariantNames}
+            placeholder="Please select"
+            options={filteredOptionsVariantsName}
+          />
+        </Space.Compact>
+        <Space.Compact block className="size">Sizes</Space.Compact>
+        <Space.Compact block>
+          <Select
+            size="small"
+            mode="multiple"
+            allowClear
+            style={{ width: '100%', padding: 4 }}
+            value={selectedVariantSizes}
+            onChange={setSelectedVariantSizes}
+            placeholder="Please select"
+            options={filteredOptionsVariantSizes}
+          />
+        </Space.Compact>
+      </DrawerStyled>
+      {/*  */}
       {/* <SiderStyled
         breakpoint="lg"
         collapsedWidth="0"
@@ -560,7 +635,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           onClick={onClick}
         />
       </SiderStyled> */}
-      <Sider trigger={null} collapsible collapsed={collapsed}>
+      {/* <Sider trigger={null} collapsible collapsed={collapsed}>
         <MenuStyled
           windowinnerheight={window.innerHeight - 64}
           theme="dark"
@@ -568,17 +643,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           defaultOpenKeys={['sub1']}
           items={items}
         />
-      </Sider>
-      <Header style={{ padding: 0, background: '#001529', borderBottomRightRadius: 5, }}>
+      </Sider> */}
+      {/* <Header style={{ padding: 0, background: '#001529', borderBottomRightRadius: 5, }}>
         <ButtonStyled
           type="text"
-          icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          onClick={() => setCollapsed(!collapsed)}
+          // icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          icon={<MenuUnfoldOutlined />}
+          // onClick={() => setCollapsed(!collapsed)}
           style={{
             color: '#fff',
           }}
         />
-      </Header>
+      </Header> */}
       <Layout style={{
         pointerEvents: loading ? 'none' : 'unset',
       }}>
@@ -593,6 +669,11 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 background: "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",
                 padding: "0 0 3px 0",
               }}>
+                <ButtonMenuStyled
+                  type="text"
+                  icon={<MenuUnfoldOutlined />}
+                  onClick={() => setDrawerVisible(!drawerVisible)}
+                />
                 {/* <Space.Compact block style={{
                   marginLeft: 15.8,
                 }}>
@@ -667,30 +748,34 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                   </Space.Compact>
                   {
                     variant.variants.map((defaultValue, i) => 
-                      <Col>
-                        <Space.Compact
-                          block
-                          style={{
-                            background:
-                              "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",
-                            borderTopLeftRadius: "5px",
-                            borderTopRightRadius: "5px",
-                            height: "5px",
-                          }}
-                        >
-                          {" "}
-                        </Space.Compact>
-                        <IFrameCard
-                          variant={variant}
-                          i={i} 
-                          // 
-                          // variant={variant} 
-                          // i={i} 
-                          // templates={templates}
-                          // templateId={templateId}
-                          // variants={variants}
-                        />
-                      </Col>
+                      <Row justify="center" style={{
+                        marginBottom: 10,
+                      }}>
+                        <Col>
+                          <Space.Compact
+                            block
+                            style={{
+                              background:
+                                "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",
+                              borderTopLeftRadius: "5px",
+                              borderTopRightRadius: "5px",
+                              height: "5px",
+                            }}
+                          >
+                            {" "}
+                          </Space.Compact>
+                          <IFrameCard
+                            variant={variant}
+                            i={i} 
+                            // 
+                            // variant={variant} 
+                            // i={i} 
+                            // templates={templates}
+                            // templateId={templateId}
+                            // variants={variants}
+                          />
+                        </Col>
+                      </Row>
                     )
                   }
                 </>)
