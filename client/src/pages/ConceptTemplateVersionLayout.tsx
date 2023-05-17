@@ -20,7 +20,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from "@ant-design/icons";
-import { Badge, Card, Col, Menu, Row, Space, Spin, Typography, FloatButton, Select, Button, Modal, Drawer, } from "antd";
+import { Badge, Card, Col, Menu, Row, Space, Spin, Typography, FloatButton, Select, Button, Modal, Drawer, QRCode, } from "antd";
 import type { MenuProps, MenuTheme } from "antd/es/menu";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Layout } from "antd";
@@ -891,14 +891,24 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         </ContentStyled>
       </Layout>
       <Modal title="Shared Variants" open={isModalOpen} onOk={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)}>
-        <Space style={{fontWeight: 'bold'}}>Shared Variants Id:</Space>
+        <Space style={{fontWeight: 'bold'}}>Shared Link:</Space>
         {' '}
         <Space>
           {
             location.state.sharedVariants.sharedVariants !== null 
-              ? location.state.sharedVariants.sharedVariants._id 
+              ? `${window.location.origin}/${location.state.sharedVariants.sharedVariants._id}` 
               : "Not Generated"
           }
+        </Space>
+        <Space.Compact block style={{
+          fontWeight: 'bold',
+          justifyContent: 'center',
+        }}>Shared QR</Space.Compact>
+        <Space style={{
+          display: 'flex',
+          justifyContent: 'center',
+        }}>
+          <QRCode value={window.location.origin + '/' + location.state.sharedVariants.sharedVariants._id} />
         </Space>
       </Modal>
     </Layout>
