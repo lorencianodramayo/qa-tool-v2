@@ -20,12 +20,15 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from "@ant-design/icons";
-import { Badge, Card, Col, Menu, Row, Space, Spin, Typography, FloatButton, Select, Button, Modal, Drawer, QRCode, } from "antd";
+import { Badge, Card, Col, Menu, Row, Space, Spin, Typography, FloatButton, Select, Button, Modal, Drawer, QRCode, Input, } from "antd";
 import type { MenuProps, MenuTheme } from "antd/es/menu";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Layout } from "antd";
 const { Header, Content, Sider } = Layout;
-import { getTemplatesVersions } from "../features/templateVersion/templateVersionSlice";
+import { 
+  getTemplatesVersions, 
+  postSharedVariants
+} from "../features/templateVersion/templateVersionSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { Collapse } from "antd";
 import { ThunkDispatch } from 'redux-thunk';
@@ -188,6 +191,9 @@ const FloatButtonMobileShareStyled = styled(FloatButton)`
     background: #1677ff;
   }
 `;
+const InputStyled = styled(Input)`
+
+`;
 const ConceptTemplateVersionLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -196,7 +202,9 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const dispatch: ThunkDispatch<undefined, undefined, undefined> = useDispatch();
   const { 
     isTemplatesVersionsSuccess, 
-    templatesVersions
+    templatesVersions,
+    isAddSharedVariantSuccess,
+    addSharedVariant,
   } = useSelector(
     (state: any) => state.templateVersion
   );
@@ -217,6 +225,10 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const [selectedVariantSizes, setSelectedVariantSizes] = useState<any>([]);
   const filteredOptionsVariantSizes = variantSizes.filter((o) => !selectedVariantSizes.includes(o.value));
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedSharedVariantNames, setSelectedSharedVariantNames] = useState<any>([]);
+  const [selectedSharedVariantSizes, setSelectedSharedVariantSizes] = useState<any>([]);
+  const [sharedLoading, setSharedLoading] = useState<boolean>(false);
+  const sharedLinkRef = useRef<Input>(null);
   // const [variantsRefreshes, setVariantsRefreshes] = useState<{ refresh: number }[]>([]);
   // const [variantPlay, setVarianPlay] = useState<any>({});
   // const [_play, _setPlay] = useState<boolean>(false);
@@ -449,6 +461,10 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     selectedVariantNames, 
     selectedVariantSizes,
   ]);
+  useEffect(() => {
+    if (isAddSharedVariantSuccess) setSharedLoading(false);
+  }, [isAddSharedVariantSuccess]);
+  console.log("asdf", addSharedVariant);
   const onClick: MenuProps["onClick"] = e => {
     setLoading(!loading);
     setTemplateId(e.key);
@@ -587,6 +603,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         <Space.Compact block className="variant">Variants</Space.Compact>
         <Space.Compact block>
           <Select
+            className="selectVariants"
             size="small"
             mode="multiple"
             allowClear
@@ -600,6 +617,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         <Space.Compact block className="size">Sizes</Space.Compact>
         <Space.Compact block>
           <Select
+            className="selectSizes"
             size="small"
             mode="multiple"
             allowClear
@@ -890,26 +908,220 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           } */}
         </ContentStyled>
       </Layout>
-      <Modal title="Shared Variants" open={isModalOpen} onOk={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)}>
-        <Space style={{fontWeight: 'bold'}}>Shared Link:</Space>
-        {' '}
-        <Space>
-          {
-            location.state.sharedVariants.sharedVariants !== null 
-              ? `${window.location.origin}/${location.state.sharedVariants.sharedVariants._id}` 
-              : "Not Generated"
-          }
-        </Space>
-        <Space.Compact block style={{
-          fontWeight: 'bold',
-          justifyContent: 'center',
-        }}>Shared QR</Space.Compact>
-        <Space style={{
-          display: 'flex',
-          justifyContent: 'center',
-        }}>
-          <QRCode value={window.location.origin + '/' + location.state.sharedVariants.sharedVariants._id} />
-        </Space>
+      <Modal title="Shared Variants" 
+        maskClosable={sharedLoading ? false : true}
+        closable={sharedLoading ? false : true}
+        open={isModalOpen}
+        // onOk={() => setIsModalOpen(false)} 
+        okButtonProps={{ style: { display: sharedLoading ? 'none' : 'unset' } }}
+        onOk={() => {
+          let filterVariants = [];
+          let i = 0;
+          templatesVersions.map(templateVersion => {
+            templateVersion.variants.map(variant => {
+              if (selectedSharedVariantNames.length === 0 && selectedSharedVariantSizes.length === 0) {
+                const variantSizeExist = filterVariants.some(el => el.variants[0].size === variant.size);
+                if (!variantSizeExist) {
+                  filterVariants.push({
+                    _id: templateVersion._id,
+                    templateId: templateVersion.templateId,
+                    variants: [{
+                      templateName: variant.templateName,
+                      size: variant.size,
+                      variantName: variant.variantName,
+                      defaultValues: variant.defaultValues,
+                    }]
+                  });
+                  i++;
+                } else {
+                  filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, {
+                    templateName: variant.templateName,
+                    size: variant.size,
+                    variantName: variant.variantName,
+                    defaultValues: variant.defaultValues,
+                  }];
+                }
+              }
+              if (selectedSharedVariantNames.length > 0 && selectedSharedVariantSizes.length > 0) {
+                selectedSharedVariantNames.map(selectedVariantName =>
+                  selectedSharedVariantSizes.map(selectedVariantSize => {
+                    if (variant.variantName === selectedVariantName && variant.size === selectedVariantSize) {
+                      const variantExist = filterVariants.some(el => el.variants[0].size === variant.size);
+                      if (!variantExist) {
+                        filterVariants.push({
+                          _id: templateVersion._id,
+                          templateId: templateVersion.templateId,
+                          variants: [{
+                            templateName: variant.templateName,
+                            size: variant.size,
+                            variantName: variant.variantName,
+                            defaultValues: variant.defaultValues,
+                          }]
+                        });
+                        i++;
+                      } else {
+                        filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, {
+                          templateName: variant.templateName,
+                          size: variant.size,
+                          variantName: variant.variantName,
+                          defaultValues: variant.defaultValues,
+                        }];
+                      }
+                    }
+                  })
+                );
+              }
+              if (selectedSharedVariantSizes.length === 0) {
+                selectedSharedVariantNames.map(selectedVariantName => {
+                  if (variant.variantName === selectedVariantName) {
+                    const variantSizeExist = filterVariants.some(el => el.variants[0].size === variant.size);
+                    if (!variantSizeExist) {
+                      filterVariants.push({
+                        _id: templateVersion._id,
+                        templateId: templateVersion.templateId,
+                        variants: [{
+                          templateName: variant.templateName,
+                          size: variant.size,
+                          variantName: variant.variantName,
+                          defaultValues: variant.defaultValues,
+                        }]
+                      });
+                      i++;
+                    } else {
+                      filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, {
+                        templateName: variant.templateName,
+                        size: variant.size,
+                        variantName: variant.variantName,
+                        defaultValues: variant.defaultValues,
+                      }];
+                    }
+                  }
+                });
+              }
+              if (selectedSharedVariantNames.length === 0) {
+                selectedSharedVariantSizes.map(selectedVariantSize => {
+                  if (variant.size === selectedVariantSize) {
+                    const variantSizeExist = filterVariants.some(el => el.variants[0].size === variant.size);
+                    if (!variantSizeExist) {
+                      filterVariants.push({
+                        _id: templateVersion._id,
+                        templateId: templateVersion.templateId,
+                        variants: [{
+                          templateName: variant.templateName,
+                          size: variant.size,
+                          variantName: variant.variantName,
+                          defaultValues: variant.defaultValues,
+                        }]
+                      });
+                      i++;
+                    } else {
+                      filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, {
+                        templateName: variant.templateName,
+                        size: variant.size,
+                        variantName: variant.variantName,
+                        defaultValues: variant.defaultValues,
+                      }];
+                    }
+                  }
+                });
+              }
+            });
+          });
+          setSharedLoading(!sharedLoading);
+          dispatch(
+            postSharedVariants({
+              templateName: templateName,
+              templatesVersions: filterVariants,
+            })
+          );
+        }}
+        cancelButtonProps={{ style: { display: sharedLoading ? 'none' : 'unset' } }}
+        onCancel={() => setIsModalOpen(false)}
+      >
+        {
+          sharedLoading && <Space
+            style={{
+              zIndex: 10,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            <Spin
+              size="large"
+              style={{
+                top: "50%",
+                left: "50%",
+                position: "absolute",
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          </Space>
+        }
+        {
+          addSharedVariant === null && (<>
+            <Space.Compact block className="variant">Variants</Space.Compact>
+            <Space.Compact block>
+              <Select
+                className="selectSharedVariants"
+                size="small"
+                mode="multiple"
+                allowClear
+                style={{ width: '100%', padding: 4 }}
+                value={selectedSharedVariantNames}
+                onChange={setSelectedSharedVariantNames}
+                placeholder="Please select"
+                options={filteredOptionsVariantsName}
+              />
+            </Space.Compact>
+            <Space.Compact block className="size">Sizes</Space.Compact>
+            <Space.Compact block>
+              <Select
+                className="selectSharedSizes"
+                size="small"
+                mode="multiple"
+                allowClear
+                style={{ width: '100%', padding: 4 }}
+                value={selectedSharedVariantSizes}
+                onChange={setSelectedSharedVariantSizes}
+                placeholder="Please select"
+                options={filteredOptionsVariantSizes}
+              />
+            </Space.Compact>
+          </>)
+        }
+        {
+          addSharedVariant !== null && (<>
+            <Space style={{fontWeight: 'bold'}}>Link:</Space>
+            {' '}
+            {
+              addSharedVariant !== null 
+                ?
+                  <Space.Compact style={{ width: '92%' }}>
+                    <InputStyled ref={sharedLinkRef} defaultValue={window.location.origin + "/" + addSharedVariant.sharedVariants._id} readOnly />
+                    <Button type="primary" onClick={() => {
+                      if (sharedLinkRef.current) {
+                        sharedLinkRef.current.select();
+                        document.execCommand('copy');
+                      }
+                    }}>Copy</Button>
+                  </Space.Compact>
+                : "Not Generated"
+            }
+            <Space.Compact block style={{
+              fontWeight: 'bold',
+              justifyContent: 'center',
+            }}>QR</Space.Compact>
+            <Space style={{
+              display: 'flex',
+              justifyContent: 'center',
+            }}>
+              <QRCode value={window.location.origin + '/' + addSharedVariant.sharedVariants._id} />
+            </Space>
+          </>)
+        }
       </Modal>
     </Layout>
   );

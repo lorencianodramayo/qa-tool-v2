@@ -25,7 +25,6 @@ const SharedVariantsLayout: React.FC = () => {
   const [api, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState<boolean>(false);
   const [variantName, setVariantName] = useState<string>("");
-  const [combinations, setCombinations] = useState<number>(0);
   const [variants, setVariants] = useState<any>([]);
   useEffect(() => {
     setLoading(!loading);
@@ -38,19 +37,20 @@ const SharedVariantsLayout: React.FC = () => {
           description: "No Shared Variants Available",
         });
       else {
-        let combinations = 0;
         let filterVariants = [];
         let i = 0;
         setVariantName(sharedVariant.sharedVariants.variantsName);
         sharedVariant.sharedVariants.sharedVariants.map(templateVersion => {
+          let combinations = 0;
           templateVersion.variants.map(variant => {
-            combinations += 1;
+            combinations += 1
             const variantSizeExist = filterVariants.some(el => el.size === variant.size);
             if (!variantSizeExist) {
               filterVariants.push({
                 _id: templateVersion._id,
                 templateName: variant.templateName,
                 size: variant.size,
+                combinations: combinations,
                 variants: [{
                   variantName: variant.variantName,
                   defaultValues: variant.defaultValues,
@@ -58,6 +58,7 @@ const SharedVariantsLayout: React.FC = () => {
               });
               i++;
             } else {
+              filterVariants[i - 1]['combinations'] = combinations;
               filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, { 
                 variantName: variant.variantName,
                 defaultValues: variant.defaultValues,
@@ -65,7 +66,6 @@ const SharedVariantsLayout: React.FC = () => {
             }
           });
         });
-        setCombinations(combinations);
         setVariants(filterVariants);
       }
       setLoading(false);  
@@ -135,7 +135,7 @@ const SharedVariantsLayout: React.FC = () => {
           { variantName }
         </Space>
       </Space.Compact>
-      <Space.Compact block style={{
+      {/* <Space.Compact block style={{
         background: "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",
         padding: "0 0 3px 0",
       }}>
@@ -167,7 +167,7 @@ const SharedVariantsLayout: React.FC = () => {
             </Space>
           </Space>
         </Space.Compact>
-      </Space.Compact>
+      </Space.Compact> */}
       <ContentStyled
           style={{
             margin: 5,
@@ -176,15 +176,42 @@ const SharedVariantsLayout: React.FC = () => {
         >
           {
             variants.map(variant => <>
-              <Space.Compact block style={{marginBottom: 5}}>
-                <Space.Compact block style={{
-                  justifyContent: 'center',
-                  background:
-                            "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",   
+              <Space.Compact block style={{
+                background: "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",
+                padding: "0 0 3px 0",
+                justifyContent: 'space-evenly',
+                marginBottom: 5
+              }}>
+                <Space style={{
+                  fontStyle: "normal",
                   color: '#fff',
                   fontWeight: 'bold',
-                  borderRadius: 5,                 
-                }}>{variant.templateName} {variant.size}</Space.Compact>
+                }}>{variant.templateName} {variant.size}</Space>
+                <Space>
+                  <Badge
+                    count={
+                      variant.combinations
+                    }
+                    overflowCount={variant.combinations}
+                    color="#6F7782"
+                    style={{
+                      fontStyle: "normal",
+                      fontWeight: 400,
+                      color: "#fff",
+                      borderRadius: 5,
+                      padding: 0,
+                    }}
+                  />
+                  <Space
+                    style={{
+                      fontStyle: "normal",
+                      color: '#fff',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Combinations
+                  </Space>
+                </Space>
               </Space.Compact>
               <Row gutter={[15.9, 22.4]} style={{ width: "100%", justifyContent: 'center' }}>
                 {

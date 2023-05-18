@@ -221,12 +221,12 @@ export default function DoneLayout() {
         }
         templatesVersions.push(data);
       });
-      dispatch(
-        postSharedVariants({
-          templateName: templateName,
-          templatesVersions: addTemplateVersion.templatesVersions,
-        })
-      );
+      // dispatch(
+      //   postSharedVariants({
+      //     templateName: templateName,
+      //     templatesVersions: addTemplateVersion.templatesVersions,
+      //   })
+      // );
       dispatch(
         postTemplateVersionCloud(templatesVersions)
       );
