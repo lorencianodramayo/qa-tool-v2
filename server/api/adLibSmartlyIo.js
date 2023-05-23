@@ -36,4 +36,7 @@ router.get("/getSharedVariants/:id", async (req, res) => {
 router.post("/postTemplateVersionCloud", async (req, res) => {
   await adLibSmartlyIo.postTemplateVersionCloud(req.body, res);
 });
+router.get("/getTemplateSelectedVersion", async (req, res) => {
+  await adLibSmartlyIo.getTemplateSelectedVersion(req, res);
+});
 module.exports = router;

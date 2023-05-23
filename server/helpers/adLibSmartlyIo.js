@@ -51,6 +51,43 @@ const getAdlibToken = async (platform) => {
 
   return { status: "ok", data: loginCookie };
 };
+const getTemplateSelectedVersion = async (req, res) => {
+  return getAdlibToken(req.query.platform).then((result) => {
+    if (result.status === "ok") {
+      fetch(
+        `https://api-${req.query.platform}.ad-lib.io/api/v2/assets/templates/${req.query.templateId}?partnerId=${req.query.partnerId}`,
+        {
+          headers: {
+            accept: "*/*",
+            "accept-language": "en-US,en;q=0.9",
+            "cache-control": "no-cache",
+            pragma: "no-cache",
+            "sec-ch-ua":
+              '"Google Chrome";v="87", " GATool_ConceptStatus";v="99", "Chromium";v="87"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-site",
+            cookie: `connect.sid=${result.data};`,
+          },
+          referrer: `https://${req.query.platform}.ad-lib.io/`,
+          referrerPolicy: "strict-origin-when-cross-origin",
+          body: null,
+          method: "GET",
+          mode: "cors",
+        }
+      )
+        .then((response) => 
+          response
+            .json()
+            .then((data) => ({ status: response.status, body: data }))
+        )
+        .then((obj) => {
+          res.json(obj);
+        });
+    }
+  });
+};
 const getVersions = async (obj, res, platform, result) => {
   var count = 0;
   await obj?.templates?.map((data, index) => {
@@ -417,4 +454,5 @@ module.exports = {
   postSharedVariants,
   getSharedVariants,
   postTemplateVersionCloud,
+  getTemplateSelectedVersion,
 };
