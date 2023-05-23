@@ -73,6 +73,7 @@ const ConfigureLayout = () => {
   const [selectOptionVersions, setSelectOptionVersions] = useState<any>([]);
   const [platform, setPlatform] = useState<string>('');
   const [partnerId, setPartnerId] = useState<string>('');
+  const [a, setA] = useState<boolean>(false);
   const [authToken, setAuthToken] = useState(null);
   const {
     templateSelectedVersion,
@@ -93,29 +94,41 @@ const ConfigureLayout = () => {
   useEffect(() => {
     if (isTemplateSelectedVersionsSuccess) {
       setFetching(false);
+      let templateSelectedVersionBody = null;
       templates.map((tmpl: any, i: number) => {
         if (tmpl._id === templateValue) {
-          const templateSelectedVersionBody = Object.assign({}, templateSelectedVersion.body, { templateVersion: tmpl.templateVersion });
-          setNewVersionTemplate(templateSelectedVersionBody);
-          let defaultVersionValue = [];
-          templateSelectedVersionBody.templateVersion.map(templateVersion => {
-            if (templateVersion.id === templateSelectedVersionBody._id)
-              if (templateVersion.approvals[0]._id === templateSelectedVersionBody.approvals.users[0]._id)
-                defaultVersionValue.push({ 
-                  value: templateSelectedVersionBody._id, 
-                  label: (templateVersion.version + 1 === templateSelectedVersionBody.templateVersion.length) 
-                    ? 'Version ' + (templateVersion.version + 1) + ' (latest)' 
-                    : 'Version ' + (templateVersion.version + 1)
-                });
-          });
-          setDefaultVersionValue(defaultVersionValue);
+          templateSelectedVersionBody = Object.assign({}, templateSelectedVersion.body, { templateVersion: tmpl.templateVersion });
+          if (!a) {
+            setNewVersionTemplate(templateSelectedVersionBody);
+            let defaultVersionValue = [];
+            templateSelectedVersionBody.templateVersion.map(templateVersion => {
+              if (templateVersion.id === templateSelectedVersionBody._id)
+                if (templateVersion.approvals[0]._id === templateSelectedVersionBody.approvals.users[0]._id)
+                  defaultVersionValue.push({ 
+                    value: templateSelectedVersionBody._id, 
+                    label: (templateVersion.version + 1 === templateSelectedVersionBody.templateVersion.length) 
+                      ? 'Version ' + (templateVersion.version + 1) + ' (latest)' 
+                      : 'Version ' + (templateVersion.version + 1)
+                  });
+            });
+            setDefaultVersionValue(defaultVersionValue);
+          }
         }
+      });
+      if (a) setTemplates(templates => {
+        return templates.map(template => {
+          if (template._id === templateValue) {
+            return templateSelectedVersionBody;
+          }
+          return template;
+        });
       });
     }
   }, [
     isTemplateSelectedVersionsSuccess, 
     templateSelectedVersion
   ]);
+  console.log(templates);
   const adLibSmartlyIo = async (adLibSmartlyIoPayload: any) => {
     setFetching(true);
     const partner = await apiService.post(
@@ -379,6 +392,17 @@ const ConfigureLayout = () => {
                       label="Version"
                       placeholder="Version"
                       name="version"
+                      onChange={(value) => {
+                        setA(!a);
+                        setFetching(!fetching);
+                        setTemplateValue(template._id);
+                        let payload = {
+                          platform: platform,
+                          templateId: value,
+                          partnerId: partnerId,
+                        };
+                        dispatch(getTemplateSelectedVersion(payload));
+                      }}
                       value={getSelectOptionVersionDefaultValue(
                         template
                       )}
@@ -450,6 +474,7 @@ const ConfigureLayout = () => {
               placeholder="Version"
               name="version"
               onChange={(value) => {
+                setA(false);
                 setFetching(!fetching);
                 let payload = {
                   platform: platform,
