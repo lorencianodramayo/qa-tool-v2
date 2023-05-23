@@ -100,7 +100,7 @@ const ConfigureLayout = () => {
           templateSelectedVersionBody = Object.assign({}, templateSelectedVersion.body, { templateVersion: tmpl.templateVersion });
           if (!a) {
             setNewVersionTemplate(templateSelectedVersionBody);
-            let defaultVersionValue = [];
+            let defaultVersionValue: any = [];
             templateSelectedVersionBody.templateVersion.map(templateVersion => {
               if (templateVersion.id === templateSelectedVersionBody._id)
                 if (templateVersion.approvals[0]._id === templateSelectedVersionBody.approvals.users[0]._id)
@@ -128,7 +128,6 @@ const ConfigureLayout = () => {
     isTemplateSelectedVersionsSuccess, 
     templateSelectedVersion
   ]);
-  console.log(templates);
   const adLibSmartlyIo = async (adLibSmartlyIoPayload: any) => {
     setFetching(true);
     const partner = await apiService.post(
@@ -437,7 +436,7 @@ const ConfigureLayout = () => {
               onChange={(value) => {
                 setTemplateValue(value);
                 let selectOptionVersions = [];
-                let defaultVersionValue = [];
+                let defaultVersionValue: any = [];
                 templates.filter(template => template._id === value).map(template => {
                   template.templateVersion.map((templateVersion, index) => {
                     selectOptionVersions.push({
@@ -504,10 +503,10 @@ const ConfigureLayout = () => {
             type="primary"
             htmlType="submit"
             onClick={() => {
-              // navigate("/configure/generate/elements", {
-              //   state: { templateName: templateName, templates: templates },
-              //   replace: true,
-              // });
+              navigate("/configure/generate/elements", {
+                state: { templateName: templateName, templates: templates },
+                replace: true,
+              });
             }}
           >
             Generate
