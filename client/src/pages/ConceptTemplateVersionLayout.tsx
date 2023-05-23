@@ -192,7 +192,6 @@ const FloatButtonMobileShareStyled = styled(FloatButton)`
   }
 `;
 const InputStyled = styled(Input)`
-
 `;
 const ConceptTemplateVersionLayout: React.FC = () => {
   const navigate = useNavigate();

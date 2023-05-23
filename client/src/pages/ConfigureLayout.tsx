@@ -1,11 +1,13 @@
 // @ts-nocheck
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { Layout, Divider, Space, Spin, Button } from "antd";
+import { Layout, Divider, Space, Spin, Button, Select } from "antd";
 import FloatLabel from "../components/FloatLabel/FloatLabel";
 import { DeleteFilled } from "@ant-design/icons";
 import apiService from "../api/apiService";
+import { getTemplateSelectedVersion } from "../features/Configure/configureSlice";
 import { useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../store";
 import Cookies from 'js-cookie';
 const LayoutStyled = styled(Layout)`
   width: 71.7em;
@@ -59,16 +61,23 @@ const ButtonGenerateStyled = styled(Button)`
 `;
 const ConfigureLayout = () => {
   const navigate = useNavigate();
-  const [conceptLinkValue, setConceptLinkValue] = useState<string>("");
+  const dispatch = useAppDispatch();
+  const [conceptLinkValue, setConceptLinkValue] = useState<string>('');
   const [conceptLinkError, setConceptLinkError] = useState<boolean>(false);
-  const [templateValue, setTemplateValue] = useState<string>("");
-  const [versionValue, setVersionValue] = useState<string>("");
-  const [templateName, setTemplateName] = useState<string>("");
-  const [loadTemplatesVersions, setLoadTemplatesVersions] = useState([]);
+  const [templateValue, setTemplateValue] = useState<string>('');
+  const [defaultVersionValue, setDefaultVersionValue] = useState<string>('');
+  const [templateName, setTemplateName] = useState<string>('');
+  const [templates, setTemplates] = useState<any>([]);
+  const [newVersionTemplate, setNewVersionTemplate] = useState<any>([]);
   const [fetching, setFetching] = useState<boolean>(false);
-  const [selectOptionTemplateVersions, setSelectOptionTemplateVersions] =
-    useState([]);
+  const [selectOptionVersions, setSelectOptionVersions] = useState<any>([]);
+  const [platform, setPlatform] = useState<string>('');
+  const [partnerId, setPartnerId] = useState<string>('');
   const [authToken, setAuthToken] = useState(null);
+  const {
+    templateSelectedVersion,
+    isTemplateSelectedVersionsSuccess,
+  } = useAppSelector((state: any) => state.configure);
   useEffect(() => {
     const handleCookieChange = () => {
       const authToken = Cookies.get('session');
@@ -81,90 +90,88 @@ const ConfigureLayout = () => {
       window.removeEventListener('cookiechange', handleCookieChange);
     };
   }, []);
-  const adLibSmartlyIo = async (adLibSmartlyIoPayload:any) => {
+  useEffect(() => {
+    if (isTemplateSelectedVersionsSuccess) {
+      setFetching(false);
+      templates.map((tmpl: any, i: number) => {
+        if (tmpl._id === templateValue) {
+          const templateSelectedVersionBody = Object.assign({}, templateSelectedVersion.body, { templateVersion: tmpl.templateVersion });
+          setNewVersionTemplate(templateSelectedVersionBody);
+          let defaultVersionValue = [];
+          templateSelectedVersionBody.templateVersion.map(templateVersion => {
+            if (templateVersion.id === templateSelectedVersionBody._id)
+              if (templateVersion.approvals[0]._id === templateSelectedVersionBody.approvals.users[0]._id)
+                defaultVersionValue.push({ 
+                  value: templateSelectedVersionBody._id, 
+                  label: (templateVersion.version + 1 === templateSelectedVersionBody.templateVersion.length) 
+                    ? 'Version ' + (templateVersion.version + 1) + ' (latest)' 
+                    : 'Version ' + (templateVersion.version + 1)
+                });
+          });
+          setDefaultVersionValue(defaultVersionValue);
+        }
+      });
+    }
+  }, [
+    isTemplateSelectedVersionsSuccess, 
+    templateSelectedVersion
+  ]);
+  const adLibSmartlyIo = async (adLibSmartlyIoPayload: any) => {
     setFetching(true);
     const partner = await apiService.post(
       "/getPartnerId",
       adLibSmartlyIoPayload
     );
     adLibSmartlyIoPayload["partnerId"] = partner.data.body.partnerId;
+    setPartnerId(partner.data.body.partnerId);
     const templates = await apiService.post(
       "/getTemplates",
       adLibSmartlyIoPayload
     );
-    let newTemplates = [];
-    templates.data.body.templates.map((template) => {
-      template["defaultVersion"] = template.templateVersion.length - 1;
-      newTemplates.push(template);
-    });
     setTemplateName(templates.data.body.name);
-    setLoadTemplatesVersions(newTemplates);
+    setTemplates(templates.data.body.templates);
     setFetching(false);
   };
   const addSelectTemplatesVersions = () => {
-    let addTemplatesVersions = {};
-    if (templateValue !== "") {
-      loadTemplatesVersions.map((templateVersion, i) => {
-        if (templateVersion.size + "-" + templateVersion.name === templateValue)
-          addTemplatesVersions = {
-            ...templateVersion,
-            defaultVersion: parseInt(versionValue.match(/\d/g)) - 1,
-          };
-      });
-
-      setLoadTemplatesVersions([
-        ...loadTemplatesVersions,
-        addTemplatesVersions,
+      setTemplates([
+        ...templates,
+        newVersionTemplate,
       ]);
-    }
   };
   const getSelectOptionTemplates = () => {
     let getSelectOptionTemplates = [];
-    const newLoadTemplatesVersions = Array.from(
-      new Set(loadTemplatesVersions.map((el) => el))
-    );
-    newLoadTemplatesVersions.map((templateVersion, index) =>
+    templates.map((template, index) =>
       getSelectOptionTemplates.push({
-        key: templateVersion._id,
-        value: templateVersion.size + "-" + templateVersion.name,
-        label: templateVersion.size + "-" + templateVersion.name,
+        value: template._id,
+        label: template.size + "-" + template.name,
       })
     );
     return getSelectOptionTemplates;
   };
   const getSelectOptionVersions = (template) => {
     let getSelectOptionVersions = [];
-    template.templateVersion.map((version, index) =>
+    template.templateVersion.map((templateVersion, index) => {
       getSelectOptionVersions.push({
-        key: version._id,
-        value:
-          index === template.templateVersion.length - 1
-            ? "Version " + (index + 1) + " (latest)"
-            : "Version " + (index + 1) + "",
-        label:
-          index === template.templateVersion.length - 1
-            ? "Version " + (index + 1) + " (latest)"
-            : "Version " + (index + 1) + "",
-        approvals: version.approvals ? true : false,
-      })
-    );
+        value: templateVersion.id,
+        label: (index + 1) === template.templateVersion.length 
+          ? 'Version ' + (index + 1) + ' (latest)'  
+          : 'Version ' + (index + 1),
+      });
+    });
     return getSelectOptionVersions;
   };
-  const getSelectOptionVersionDefaultValue = (index, defaultVersion) => {
-    let versionDefaultValue = null;
-    if (
-      loadTemplatesVersions[index].templateVersion.length - 1 ===
-      defaultVersion
-    )
-      versionDefaultValue = "Version " + (defaultVersion + 1) + " (latest)";
-    else versionDefaultValue = "Version " + (defaultVersion + 1);
-
-    return versionDefaultValue;
+  const getSelectOptionVersionDefaultValue = (template) => {
+    let defaultVersionValue = [];
+    defaultVersionValue.push({
+      value: template.templateVersion[template.version].id,
+      label: (template.version + 1) === template.templateVersion.length ? 'Version ' + (template.version + 1) + ' (latest)'  : 'Version ' + (template.version + 1),
+    });
+    return defaultVersionValue;
   };
   const removeSelectTemplatesVersions = (index) => {
-    let data = [...loadTemplatesVersions];
+    let data = [...templates];
     data.splice(index, 1);
-    setLoadTemplatesVersions(data);
+    setTemplates(data);
   };
   return (
     <LayoutStyled>
@@ -276,7 +283,7 @@ const ConfigureLayout = () => {
         {fetching && (
           <Space
             style={{
-              zIndex: 10,
+              zIndex: 99999,
               position: "absolute",
               top: 0,
               left: 0,
@@ -311,6 +318,7 @@ const ConfigureLayout = () => {
               try {
                 let conceptLink = value.target.value.split("/");
                 let platform = conceptLink[2].split(".");
+                setPlatform(platform[0]);
                 let conceptId = conceptLink[4];
                 if (conceptId === undefined) setConceptLinkError(true);
                 else {
@@ -341,6 +349,58 @@ const ConfigureLayout = () => {
         ) : (
           <></>
         )}
+        <div
+          style={{ marginBottom: templates.length > 0 ? 25.6 : 0 }}
+        >
+          {templates.map((template, index) => {
+            return (
+              <div key={index} style={{ marginBottom: 16.1 }}>
+                <Space>
+                  <Space.Compact block>
+                    <FloatLabel
+                      style={{
+                        width: 158.3,
+                      }}
+                      label="Template"
+                      placeholder="Template"
+                      name="template"
+                      value={template.size + "-" + template.name}
+                      select={true}
+                      selectOptions={[]}
+                      // showArrow={false}
+                      // templateItem={true}
+                    />
+                  </Space.Compact>
+                  <Space.Compact block>
+                    <FloatLabel
+                      style={{
+                        width: 158.3,
+                      }}
+                      label="Version"
+                      placeholder="Version"
+                      name="version"
+                      value={getSelectOptionVersionDefaultValue(
+                        template
+                      )}
+                      select={true}
+                      selectOptions={getSelectOptionVersions(template)}
+                      showArrow={true}
+                    />
+                  </Space.Compact>
+                  <Space wrap>
+                    <ButtonAddDeleteStyled
+                      type="primary"
+                      shape="circle"
+                      danger
+                      onClick={() => removeSelectTemplatesVersions(index)}
+                      icon={<DeleteFilled />}
+                    />
+                  </Space>
+                </Space>
+              </div>
+            );
+          })}
+        </div>
         <Space wrap style={{ marginBottom: 25.6 }}>
           <Space.Compact block>
             <FloatLabel
@@ -352,28 +412,26 @@ const ConfigureLayout = () => {
               name="template"
               onChange={(value) => {
                 setTemplateValue(value);
-                loadTemplatesVersions.map((templateVersion) => {
-                  let selectOptionVersions = [];
-                  if (
-                    templateVersion.size + "-" + templateVersion.name ===
-                    value
-                  ) {
-                    templateVersion.templateVersion.map((version, index) =>
-                      selectOptionVersions.push({
-                        key: version._id,
-                        value:
-                          index === templateVersion.templateVersion.length - 1
-                            ? "Version " + (index + 1) + " (latest)"
-                            : "Version " + (index + 1) + "",
-                        label:
-                          index === templateVersion.templateVersion.length - 1
-                            ? "Version " + (index + 1) + " (latest)"
-                            : "Version " + (index + 1) + "",
-                        approvals: version.approvals ? true : false,
-                      })
-                    );
-                    setSelectOptionTemplateVersions(selectOptionVersions);
-                  }
+                let selectOptionVersions = [];
+                let defaultVersionValue = [];
+                templates.filter(template => template._id === value).map(template => {
+                  template.templateVersion.map((templateVersion, index) => {
+                    selectOptionVersions.push({
+                      value: templateVersion.id,
+                      label: (index + 1) === template.templateVersion.length 
+                        ? 'Version ' + (index + 1) + ' (latest)'  
+                        : 'Version ' + (index + 1),
+                    });
+                    if (template.version === index) 
+                      defaultVersionValue.push({ 
+                        value: templateVersion.id, 
+                        label: (index + 1) === template.templateVersion.length 
+                          ? 'Version ' + (index + 1) + ' (latest)' 
+                          : 'Version ' + (index + 1) 
+                      });
+                  });
+                  setSelectOptionVersions(selectOptionVersions);
+                  setDefaultVersionValue(defaultVersionValue);
                 });
               }}
               value={templateValue}
@@ -391,10 +449,18 @@ const ConfigureLayout = () => {
               label="Version"
               placeholder="Version"
               name="version"
-              onChange={(value) => setVersionValue(value)}
-              value={versionValue}
+              onChange={(value) => {
+                setFetching(!fetching);
+                let payload = {
+                  platform: platform,
+                  templateId: value,
+                  partnerId: partnerId,
+                };
+                dispatch(getTemplateSelectedVersion(payload));
+              }}
+              value={defaultVersionValue}
               select={true}
-              selectOptions={selectOptionTemplateVersions}
+              selectOptions={selectOptionVersions}
               showArrow={true}
             />
           </Space.Compact>
@@ -408,68 +474,15 @@ const ConfigureLayout = () => {
             </ButtonAddDeleteStyled>
           </Space>
         </Space>
-        <div
-          style={{ marginBottom: loadTemplatesVersions.length > 0 ? 25.6 : 0 }}
-        >
-          {loadTemplatesVersions.map((templateVersion, index) => {
-            return (
-              <div key={index} style={{ marginBottom: 16.1 }}>
-                <Space>
-                  <Space.Compact block>
-                    <FloatLabel
-                      style={{
-                        width: 158.3,
-                      }}
-                      label="Template"
-                      placeholder="Template"
-                      name="template"
-                      value={templateVersion.size + "-" + templateVersion.name}
-                      select={true}
-                      selectOptions={getSelectOptionTemplates()}
-                      showArrow={false}
-                      templateItem={true}
-                    />
-                  </Space.Compact>
-                  <Space.Compact block>
-                    <FloatLabel
-                      style={{
-                        width: 158.3,
-                      }}
-                      label="Version"
-                      placeholder="Version"
-                      name="version"
-                      value={getSelectOptionVersionDefaultValue(
-                        index,
-                        templateVersion.defaultVersion
-                      )}
-                      select={true}
-                      selectOptions={getSelectOptionVersions(templateVersion)}
-                      showArrow={false}
-                    />
-                  </Space.Compact>
-                  <Space wrap>
-                    <ButtonAddDeleteStyled
-                      type="primary"
-                      shape="circle"
-                      danger
-                      onClick={() => removeSelectTemplatesVersions(index)}
-                      icon={<DeleteFilled />}
-                    />
-                  </Space>
-                </Space>
-              </div>
-            );
-          })}
-        </div>
         <Space.Compact block>
           <ButtonGenerateStyled
             type="primary"
             htmlType="submit"
             onClick={() => {
-              navigate("/configure/generate/elements", {
-                state: { templateName: templateName, templates: loadTemplatesVersions },
-                replace: true,
-              });
+              // navigate("/configure/generate/elements", {
+              //   state: { templateName: templateName, templates: templates },
+              //   replace: true,
+              // });
             }}
           >
             Generate

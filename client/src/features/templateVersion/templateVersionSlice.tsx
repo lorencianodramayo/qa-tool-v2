@@ -6,22 +6,22 @@ const initialState = {
   isTemplatesVersionsError: false,
   isTemplatesVersionsSuccess: false,
   isTemplatesVersionsLoading: false,
-  templatesVersionsMessage: "",
+  templatesVersionsMessage: null,
   addTemplateVersion: null,
   isAddTemplateVersionError: false,
   isAddTemplateVersionSuccess: false,
   isAddTemplateVersionLoading: false,
-  addTemplateVersionMessage: "",
+  addTemplateVersionMessage: null,
   addSharedVariant: null,
   isAddSharedVariantError: false,
   isAddSharedVariantSuccess: false,
   isAddSharedVariantLoading: false,
-  addSharedVariantMessage: "",
+  addSharedVariantMessage: null,
   addTemplateVersionCloud: null,
   isAddTemplateVersionCloudError: false,
   isAddTemplateVersionCloudSuccess: false,
   isAddTemplateVersionCloudLoading: false,
-  addTemplateVersionCloudMessage: "",
+  addTemplateVersionCloudMessage: null,
 };
 export const getTemplatesVersions = createAsyncThunk(
   "templateVersion/getTemplatesVersions",
@@ -78,17 +78,17 @@ export const templateVersionSlice = createSlice({
         (state.isTemplatesVersionsError = false),
         (state.isTemplatesVersionsSuccess = false),
         (state.isTemplatesVersionsLoading = false),
-        (state.templatesVersionsMessage = ""),
+        (state.templatesVersionsMessage = null),
         (state.addTemplateVersion = null),
         (state.isAddTemplateVersionError = false),
         (state.isAddTemplateVersionSuccess = false),
         (state.isAddTemplateVersionLoading = false),
-        (state.addTemplateVersionMessage = ""),
+        (state.addTemplateVersionMessage = null),
         (state.addSharedVariant = null),
         (state.isAddSharedVariantError = false),
         (state.isAddSharedVariantSuccess = false),
         (state.isAddSharedVariantLoading = false),
-        (state.addSharedVariantMessage = ""),
+        (state.addSharedVariantMessage = null),
         (state.addTemplateVersionCloud = null),
         (state.isAddTemplateVersionCloudError = false),
         (state.isAddTemplateVersionCloudSuccess = false),
@@ -105,7 +105,7 @@ export const templateVersionSlice = createSlice({
         (state.isTemplatesVersionsLoading = false),
           (state.isTemplatesVersionsError = false),
           (state.isTemplatesVersionsSuccess = true),
-          (state.templatesVersionsMessage = ""),
+          (state.templatesVersionsMessage = null),
           (state.templatesVersions = action.payload);
       })
       .addCase(getTemplatesVersions.rejected, (state, action) => {
@@ -122,7 +122,7 @@ export const templateVersionSlice = createSlice({
         (state.isAddTemplateVersionLoading = false),
           (state.isAddTemplateVersionError = false),
           (state.isAddTemplateVersionSuccess = true),
-          (state.addTemplateVersionMessage = ""),
+          (state.addTemplateVersionMessage = null),
           (state.addTemplateVersion = action.payload);
       })
       .addCase(postTemplateVersion.rejected, (state, action) => {
@@ -139,7 +139,7 @@ export const templateVersionSlice = createSlice({
         (state.isAddSharedVariantLoading = false),
           (state.isAddSharedVariantError = false),
           (state.isAddSharedVariantSuccess = true),
-          (state.addSharedVariantMessage = ""),
+          (state.addSharedVariantMessage = null),
           (state.addSharedVariant = action.payload);
       })
       .addCase(postSharedVariants.rejected, (state, action) => {
@@ -156,7 +156,7 @@ export const templateVersionSlice = createSlice({
         (state.isAddTemplateVersionCloudLoading = false),
           (state.isAddTemplateVersionCloudError = false),
           (state.isAddTemplateVersionCloudSuccess = true),
-          (state.addTemplateVersionCloudMessage = ""),
+          (state.addTemplateVersionCloudMessage = null),
           (state.addTemplateVersionCloud = action.payload);
       })
       .addCase(postTemplateVersionCloud.rejected, (state, action) => {

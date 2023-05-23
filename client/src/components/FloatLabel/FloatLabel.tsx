@@ -75,7 +75,6 @@ const SelectComponent = styled(Select)`
 
 const FloatLabel = (props) => {
   const [focus, setFocus] = useState(false);
-
   let {
     style,
     label,
@@ -91,15 +90,10 @@ const FloatLabel = (props) => {
     textArea,
     rows,
   } = props;
-
   if (!placeholder) placeholder = label;
-
   const isOccupied = focus || (value && value.length !== 0);
-
   const labelClass = isOccupied ? "label as-label" : "label as-placeholder";
-
   const requiredMark = required ? <span className="text-danger">*</span> : null;
-
   return (
     <div
       className="float-label"
@@ -126,7 +120,8 @@ const FloatLabel = (props) => {
         <SelectComponent
           showSearch
           style={{ width: style.width, marginRight: style.marginRight }}
-          defaultValue={value}
+          value={value}
+          // defaultValue={value}
           onChange={props.onChange}
           showArrow={showArrow ? true : false}
           disabled={!showArrow ? true : false}
@@ -152,15 +147,11 @@ const FloatLabel = (props) => {
                   }}
                 >
                   <Space.Compact block>{item.label}</Space.Compact>
-                  {item.approvals ? (
                     <Space.Compact block>
                       <CheckCircleFilled
                         style={{ fontSize: "18px", color: "#66bb6a" }}
                       />
                     </Space.Compact>
-                  ) : (
-                    <></>
-                  )}
                 </Space>
               )}
             </Select.Option>
