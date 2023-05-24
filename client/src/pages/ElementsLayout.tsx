@@ -331,6 +331,7 @@ export default function ElementsLayout() {
         textHeadlineLegal: text,
       };
       if (language !== '') {
+        setLoading(!loading);
         const response = await apiService.post("/translate", payload);
         text = response.data.translate;
       }
@@ -573,14 +574,14 @@ export default function ElementsLayout() {
                       let dataRemovedCharacter = [...removedCharacter]
                       if (type.type === 'down') {
                         const numToRemoveValidated = Math.min(numToRemove[i], inputString[i].length);
-                        if (numToRemoveValidated > 0) {
+                        // if (numToRemoveValidated > 0) {
                           const removed = inputString[i].slice(-numToRemoveValidated);
                           const newInputString = inputString[i].slice(0, -numToRemoveValidated);
                           dataInputString[i] = newInputString;
                           dataRemovedCharacter[i] = removed + removedCharacter[i];
                           setInputString(dataInputString);
                           setRemovedCharacter(dataRemovedCharacter);
-                        }
+                        // }
                       } else {
                         if (removedCharacter[i].length === 0) {
                           let characters = null;
@@ -595,14 +596,14 @@ export default function ElementsLayout() {
                           setInputString(dataInputString);
                         } else {
                           const numToAddValidated = Math.min(numToAdd[i], removedCharacter[i].length);
-                          if (numToAddValidated > 0) {
+                          // if (numToAddValidated > 0) {
                             const added = removedCharacter[i].slice(0, numToAddValidated);
                             const newRemovedCharacter = removedCharacter[i].slice(numToAddValidated);
                             dataInputString[i] = inputString[i] + added;
                             dataRemovedCharacter[i] = newRemovedCharacter;
                             setInputString(dataInputString);
                             setRemovedCharacter(dataRemovedCharacter);
-                          }
+                          // }
                         }
                       }
                       let defaultDynamicFieldsValues =
@@ -628,43 +629,79 @@ export default function ElementsLayout() {
                       });
                       setTemplates(newState);
                     }}
-                    // onChange={(value) => {
-                    //   let dataInputString = [...inputString];
-                    //   let dataRemovedCharacter = [...removedCharacter]
-                    //   if (value < inputString[i].length) {
-                    //     const numToRemoveValidated = Math.min(value, inputString[i].length);
-                    //     if (numToRemoveValidated > 0) {
-                    //       const removed = inputString[i].slice(-numToRemoveValidated);
-                    //       const newInputString = inputString[i].slice(0, -numToRemoveValidated);
-                    //       dataInputString[i] = newInputString;
-                    //       dataRemovedCharacter[i] = removed + removedCharacter[i];
-                    //       setInputString(dataInputString);
-                    //       setRemovedCharacter(dataRemovedCharacter);
-                    //     }
-                    //   }
-                    //   let defaultDynamicFieldsValues =
-                    //       templates[templateIndex].defaultDynamicFieldsValues;
-                    //     const newDefaultDynamicFieldsValues = {
-                    //       [dynamicElement]: dataInputString[i],
-                    //     };
-                    //     defaultDynamicFieldsValues = {
-                    //       ...defaultDynamicFieldsValues,
-                    //       ...newDefaultDynamicFieldsValues,
-                    //     };
-                    //     const newState = templates.map((template, i) => {
-                    //       if (templateIndex === i) {
-                    //         return {
-                    //           ...template,
-                    //           ...{
-                    //             ["defaultDynamicFieldsValues"]:
-                    //               defaultDynamicFieldsValues,
-                    //           },
-                    //         };
-                    //       }
-                    //       return template;
-                    //     });
-                    //     setTemplates(newState);
-                    // }}
+                    onChange={(value) => {
+                      let dataInputString = [...inputString];
+                      let dataRemovedCharacter = [...removedCharacter];
+                      // if (removedCharacter[i].length === 0) {
+                      //   // if (value < inputString[i].length) {
+                      //   //   const numToRemoveValidated = Math.min(value, inputString[i].length);
+                      //   //   if (numToRemoveValidated > 0) {
+                      //   //     const removed = inputString[i].slice(-numToRemoveValidated);
+                      //   //     const newInputString = inputString[i].slice(0, -numToRemoveValidated);
+                      //   //     dataInputString[i] = newInputString;
+                      //   //     dataRemovedCharacter[i] = removed + removedCharacter[i];
+                      //   //     setInputString(dataInputString);
+                      //   //     setRemovedCharacter(dataRemovedCharacter);
+                      //   //   }
+                      //   // }
+                      // } else {
+                        if (value < inputString[i].length) {
+                          const numToRemoveValidated = Math.min(value, inputString[i].length);
+                          const removed = inputString[i].slice(-numToRemoveValidated);
+                          const newInputString = inputString[i].slice(0, -numToRemoveValidated);
+                          dataInputString[i] = newInputString;
+                          dataRemovedCharacter[i] = removed + removedCharacter[i];
+                          setInputString(dataInputString);
+                          setRemovedCharacter(dataRemovedCharacter);
+                        } else {
+                          const numToAddValidated = Math.min(value, removedCharacter[i].length);
+                          const added = removedCharacter[i].slice(0, numToAddValidated);
+                          const newRemovedCharacter = removedCharacter[i].slice(numToAddValidated);
+                          dataInputString[i] = inputString[i] + added;
+                          dataRemovedCharacter[i] = newRemovedCharacter;
+                          if (value !== dataInputString[i].length) {
+                            let newDataInputString = dataInputString[i];
+                            let characters = null;
+                            let n = value - dataInputString[i].length;
+                            for (let i = 0; i < n; i++) {
+                              if (language !== '') {
+                                const filteredLanguage = languages.filter(lang => {
+                                  return lang.language === language;
+                                });
+                                filteredLanguage.map(language => characters = language.content.split(''));
+                              } else characters = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin non velit a dolor euismod sollicitudin eu eget dolor. Mauris nec risus sed libero sagittis porta et ut massa. Nulla vel ipsum vehicula, varius lectus vel, varius neque. Phasellus id diam magna. Integer pellentesque semper purus. Cras consequat lacinia est nec lacinia. Cras massa sapien, fermentum sit amet orci sed, imperdiet tempus quam. Duis tincidunt sem a finibus faucibus. Duis id leo vel velit imperdiet imperdiet ut nec metus. Nam aliquam ante vel vestibulum blandit. Suspendisse pharetra erat a lorem scelerisque convallis. Nam imperdiet tincidunt magna ac rutrum. Aliquam consectetur aliquam massa vitae hendrerit. Etiam imperdiet sed mauris vel iaculis. Etiam vitae arcu vitae ante pretium vehicula. Curabitur eget vulputate ipsum. Aliquam quis blandit dui. Vivamus placerat congue dolor vel convallis. Nunc neque nulla, convallis ac eros in, maximus varius odio. Morbi cursus nisi eget leo lobortis porttitor. Nam nibh sapien, mattis ut elementum porttitor, iaculis id enim. Quisque iaculis quam in diam maximus feugiat. Duis finibus dui ut dui posuere vestibulum. Sed porta viverra dolor, sed rutrum odio varius ornare. Donec ultricies pellentesque ligula. Aenean dictum ante quis sapien malesuada suscipit. Morbi metus massa, lacinia id aliquet vel, semper eget felis. Maecenas hendrerit rhoncus varius. Sed massa mi, blandit id tellus sed, aliquam viverra justo. Mauris rhoncus leo quis ullamcorper pellentesque. Nunc libero justo, laoreet hendrerit leo quis, facilisis facilisis massa. Aliquam sed erat mi. Duis ac imperdiet nibh. Ut eu dolor viverra, pulvinar ante ut, mattis dolor. Etiam volutpat dui at molestie ultrices. Mauris blandit, eros a convallis egestas, dolor augue convallis augue, vitae pretium massa purus nec mauris. Aenean eget hendrerit augue. Suspendisse hendrerit, dui in luctus lobortis, massa sapien blandit velit, vitae viverra diam sapien eget sapien. Proin pulvinar sollicitudin cursus. Phasellus ullamcorper ex a lorem fermentum maximus. Donec in ipsum non lectus convallis blandit. Sed lacus augue, cursus ut ipsum sed, posuere ultrices nunc. Suspendisse ac tincidunt velit, id tincidunt risus. Nam vulputate gravida cursus. Pellentesque et luctus arcu. Proin accumsan tortor sed lectus rutrum commodo eget ut eros. Duis neque lectus, aliquet sit amet tincidunt at, finibus at dui. Aliquam ultricies arcu lacinia massa pretium finibus. Proin mollis lobortis efficitur. Curabitur sollicitudin justo non diam tincidunt, nec consectetur lacus faucibus. Integer commodo quis tellus vitae vestibulum. Aliquam dictum turpis aliquam leo sagittis lacinia. Nulla dapibus sodales est, non feugiat dui fringilla ut. Proin convallis augue at magna luctus bibendum. Suspendisse et velit ipsum. Sed non magna tincidunt mauris pellentesque cursus. Phasellus libero massa, convallis volutpat elit sed, gravida imperdiet lectus. Vivamus non commodo lectus. Nunc a cursus arcu, vitae aliquet risus. Pellentesque ac dolor purus. Aliquam auctor felis malesuada neque tristique gravida. Vestibulum nibh nibh, volutpat at eros at, maximus mattis sapien. Integer consectetur ultricies urna vitae dictum. Nullam id quam a arcu varius ultrices nec sit amet nisl. Nulla porta nec lacus sed pellentesque.'.split('');
+                              const index = Math.floor(Math.random() * characters.length) + 1;
+                              newDataInputString = newDataInputString + characters[index];
+                            }
+                            dataInputString[i] = newDataInputString;
+                          }
+                          setInputString(dataInputString);
+                          setRemovedCharacter(dataRemovedCharacter);
+                        }
+                      // }
+                      let defaultDynamicFieldsValues =
+                          templates[templateIndex].defaultDynamicFieldsValues;
+                        const newDefaultDynamicFieldsValues = {
+                          [dynamicElement]: dataInputString[i],
+                        };
+                        defaultDynamicFieldsValues = {
+                          ...defaultDynamicFieldsValues,
+                          ...newDefaultDynamicFieldsValues,
+                        };
+                        const newState = templates.map((template, i) => {
+                          if (templateIndex === i) {
+                            return {
+                              ...template,
+                              ...{
+                                ["defaultDynamicFieldsValues"]:
+                                  defaultDynamicFieldsValues,
+                              },
+                            };
+                          }
+                          return template;
+                        });
+                        setTemplates(newState);
+                    }}
                   />
                 </Space>
               </Space>
@@ -1074,7 +1111,6 @@ export default function ElementsLayout() {
             placeholder="Select a language"
             name="language"
             onChange={async (language) => {
-              setLoading(!loading);
               setLanguage(language);
               let defaultDynamicFieldsValues =
                 templates[templateIndex].defaultDynamicFieldsValues;
