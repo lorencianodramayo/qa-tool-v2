@@ -4,6 +4,7 @@ import languageReducer from "../features/language/languageSlice";
 import templateVersionReducer from "../features/templateVersion/templateVersionSlice";
 import sharedVariantReducer from "../features/SharedVariant/sharedVariantSlice";
 import configureReducer from "../features/Configure/configureSlice";
+import elementReducer from "../features/Configure/configureSlice";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     templateVersion: templateVersionReducer,
     sharedVariant: sharedVariantReducer,
     configure: configureReducer,
+    element: elementReducer,
   },
   // middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
 });
