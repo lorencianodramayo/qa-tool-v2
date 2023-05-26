@@ -9,6 +9,7 @@ import { getTemplateSelectedVersion } from "../features/Configure/configureSlice
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store";
 import Cookies from 'js-cookie';
+import axios from "axios";
 const LayoutStyled = styled(Layout)`
   width: 71.7em;
   border-radius: 10px;
@@ -175,7 +176,7 @@ const ConfigureLayout = () => {
   const getSelectOptionVersionDefaultValue = (template) => {
     let defaultVersionValue = [];
     defaultVersionValue.push({
-      value: template.templateVersion[template.version].id,
+      value: template.templateVersion[template.version]?.id,
       label: (template.version + 1) === template.templateVersion.length ? 'Version ' + (template.version + 1) + ' (latest)'  : 'Version ' + (template.version + 1),
     });
     return defaultVersionValue;
