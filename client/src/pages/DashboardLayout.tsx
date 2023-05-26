@@ -76,7 +76,7 @@ export default function DashboardLayout() {
               QA Tool
             </Space>
           </Col>
-          <Col xs={2} sm={4} md={6} lg={8} xl={10}>
+          {/* <Col xs={2} sm={4} md={6} lg={8} xl={10}>
             <Space
               style={{
                 display: "flex",
@@ -117,7 +117,7 @@ export default function DashboardLayout() {
                 </Space>
               </Space>
             </Space>
-          </Col>
+          </Col> */}
         </Row>
       </Header>
       <Content>

@@ -297,7 +297,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
       // );
       const interval = setInterval(() => {
         setLoading(false);
-      }, 2000);
+      }, 4000);
       return () => clearInterval(interval);
     }
   }, [
