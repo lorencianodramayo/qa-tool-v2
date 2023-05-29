@@ -297,7 +297,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
       // );
       const interval = setInterval(() => {
         setLoading(false);
-      }, 4000);
+      }, 60000);
       return () => clearInterval(interval);
     }
   }, [
@@ -463,7 +463,6 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   useEffect(() => {
     if (isAddSharedVariantSuccess) setSharedLoading(false);
   }, [isAddSharedVariantSuccess]);
-  console.log("asdf", addSharedVariant);
   const onClick: MenuProps["onClick"] = e => {
     setLoading(!loading);
     setTemplateId(e.key);

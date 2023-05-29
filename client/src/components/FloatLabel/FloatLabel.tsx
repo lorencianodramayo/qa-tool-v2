@@ -147,11 +147,16 @@ const FloatLabel = (props) => {
                   }}
                 >
                   <Space.Compact block>{item.label}</Space.Compact>
-                    <Space.Compact block>
-                      <CheckCircleFilled
-                        style={{ fontSize: "18px", color: "#66bb6a" }}
-                      />
-                    </Space.Compact>
+                  {
+                    item.approved 
+                      ?
+                        <Space.Compact block>
+                          <CheckCircleFilled
+                            style={{ fontSize: "18px", color: "#66bb6a" }}
+                          />
+                        </Space.Compact> 
+                      : <></>
+                  }
                 </Space>
               )}
             </Select.Option>
