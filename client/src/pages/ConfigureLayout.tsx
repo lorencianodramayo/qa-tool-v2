@@ -1,7 +1,17 @@
 // @ts-nocheck
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { Layout, Divider, Space, Spin, Button, Select } from "antd";
+import { 
+  Layout,
+  Space, 
+  Divider,
+  Spin, 
+  Select, 
+  Checkbox, 
+  TreeSelect,
+  Button
+} from "antd";
+import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import FloatLabel from "../components/FloatLabel/FloatLabel";
 import { DeleteFilled } from "@ant-design/icons";
 import apiService from "../api/apiService";
@@ -10,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store";
 import Cookies from 'js-cookie';
 import axios from "axios";
+const { TreeNode } = TreeSelect;
 const LayoutStyled = styled(Layout)`
   width: 71.7em;
   border-radius: 10px;
@@ -21,6 +32,12 @@ const LayoutStyled = styled(Layout)`
   margin: 58.7px auto 0 auto;
   left: 0;
   right: 0;
+`;
+const TreeSelectStyled = styled(TreeSelect)`
+  &.ant-select-multiple .ant-select-selector {
+    box-shadow: unset !important;
+    border: 1px solid #d9d9d9 !important;
+  }
 `;
 const ButtonAddDeleteStyled = styled(Button)`
   padding: 4px 6.7px;
@@ -74,8 +91,21 @@ const ConfigureLayout = () => {
   const [selectOptionVersions, setSelectOptionVersions] = useState<any>([]);
   const [platform, setPlatform] = useState<string>('');
   const [partnerId, setPartnerId] = useState<string>('');
-  const [a, setA] = useState<boolean>(false);
+  const [singleTemplateSelection, setSingleTemplateSelection] = useState<string>('');
+  const [singleVersionSelection, setSingleVersionSelection] = useState<boolean>(false);
+  const [multipleTemplateSelection, setMultipleTemplateSelection] = useState<string>('');
+  const [multipleVersionSelection, setMultipleVersionSelection] = useState<boolean>(false);
+  const [treeValues, setTreeValues] = useState<string[]>([]);
+  interface TreeNodeData {
+    title: string;
+    value: string;
+  }
+  const [treeData, setTreeData] = useState<TreeNodeData[]>([]);
   const [authToken, setAuthToken] = useState(null);
+  const [searchValue, setSearchValue] = useState<string>('');
+  const [selectAll, setSelectAll] = useState<boolean>(false);
+  const [placement, SetPlacement] = useState<SelectCommonPlacement>('bottomLeft');
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const {
     templateSelectedVersion,
     isTemplateSelectedVersionsSuccess,
@@ -94,41 +124,48 @@ const ConfigureLayout = () => {
   }, []);
   useEffect(() => {
     if (isTemplateSelectedVersionsSuccess) {
-      setFetching(false);
       let templateSelectedVersionBody = null;
       templates.map((tmpl: any, i: number) => {
-        if (tmpl._id === templateValue) {
+        if (tmpl._id === singleTemplateSelection) {
           templateSelectedVersionBody = Object.assign({}, templateSelectedVersion.body, { templateVersion: tmpl.templateVersion });
-          if (!a) {
+          if (singleVersionSelection) {
             setNewVersionTemplate(templateSelectedVersionBody);
-            let defaultVersionValue: any = [];
-            templateSelectedVersionBody.templateVersion.map(templateVersion => {
-              if (templateVersion.id === templateSelectedVersionBody._id)
-                if (templateVersion.approvals[0]._id === templateSelectedVersionBody.approvals.users[0]._id)
-                  defaultVersionValue.push({ 
-                    value: templateSelectedVersionBody._id, 
-                    label: (templateVersion.version + 1 === templateSelectedVersionBody.templateVersion.length) 
-                      ? 'Version ' + (templateVersion.version + 1) + ' (latest)' 
-                      : 'Version ' + (templateVersion.version + 1)
-                  });
+            setDefaultVersionValue({ 
+              value: templateSelectedVersionBody._id, 
+              label: (templateSelectedVersionBody.version + 1) === templateSelectedVersionBody.templateVersion.length
+                ? 'Version ' + (templateSelectedVersionBody.templateVersion[templateSelectedVersionBody.version].version + 1) + ' (latest)' 
+                : 'Version ' + (templateSelectedVersionBody.templateVersion[templateSelectedVersionBody.version].version + 1),
             });
-            setDefaultVersionValue(defaultVersionValue);
           }
         }
       });
-      if (a) setTemplates(templates => {
+      if (multipleVersionSelection) setTemplates(templates => {
         return templates.map(template => {
-          if (template._id === templateValue) {
+          templateSelectedVersionBody = Object.assign({}, templateSelectedVersion.body, { templateVersion: template.templateVersion });
+          if (template._id === multipleTemplateSelection) {
             return templateSelectedVersionBody;
           }
           return template;
         });
       });
+      setFetching(false);
+      setMultipleVersionSelection(false);
+      setSingleVersionSelection(false);
     }
   }, [
     isTemplateSelectedVersionsSuccess, 
     templateSelectedVersion
   ]);
+  useEffect(() => {
+    if (templates.length > 0) {
+      let treeData: TreeNodeData[] = [];
+      templates.map(template => treeData.push({
+        title: template.size + ' ' + template.name,
+        value: template.size + ' ' + template.name,
+      }));
+      setTreeData(treeData);
+    }
+  }, [templates]);
   const adLibSmartlyIo = async (adLibSmartlyIoPayload: any) => {
     setFetching(true);
     const partner = await apiService.post(
@@ -145,11 +182,29 @@ const ConfigureLayout = () => {
     setTemplates(templates.data.body.templates);
     setFetching(false);
   };
-  const addSelectTemplatesVersions = () => {
-      setTemplates([
-        ...templates,
-        newVersionTemplate,
-      ]);
+  const handleChange = (selectedValues: string[]) => {
+    setSelectedValues(selectedValues);
+  };
+  const handleSelectAll = (e: CheckboxChangeEvent) => {
+    setSelectAll(e.target.checked);
+    const filteredValues = treeData
+      .filter((node) => filterTreeNode(searchValue, node))
+      .map((node) => node.value);
+    setSelectedValues(filteredValues);
+  };
+  const handleUnselectAll = (e: CheckboxChangeEvent) => {
+    setSelectAll(e.target.checked);
+    setSearchValue('');
+    setSelectedValues([]);
+  };
+  const filterTreeNode = (inputValue: string, treeNode: TreeNodeData) => {
+    setSearchValue(inputValue);
+    return treeNode.title.toLowerCase().includes(inputValue.toLowerCase());
+  };
+  const renderTreeNodes = (data: TreeNodeData[]) => {
+    return data.map((node) => (
+      <TreeNode title={node.title} value={node.value} key={node.value} />
+    ));
   };
   const getSelectOptionTemplates = () => {
     let getSelectOptionTemplates = [];
@@ -161,6 +216,16 @@ const ConfigureLayout = () => {
     );
     return getSelectOptionTemplates;
   };
+  const addSelectTemplatesVersions = () => {
+    let template = [];
+    templates.map(tmpl => {
+      if (tmpl._id === singleTemplateSelection) template.push(tmpl);
+    });
+    setTemplates([
+      ...templates,
+      typeof newVersionTemplate === 'object' && newVersionTemplate.length !== 0 ? newVersionTemplate : template[0],
+    ]);
+  };
   const getSelectOptionVersions = (template) => {
     let getSelectOptionVersions = [];
     template.templateVersion.map((templateVersion, index) => {
@@ -169,6 +234,7 @@ const ConfigureLayout = () => {
         label: (index + 1) === template.templateVersion.length 
           ? 'Version ' + (index + 1) + ' (latest)'  
           : 'Version ' + (index + 1),
+        approved: templateVersion.approvals !== undefined ? true : false
       });
     });
     return getSelectOptionVersions;
@@ -318,7 +384,7 @@ const ConfigureLayout = () => {
         <Space.Compact
           block
           style={{
-            marginBottom: conceptLinkError ? 0 : 16.1,
+            marginBottom: conceptLinkError ? 0 : 4.1,
             marginTop: 5,
           }}
         >
@@ -352,27 +418,59 @@ const ConfigureLayout = () => {
             input={true}
           />
         </Space.Compact>
-        {conceptLinkError ? (
+        {conceptLinkError && (
           <Space.Compact
             block
             style={{ color: "red", fontSize: 12, padding: "0 0 0 12px" }}
           >
             Invalid Concept Link
           </Space.Compact>
-        ) : (
-          <></>
         )}
-        <div
-          style={{ marginBottom: templates.length > 0 ? 25.6 : 0 }}
-        >
-          {templates.map((template, index) => {
+        {/* <div>
+          <Button onClick={handleSelectAll}>Select All</Button>
+          <Button onClick={handleUnselectAll}>Unselect All</Button>
+        </div> */}
+        {treeData.length > 1 && (<>
+          <Space style={{
+            marginBottom: 4.1
+          }}>
+            <Checkbox onChange={selectAll ? handleUnselectAll : handleSelectAll}>{selectAll ? 'Unselect All' : 'Select All'}</Checkbox>
+          </Space>
+          <Space.Compact block style={{
+            marginBottom: 15,
+          }}>
+            <TreeSelectStyled
+              style={{ 
+                width: 324.6,
+              }}
+              placeholder='Please select template'
+              maxTagPlaceholder={omittedValues =>
+                `+ ${omittedValues.length} Templates ...`
+              } 
+              maxTagCount={2}
+              allowClear={true}
+              value={selectedValues}
+              onChange={handleChange}
+              treeNodeFilterProp="title"
+              treeDefaultExpandAll
+              treeCheckable
+              showCheckedStrategy={TreeSelect.SHOW_ALL}
+              filterTreeNode={filterTreeNode}
+              placement={placement}
+            >
+              {renderTreeNodes(treeData)}
+            </TreeSelectStyled>
+          </Space.Compact>
+        </>)}
+        <div>
+          {templates.filter(tmpl => selectedValues.includes(tmpl.size + ' ' + tmpl.name)).map((template, index) => {
             return (
               <div key={index} style={{ marginBottom: 16.1 }}>
                 <Space>
                   <Space.Compact block>
                     <FloatLabel
                       style={{
-                        width: 158.3,
+                        width: 324.6,
                       }}
                       label="Template"
                       placeholder="Template"
@@ -393,9 +491,9 @@ const ConfigureLayout = () => {
                       placeholder="Version"
                       name="version"
                       onChange={(value) => {
-                        setA(!a);
+                        setMultipleVersionSelection(!multipleVersionSelection);
                         setFetching(!fetching);
-                        setTemplateValue(template._id);
+                        setMultipleTemplateSelection(template._id);
                         let payload = {
                           platform: platform,
                           templateId: value,
@@ -411,7 +509,9 @@ const ConfigureLayout = () => {
                       showArrow={true}
                     />
                   </Space.Compact>
-                  <Space wrap>
+                  <Space wrap style={{
+                    pointerEvents: fetching ? 'none' : 'unset'
+                  }}>
                     <ButtonAddDeleteStyled
                       type="primary"
                       shape="circle"
@@ -425,17 +525,17 @@ const ConfigureLayout = () => {
             );
           })}
         </div>
-        <Space wrap style={{ marginBottom: 25.6 }}>
+        {treeData.length > 1 && (<Space wrap style={{ marginBottom: 25.6 }}>
           <Space.Compact block>
             <FloatLabel
               style={{
-                width: 158.3,
+                width: 250,
               }}
               label="Template"
               placeholder="Template"
               name="template"
               onChange={(value) => {
-                setTemplateValue(value);
+                setSingleTemplateSelection(value);
                 let selectOptionVersions = [];
                 let defaultVersionValue: any = [];
                 templates.filter(template => template._id === value).map(template => {
@@ -445,6 +545,7 @@ const ConfigureLayout = () => {
                       label: (index + 1) === template.templateVersion.length 
                         ? 'Version ' + (index + 1) + ' (latest)'  
                         : 'Version ' + (index + 1),
+                      approved: templateVersion.approvals !== undefined ? true : false
                     });
                     if (template.version === index) 
                       defaultVersionValue.push({ 
@@ -458,7 +559,7 @@ const ConfigureLayout = () => {
                   setDefaultVersionValue(defaultVersionValue);
                 });
               }}
-              value={templateValue}
+              value={singleTemplateSelection}
               select={true}
               selectOptions={getSelectOptionTemplates()}
               showArrow={true}
@@ -474,7 +575,7 @@ const ConfigureLayout = () => {
               placeholder="Version"
               name="version"
               onChange={(value) => {
-                setA(false);
+                setSingleVersionSelection(!singleVersionSelection);
                 setFetching(!fetching);
                 let payload = {
                   platform: platform,
@@ -489,30 +590,34 @@ const ConfigureLayout = () => {
               showArrow={true}
             />
           </Space.Compact>
-          <Space wrap>
-            <ButtonAddDeleteStyled
+          {singleTemplateSelection !== '' && (
+            <Space wrap>
+              <ButtonAddDeleteStyled
+                type="primary"
+                shape="circle"
+                onClick={addSelectTemplatesVersions}
+              >
+                +
+              </ButtonAddDeleteStyled>
+            </Space>
+          )}
+        </Space>)}
+        {templates.length > 0 && (
+          <Space.Compact block>
+            <ButtonGenerateStyled
               type="primary"
-              shape="circle"
-              onClick={addSelectTemplatesVersions}
+              htmlType="submit"
+              onClick={() => {
+                navigate("/configure/generate/elements", {
+                  state: { templateName: templateName, templates: templates },
+                  replace: true,
+                });
+              }}
             >
-              +
-            </ButtonAddDeleteStyled>
-          </Space>
-        </Space>
-        <Space.Compact block>
-          <ButtonGenerateStyled
-            type="primary"
-            htmlType="submit"
-            onClick={() => {
-              navigate("/configure/generate/elements", {
-                state: { templateName: templateName, templates: templates },
-                replace: true,
-              });
-            }}
-          >
-            Generate
-          </ButtonGenerateStyled>
-        </Space.Compact>
+              Generate
+            </ButtonGenerateStyled>
+          </Space.Compact>
+        )}
       </div>
       {/* <Divider
         type="horizontal"
