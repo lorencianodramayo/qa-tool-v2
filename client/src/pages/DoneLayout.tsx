@@ -1,28 +1,29 @@
 // @ts-nocheck
-import styled from "styled-components";
-import { Button, Divider, Input, InputNumber, Spin, Layout, Space, notification } from "antd";
-import { useEffect, useState } from "react";
+import styled from 'styled-components'
+import {Button, Divider, Input, InputNumber, Spin, Layout, Space, notification} from 'antd'
+import {useEffect, useState} from 'react'
 import {
   CheckOutlined,
   CaretUpOutlined,
   CaretDownOutlined,
   CloseOutlined,
   ProfileFilled,
-} from "@ant-design/icons";
-import type { UploadProps } from "antd";
-import { message, Upload } from "antd";
-import { useLocation, useNavigate } from "react-router-dom";
+} from '@ant-design/icons'
+import type {UploadProps} from 'antd'
+import {message, Upload} from 'antd'
+import {useLocation, useNavigate} from 'react-router-dom'
 import {
   postTemplateVersion,
   postSharedVariants,
   postTemplateVersionCloud,
-} from "../features/templateVersion/templateVersionSlice";
-import { useDispatch, useSelector } from "react-redux";
+} from '../features/templateVersion/templateVersionSlice'
+import {useDispatch, useSelector} from 'react-redux'
+import {postTemplateVersionImageVideoCloud} from '../features/Done/doneSlice'
+import {useAppDispatch, useAppSelector} from '../store'
 const LayoutStyled = styled(Layout)`
   width: 71.7em;
   border-radius: 10px;
-  box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px,
-    rgba(0, 0, 0, 0.22) 0px 15px 12px;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
   display: flex;
   background: #fff;
 
@@ -30,11 +31,11 @@ const LayoutStyled = styled(Layout)`
   margin: 58.7px auto 0 auto;
   left: 0;
   right: 0;
-`;
+`
 const DivMenuStyled = styled.div`
   margin: 0 4px;
   float: left;
-`;
+`
 const DivMenuItemStyled = styled.div`
   width: 100%;
   display: flex;
@@ -48,14 +49,14 @@ const DivMenuItemStyled = styled.div`
     border-radius: 5px;
     color: #fff;
   }
-`;
+`
 const InputStyled = styled(Input)`
   border-color: #d9d9d9;
   :hover,
   :focus-visible {
     border-color: #d9d9d9;
   }
-`;
+`
 const ButtonCaseStyled = styled(Button)`
   margin-right: 0.4px;
   &.ant-btn.ant-btn-lg {
@@ -77,7 +78,7 @@ const ButtonCaseStyled = styled(Button)`
     outline: unset;
     border-color: #339af0 !important;
   }
-`;
+`
 const InputNumberStyled = styled(InputNumber)`
   &.ant-input-number {
     border-color: #339af0;
@@ -112,7 +113,7 @@ const InputNumberStyled = styled(InputNumber)`
     .ant-input-number-handler-down-inner {
     font-size: 10px !important;
   }
-`;
+`
 const UploadStyled = styled(Upload)`
   margin-right: 51.6px;
   &.ant-upload-wrapper {
@@ -134,10 +135,7 @@ const UploadStyled = styled(Upload)`
     margin-right: 4px;
     transition: unset;
   }
-  &.ant-upload-wrapper
-    .ant-upload-list
-    .ant-upload-list-item
-    .ant-upload-list-item-name {
+  &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item .ant-upload-list-item-name {
     font-size: 12px;
     font-weight: 400;
     color: #339af0;
@@ -179,7 +177,7 @@ const UploadStyled = styled(Upload)`
       transition: unset !important;
     }
   }
-`;
+`
 const ButtonDoneStyled = styled(Button)`
   background-color: rgb(24, 144, 255);
   box-shadow: unset;
@@ -193,99 +191,187 @@ const ButtonDoneStyled = styled(Button)`
     background-color: rgb(24, 144, 255) !important;
     border-color: rgb(24, 144, 255);
   }
-`;
+`
 export default function DoneLayout() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const dispatch = useDispatch();
-  const templateName:string = location.state.templateName;
-  const templates:any = location.state.templates;
-  const [templateIndex, setTemplateIndex] = useState<number>(0);
+  const navigate = useNavigate()
+  const location = useLocation()
+  const dispatch = useDispatch()
+  const dispatchv2 = useAppDispatch()
+  const templateName: string = location.state.templateName
+  const templates: any = location.state.templates
+  const [templateIndex, setTemplateIndex] = useState<number>(0)
+  const [imageVideoFiles, setImageVideoFiles] = useState<any>([])
   const {
     addTemplateVersion,
     isAddTemplateVersionSuccess,
     addSharedVariant,
     isAddTemplateVersionCloudSuccess,
     isAddTemplateVersionCloudError,
-  } = useSelector((state: any) => state.templateVersion);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [_templates, _setTemplates] = useState<any>([]);
-  const [api, contextHolder] = notification.useNotification();
+  } = useSelector((state: any) => state.templateVersion)
+  const {
+    templateVersionImageVideoCloud,
+    isTemplateVersionImageVideoCloudSuccess,
+    isTemplateVersionImageVideoCloudError,
+  } = useAppSelector((state: any) => state.done)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [_templates, _setTemplates] = useState<any>([])
+  const [api, contextHolder] = notification.useNotification()
   useEffect(() => {
     if (isAddTemplateVersionSuccess) {
-      let templatesVersions = [];
+      let templatesVersions = []
       addTemplateVersion.templatesVersions.map((templatesVersion, i) => {
         let data = {
           creativeId: templatesVersion._id,
           templateUrl: _templates[i].url,
         }
-        templatesVersions.push(data);
-      });
-      // dispatch(
-      //   postSharedVariants({
-      //     templateName: templateName,
-      //     templatesVersions: addTemplateVersion.templatesVersions,
-      //   })
-      // );
-      dispatch(
-        postTemplateVersionCloud(templatesVersions)
-      );
+        templatesVersions.push(data)
+      })
+      dispatch(postTemplateVersionCloud(templatesVersions))
     }
-  }, [
-    isAddTemplateVersionSuccess, 
-    addTemplateVersion,
-  ]);
+  }, [isAddTemplateVersionSuccess, addTemplateVersion])
   useEffect(() => {
     if (isAddTemplateVersionCloudSuccess) {
-      navigate("/concept_template_version", {
-        state: { 
-          templateName: templateName, 
-          templates: templates,
-          sharedVariants: addSharedVariant, 
-        },
-        replace: true,
-      });
+      let files = []
+      addTemplateVersion.templatesVersions.map((templatesVersion, i) => {
+        if (_templates[i].defaultDynamicFieldsValuesFiles)
+          files.push({
+            creativeId: templatesVersion._id,
+            files: _templates[i].defaultDynamicFieldsValuesFiles,
+          })
+      })
+      const formData = new FormData()
+      files.forEach((fileObject) => {
+        formData.append(`files[${fileObject.creativeId}][creativeId]`, fileObject.creativeId)
+        fileObject.files.forEach((nestedFile) => {
+          formData.append(
+            `files[${fileObject.creativeId}][files][${nestedFile.dynamicElementKey}][dynamicElementKey]`,
+            nestedFile.dynamicElementKey,
+          )
+          formData.append(
+            `files[${fileObject.creativeId}][files][${nestedFile.dynamicElementKey}][fileData]`,
+            nestedFile.fileData,
+            nestedFile.fileData.name,
+          )
+        })
+      })
+      setImageVideoFiles(files)
+      dispatchv2(postTemplateVersionImageVideoCloud(formData))
+      // let files = [{
+      //   id: '1',
+      //   files: [{
+      //     id: 'logo',
+      //     fileData: file
+      //   }, {
+      //     id: 'image',
+      //     fileData: file
+      //   }, {
+      //     id: 'background',
+      //     fileData: file
+      //   }],
+      // }, {
+      //   id: '2',
+      //   files: [{
+      //     id: 'icon',
+      //     fileData: file
+      //   }, {
+      //     id: 'photo',
+      //     fileData: file
+      //   }],
+      // }];
+      // const formData = new FormData();
+      // files.forEach((fileObject) => {
+      //   formData.append(`files[${fileObject.id}][id]`, fileObject.id);
+      //   fileObject.files.forEach((nestedFile) => {
+      //     formData.append(
+      //       `files[${fileObject.id}][files][${nestedFile.id}][id]`,
+      //       nestedFile.id
+      //     );
+      //     formData.append(
+      //       `files[${fileObject.id}][files][${nestedFile.id}][file]`,
+      //       nestedFile.fileData,
+      //       nestedFile.fileData.name // Include the file name
+      //     );
+      //   });
+      // });
     }
     if (isAddTemplateVersionCloudError) {
-      api["error"]({
-        message: "Done",
-        description: "Error Generating Templates, please try again!",
-      });
-      setLoading(false);
+      api['error']({
+        message: 'Done',
+        description: 'Error Generating Templates, please try again!',
+      })
+      setLoading(false)
     }
-  }, [
-    isAddTemplateVersionCloudSuccess,
-    isAddTemplateVersionCloudError
-  ]);
+  }, [addTemplateVersion, isAddTemplateVersionCloudSuccess, isAddTemplateVersionCloudError])
+  useEffect(() => {
+    if (isTemplateVersionImageVideoCloudSuccess)
+      navigate('/concept_template_version', {
+        state: {
+          templateName: templateName,
+          templates: templates,
+          sharedVariants: addSharedVariant,
+          imageVideoFiles: imageVideoFiles,
+        },
+        replace: true,
+      })
+    if (isTemplateVersionImageVideoCloudError) {
+      api['error']({
+        message: 'Done',
+        description: 'Error Generating Templates Asset, please try again!',
+      })
+      setLoading(false)
+    }
+  }, [isTemplateVersionImageVideoCloudSuccess, isTemplateVersionImageVideoCloudError])
   const activeStyle = {
-    backgroundColor: "#1890ff",
+    backgroundColor: '#1890ff',
     borderRadius: 5,
-    color: "#fff",
-  };
+    color: '#fff',
+  }
+  function checkDynamicElementExists(defaultDynamicFieldsValuesFiles, dynamicElement) {
+    for (let i = 0; i < defaultDynamicFieldsValuesFiles.length; i++) {
+      if (defaultDynamicFieldsValuesFiles[i].dynamicElementKey === dynamicElement) {
+        return defaultDynamicFieldsValuesFiles[i]
+      }
+    }
+    return false
+  }
+  const defaultFileList = (template, dynamicElement) => {
+    let fileName = ''
+    if (template.hasOwnProperty('defaultDynamicFieldsValuesFiles')) {
+      if (!checkDynamicElementExists(template.defaultDynamicFieldsValuesFiles, dynamicElement))
+        fileName = template.defaultDynamicFieldsValues[dynamicElement]
+      else
+        fileName = checkDynamicElementExists(
+          template.defaultDynamicFieldsValuesFiles,
+          dynamicElement,
+        ).fileData.name
+    } else fileName = template.defaultDynamicFieldsValues[dynamicElement]
+    return fileName
+  }
   const renderTemplateConfigurations = (template) => {
     return (
-      <Space direction="vertical" style={{ width: "100%" }}>
+      <Space direction="vertical" style={{width: '100%'}}>
         {template.dynamicElements.map((dynamicElement, i) => {
           const buttonCases = [
             {
-              value: "Capitalize",
-              label: "Aa",
+              value: 'Capitalize',
+              label: 'Aa',
             },
-            { value: "Lowercase", label: "aa" },
-            { value: "Uppercase", label: "AA" },
-          ];
+            {value: 'Lowercase', label: 'aa'},
+            {value: 'Uppercase', label: 'AA'},
+          ]
           if (
-            dynamicElement.includes("Text") ||
-            dynamicElement.includes("Headline") ||
-            dynamicElement.includes("legal")
+            dynamicElement.includes('Text') ||
+            dynamicElement.includes('Headline') ||
+            dynamicElement.includes('legal') ||
+            dynamicElement.includes('Subheadline')
           )
             return (
               <Space
                 key={i}
                 direction="horizontal"
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
+                  display: 'flex',
+                  justifyContent: 'space-between',
                   marginTop: 20.4,
                   marginLeft: 15,
                 }}
@@ -296,19 +382,17 @@ export default function DoneLayout() {
                       fontWeight: 400,
                       fontSize: 14,
                       width: 132,
-                      color: "#000",
-                      justifyContent: "flex-end",
+                      color: '#000',
+                      justifyContent: 'flex-end',
                     }}
                   >
                     {dynamicElement}:
                   </Space>
                   <Space>
                     <InputStyled
-                      style={{ width: 356 }}
+                      style={{width: 356}}
                       placeholder={`${dynamicElement}`}
-                      value={
-                        template.defaultDynamicFieldsValues[dynamicElement]
-                      }
+                      value={template.defaultDynamicFieldsValues[dynamicElement]}
                     />
                   </Space>
                 </Space>
@@ -317,18 +401,18 @@ export default function DoneLayout() {
                     {buttonCases.map((buttonCase) => (
                       <ButtonCaseStyled
                         style={
-                          template.hasOwnProperty("dynamicElementsStyles")
+                          template.hasOwnProperty('dynamicElementsStyles')
                             ? template.dynamicElementsStyles.find((obj) => {
-                                return obj[dynamicElement];
+                                return obj[dynamicElement]
                               })
                               ? template.dynamicElementsStyles.find((obj) => {
-                                  return obj[dynamicElement];
+                                  return obj[dynamicElement]
                                 })[dynamicElement].case === buttonCase.value
                                 ? {
-                                    backgroundColor: "#339af0",
-                                    color: "#fff",
-                                    outline: "unset",
-                                    borderColor: "#339af0",
+                                    backgroundColor: '#339af0',
+                                    color: '#fff',
+                                    outline: 'unset',
+                                    borderColor: '#339af0',
                                   }
                                 : {}
                               : {}
@@ -345,41 +429,36 @@ export default function DoneLayout() {
                       marginRight: 51.6,
                     }}
                     controls={{
-                      upIcon: (
-                        <CaretUpOutlined
-                          style={{ color: "#339AF0", fontSize: 10.8 }}
-                        />
-                      ),
-                      downIcon: (
-                        <CaretDownOutlined
-                          style={{ color: "#339AF0", fontSize: 10.8 }}
-                        />
-                      ),
+                      upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                      downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
                     }}
                     bordered={true}
                     min={0}
                     max={textHeadingLegalMaxValue(
-                      template.defaultDynamicFieldsValues[dynamicElement]
+                      template.defaultDynamicFieldsValues[dynamicElement],
                     )}
                     value={textHeadingLegalMaxValue(
-                      template.defaultDynamicFieldsValues[dynamicElement]
+                      template.defaultDynamicFieldsValues[dynamicElement],
                     )}
                   />
                 </Space>
               </Space>
-            );
+            )
           else if (
-            dynamicElement.includes("logo") ||
-            dynamicElement.includes("Background") ||
-            dynamicElement.includes("Image")
+            dynamicElement.includes('logo') ||
+            dynamicElement.includes('Background') ||
+            dynamicElement.includes('Image') ||
+            dynamicElement.includes('Video') ||
+            dynamicElement.includes('Overlay') ||
+            dynamicElement.includes('packshot')
           )
             return (
               <Space
                 key={i}
                 direction="horizontal"
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
+                  display: 'flex',
+                  // justifyContent: "space-between",
                   marginTop: 20.4,
                   marginLeft: 15,
                 }}
@@ -390,15 +469,22 @@ export default function DoneLayout() {
                       fontWeight: 400,
                       fontSize: 14,
                       width: 132,
-                      color: "#000",
-                      justifyContent: "flex-end",
+                      color: '#000',
+                      justifyContent: 'flex-end',
                     }}
                   >
                     {dynamicElement}:
                   </Space>
-                  <Space></Space>
                 </Space>
-                <Space.Compact block>
+                <Space
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  {defaultFileList(template, dynamicElement)}
+                </Space>
+                {/* <Space.Compact block>
                   <UploadStyled
                     maxCount={1}
                     fileList={
@@ -417,26 +503,26 @@ export default function DoneLayout() {
                     }}
                     {...props}
                   ></UploadStyled>
-                </Space.Compact>
+                </Space.Compact> */}
               </Space>
-            );
+            )
         })}
       </Space>
-    );
-  };
+    )
+  }
   const textHeadingLegalMaxValue = (content) => {
-    let html = content;
-    let div = document.createElement("div");
-    div.innerHTML = html;
-    let textHeadingLegal = div.textContent || div.innerText || "";
-    return textHeadingLegal.length;
-  };
+    let html = content
+    let div = document.createElement('div')
+    div.innerHTML = html
+    let textHeadingLegal = div.textContent || div.innerText || ''
+    return textHeadingLegal.length
+  }
   const props: UploadProps = {
     showUploadList: {
       showRemoveIcon: true,
-      removeIcon: <CloseOutlined style={{ color: "#339AF0", fontSize: 10 }} />,
+      removeIcon: <CloseOutlined style={{color: '#339AF0', fontSize: 10}} />,
     },
-  };
+  }
   return (
     <>
       <LayoutStyled>
@@ -445,52 +531,52 @@ export default function DoneLayout() {
           <Space
             style={{
               zIndex: 10,
-              position: "absolute",
+              position: 'absolute',
               top: 0,
               left: 0,
-              width: "100%",
-              height: "100%",
+              width: '100%',
+              height: '100%',
             }}
           >
             <Spin
               size="large"
               style={{
-                top: "50%",
-                left: "50%",
-                position: "absolute",
-                transform: "translate(-50%, -50%)",
+                top: '50%',
+                left: '50%',
+                position: 'absolute',
+                transform: 'translate(-50%, -50%)',
               }}
             />
           </Space>
         )}
         <Space
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             marginTop: 42.1,
             pointerEvents: loading ? 'none' : 'unset',
           }}
         >
           <Space
             style={{
-              border: "1px solid #1890FF",
-              backgroundColor: "#FFF",
-              height: "27.6px",
-              width: "27.6px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              border: '1px solid #1890FF',
+              backgroundColor: '#FFF',
+              height: '27.6px',
+              width: '27.6px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               marginRight: 6.6,
-              color: "#1890FF",
+              color: '#1890FF',
             }}
           >
             <CheckOutlined />
           </Space>
           <Space
             style={{
-              color: "rgba(0, 0, 0, 0.85)",
+              color: 'rgba(0, 0, 0, 0.85)',
               fontWeight: 400,
               fontSize: 16,
             }}
@@ -500,31 +586,31 @@ export default function DoneLayout() {
           <Divider
             type="horizontal"
             style={{
-              width: "118.4px",
-              margin: "0 14px 0 14px",
-              minWidth: "unset",
-              backgroundColor: "#F0F0F0",
+              width: '118.4px',
+              margin: '0 14px 0 14px',
+              minWidth: 'unset',
+              backgroundColor: '#F0F0F0',
             }}
           />
           <Space
             style={{
-              border: "1px solid #1890FF",
-              backgroundColor: "#FFF",
-              height: "27.6px",
-              width: "27.6px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              border: '1px solid #1890FF',
+              backgroundColor: '#FFF',
+              height: '27.6px',
+              width: '27.6px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               marginRight: 6.6,
-              color: "#1890FF",
+              color: '#1890FF',
             }}
           >
             <CheckOutlined />
           </Space>
           <Space
             style={{
-              color: "rgba(0, 0, 0, 0.45)",
+              color: 'rgba(0, 0, 0, 0.45)',
               fontWeight: 400,
               fontSize: 16,
             }}
@@ -534,22 +620,22 @@ export default function DoneLayout() {
           <Divider
             type="horizontal"
             style={{
-              width: "118.4px",
-              margin: "0 14px 0 14px",
-              minWidth: "unset",
-              backgroundColor: "#F0F0F0",
+              width: '118.4px',
+              margin: '0 14px 0 14px',
+              minWidth: 'unset',
+              backgroundColor: '#F0F0F0',
             }}
           />
           <Space
             style={{
-              backgroundColor: "#1890FF",
-              height: "27.6px",
-              width: "27.6px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#FFF",
+              backgroundColor: '#1890FF',
+              height: '27.6px',
+              width: '27.6px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#FFF',
               marginRight: 6.6,
             }}
           >
@@ -557,7 +643,7 @@ export default function DoneLayout() {
           </Space>
           <Space
             style={{
-              color: "rgba(0, 0, 0, 0.45)",
+              color: 'rgba(0, 0, 0, 0.45)',
               fontWeight: 400,
               fontSize: 16,
             }}
@@ -568,42 +654,42 @@ export default function DoneLayout() {
         <div
           style={{
             marginTop: 42.4,
-            color: "#000",
+            color: '#000',
             marginBottom: 42.4,
             pointerEvents: loading ? 'none' : 'unset',
           }}
         >
-          <DivMenuStyled style={{ width: "20%" }}>
+          <DivMenuStyled style={{width: '20%'}}>
             {templates.map((template, i) => (
               <DivMenuItemStyled
                 key={i}
                 onClick={() => setTemplateIndex(i)}
                 style={templateIndex === i ? activeStyle : {}}
               >
-                <ProfileFilled style={{ marginRight: 4, fontSize: "18px" }} />
+                <ProfileFilled style={{marginRight: 4, fontSize: '18px'}} />
                 {template.size} - {template.name}
               </DivMenuItemStyled>
             ))}
           </DivMenuStyled>
           <div
             style={{
-              float: "left",
-              width: "76%",
-              borderLeft: "1px solid #F0F0F0",
+              float: 'left',
+              width: '76%',
+              borderLeft: '1px solid #F0F0F0',
             }}
           >
             {renderTemplateConfigurations(templates[templateIndex])}
           </div>
-          <Space style={{ width: "100%", justifyContent: "right" }}>
-            <Space style={{ margin: "10px 20px 0 0" }}>
+          <Space style={{width: '100%', justifyContent: 'right'}}>
+            <Space style={{margin: '10px 20px 0 0'}}>
               <ButtonDoneStyled
                 type="primary"
                 onClick={() => {
-                  let _templatesVersions = [];
-                  let __templates = [];
+                  let _templatesVersions = []
+                  let __templates = []
                   templates.map((template) => {
-                    let templateVariants = [];
-                    if (template.hasOwnProperty("possibleValues")) {
+                    let templateVariants = []
+                    if (template.hasOwnProperty('possibleValues')) {
                       // let possibleValues = {
                       //   trigger: ["4 Frames", "3 Frames", "2 Frames"],
                       //   trigger2: [
@@ -627,85 +713,64 @@ export default function DoneLayout() {
                       //     // "with logo3 logo3",
                       //   ],
                       // };
-                      let possibleValues = template.possibleValues;
-                      let possibleValuesKeys = Object.keys(possibleValues);
-                      let possibleValuesRowLength = [];
+                      let possibleValues = template.possibleValues
+                      let possibleValuesKeys = Object.keys(possibleValues)
+                      let possibleValuesRowLength = []
                       possibleValuesKeys.map((key, i) => {
                         if (i === 1)
                           if (i < possibleValuesKeys.length - 1)
-                            possibleValuesRowLength.push(
-                              possibleValues[key].length
-                            );
-                      });
+                            possibleValuesRowLength.push(possibleValues[key].length)
+                      })
                       if (possibleValuesKeys.length > 2) {
-                        let g = 0;
+                        let g = 0
                         while (g < 2) {
-                          let t = 0;
-                          while (
-                            t < possibleValues[possibleValuesKeys[0]].length
-                          ) {
-                            let i = 0;
+                          let t = 0
+                          while (t < possibleValues[possibleValuesKeys[0]].length) {
+                            let i = 0
                             while (i < Math.max(...possibleValuesRowLength)) {
-                              let n = 1;
+                              let n = 1
                               let variants_1 =
                                 g === 1
-                                  ? "MIN-" +
-                                    possibleValues[possibleValuesKeys[0]][t]
-                                  : "MAX-" +
-                                    possibleValues[possibleValuesKeys[0]][t];
+                                  ? 'MIN-' + possibleValues[possibleValuesKeys[0]][t]
+                                  : 'MAX-' + possibleValues[possibleValuesKeys[0]][t]
                               while (n < possibleValuesKeys.length - 1) {
-                                if (
-                                  possibleValues[possibleValuesKeys[n]][i] !==
-                                  undefined
-                                ) {
-                                  variants_1 +=
-                                    "-" +
-                                    possibleValues[possibleValuesKeys[n]][i];
+                                if (possibleValues[possibleValuesKeys[n]][i] !== undefined) {
+                                  variants_1 += '-' + possibleValues[possibleValuesKeys[n]][i]
                                 }
-                                n++;
+                                n++
                                 if (n === possibleValuesKeys.length - 1) {
-                                  let e = 0;
+                                  let e = 0
                                   while (
                                     e <
                                     possibleValues[
-                                      possibleValuesKeys[
-                                        possibleValuesKeys.length - 1
-                                      ]
+                                      possibleValuesKeys[possibleValuesKeys.length - 1]
                                     ].length
                                   ) {
-                                    let variants_2 = "";
+                                    let variants_2 = ''
                                     variants_2 +=
-                                      variants_1 +
-                                      "-" +
-                                      possibleValues[possibleValuesKeys[n]][e];
-                                    if (variants_2.includes("MIN")) {
-                                      template.defaultDynamicFieldsValues;
-                                      let defaultValues = {};
+                                      variants_1 + '-' + possibleValues[possibleValuesKeys[n]][e]
+                                    if (variants_2.includes('MIN')) {
+                                      template.defaultDynamicFieldsValues
+                                      let defaultValues = {}
                                       for (const [key, value] of Object.entries(
-                                        template.defaultDynamicFieldsValues
+                                        template.defaultDynamicFieldsValues,
                                       )) {
                                         if (
-                                          key.toLowerCase().includes("text") ||
-                                          key
-                                            .toLowerCase()
-                                            .includes("headline") ||
-                                          key.toLowerCase().includes("legal")
+                                          key.toLowerCase().includes('text') ||
+                                          key.toLowerCase().includes('headline') ||
+                                          key.toLowerCase().includes('legal') ||
+                                          key.toLowerCase().includes('subheadline')
                                         ) {
-                                          let html = `${value}`;
-                                          let div = document.createElement("div");
-                                          div.innerHTML = html;
+                                          let html = `${value}`
+                                          let div = document.createElement('div')
+                                          div.innerHTML = html
                                           let textLegalHeading =
-                                            div.textContent ||
-                                            div.innerText ||
-                                            "";
-                                          defaultValues[key] =
-                                            textLegalHeading.slice(
-                                              0,
-                                              Math.round(
-                                                textLegalHeading.length / 2
-                                              )
-                                            );
-                                        } else defaultValues[key] = value;
+                                            div.textContent || div.innerText || ''
+                                          defaultValues[key] = textLegalHeading.slice(
+                                            0,
+                                            Math.round(textLegalHeading.length / 2),
+                                          )
+                                        } else defaultValues[key] = value
                                       }
                                       templateVariants.push({
                                         variantName: variants_2,
@@ -713,12 +778,9 @@ export default function DoneLayout() {
                                         templateName: template.name,
                                         defaultValues: {
                                           ...defaultValues,
-                                          trigger:
-                                            possibleValues[possibleValuesKeys[0]][
-                                              t
-                                            ],
+                                          trigger: possibleValues[possibleValuesKeys[0]][t],
                                         },
-                                      });
+                                      })
                                     } else
                                       templateVariants.push({
                                         variantName: variants_2,
@@ -726,58 +788,46 @@ export default function DoneLayout() {
                                         templateName: template.name,
                                         defaultValues: {
                                           ...template.defaultDynamicFieldsValues,
-                                          trigger:
-                                            possibleValues[possibleValuesKeys[0]][
-                                              t
-                                            ],
+                                          trigger: possibleValues[possibleValuesKeys[0]][t],
                                         },
-                                      });
-                                    e++;
+                                      })
+                                    e++
                                   }
                                 }
                               }
-                              i++;
+                              i++
                             }
-                            t++;
+                            t++
                           }
-                          g++;
+                          g++
                         }
                       } else {
-                        let g = 0;
+                        let g = 0
                         while (g < 2) {
-                          let t = 0;
+                          let t = 0
                           while (
                             t <
-                            possibleValues[
-                              possibleValuesKeys[possibleValuesKeys.length - 1]
-                            ].length
+                            possibleValues[possibleValuesKeys[possibleValuesKeys.length - 1]].length
                           ) {
-                            let variants_1 = "";
+                            let variants_1 = ''
                             if (possibleValuesKeys.length > 1) {
-                              let i = 0;
+                              let i = 0
                               variants_1 +=
                                 g === 1
-                                  ? "MIN-" +
-                                    possibleValues[possibleValuesKeys[0]][t]
-                                  : "MAX-" +
-                                    possibleValues[possibleValuesKeys[0]][t];
+                                  ? 'MIN-' + possibleValues[possibleValuesKeys[0]][t]
+                                  : 'MAX-' + possibleValues[possibleValuesKeys[0]][t]
                               while (
                                 i <
-                                possibleValues[
-                                  possibleValuesKeys[
-                                    possibleValuesKeys.length - 1
-                                  ]
-                                ].length
+                                possibleValues[possibleValuesKeys[possibleValuesKeys.length - 1]]
+                                  .length
                               ) {
-                                let variants_2 = "";
+                                let variants_2 = ''
                                 variants_2 +=
                                   variants_1 +
-                                  "-" +
-                                  possibleValues[
-                                    possibleValuesKeys[
-                                      possibleValuesKeys.length - 1
-                                    ]
-                                  ][i];
+                                  '-' +
+                                  possibleValues[possibleValuesKeys[possibleValuesKeys.length - 1]][
+                                    i
+                                  ]
                                 // templateVariants.push({
                                 //   variantName: variants_2,
                                 //   size: template.size,
@@ -788,27 +838,27 @@ export default function DoneLayout() {
                                 //       possibleValues[possibleValuesKeys[0]][t],
                                 //   },
                                 // });
-                                if (variants_2.includes("MIN")) {
-                                  template.defaultDynamicFieldsValues;
-                                  let defaultValues = {};
+                                if (variants_2.includes('MIN')) {
+                                  template.defaultDynamicFieldsValues
+                                  let defaultValues = {}
                                   for (const [key, value] of Object.entries(
-                                    template.defaultDynamicFieldsValues
+                                    template.defaultDynamicFieldsValues,
                                   )) {
                                     if (
-                                      key.toLowerCase().includes("text") ||
-                                      key.toLowerCase().includes("headline") ||
-                                      key.toLowerCase().includes("legal")
+                                      key.toLowerCase().includes('text') ||
+                                      key.toLowerCase().includes('headline') ||
+                                      key.toLowerCase().includes('legal') ||
+                                      key.toLowerCase().includes('subheadline')
                                     ) {
-                                      let html = `${value}`;
-                                      let div = document.createElement("div");
-                                      div.innerHTML = html;
-                                      let textLegalHeading =
-                                        div.textContent || div.innerText || "";
+                                      let html = `${value}`
+                                      let div = document.createElement('div')
+                                      div.innerHTML = html
+                                      let textLegalHeading = div.textContent || div.innerText || ''
                                       defaultValues[key] = textLegalHeading.slice(
                                         0,
-                                        Math.round(textLegalHeading.length / 2)
-                                      );
-                                    } else defaultValues[key] = value;
+                                        Math.round(textLegalHeading.length / 2),
+                                      )
+                                    } else defaultValues[key] = value
                                   }
                                   templateVariants.push({
                                     variantName: variants_2,
@@ -816,10 +866,9 @@ export default function DoneLayout() {
                                     templateName: template.name,
                                     defaultValues: {
                                       ...defaultValues,
-                                      trigger:
-                                        possibleValues[possibleValuesKeys[0]][t],
+                                      trigger: possibleValues[possibleValuesKeys[0]][t],
                                     },
-                                  });
+                                  })
                                 } else
                                   templateVariants.push({
                                     variantName: variants_2,
@@ -827,19 +876,16 @@ export default function DoneLayout() {
                                     templateName: template.name,
                                     defaultValues: {
                                       ...template.defaultDynamicFieldsValues,
-                                      trigger:
-                                        possibleValues[possibleValuesKeys[0]][t],
+                                      trigger: possibleValues[possibleValuesKeys[0]][t],
                                     },
-                                  });
-                                i++;
+                                  })
+                                i++
                               }
                             } else {
                               variants_1 +=
                                 g === 1
-                                  ? "MIN-" +
-                                    possibleValues[possibleValuesKeys[0]][t]
-                                  : "MAX-" +
-                                    possibleValues[possibleValuesKeys[0]][t];
+                                  ? 'MIN-' + possibleValues[possibleValuesKeys[0]][t]
+                                  : 'MAX-' + possibleValues[possibleValuesKeys[0]][t]
                               // templateVariants.push({
                               //   variantName: variants_1,
                               //   size: template.size,
@@ -850,27 +896,27 @@ export default function DoneLayout() {
                               //       possibleValues[possibleValuesKeys[0]][t],
                               //   },
                               // });
-                              if (variants_1.includes("MIN")) {
-                                template.defaultDynamicFieldsValues;
-                                let defaultValues = {};
+                              if (variants_1.includes('MIN')) {
+                                template.defaultDynamicFieldsValues
+                                let defaultValues = {}
                                 for (const [key, value] of Object.entries(
-                                  template.defaultDynamicFieldsValues
+                                  template.defaultDynamicFieldsValues,
                                 )) {
                                   if (
-                                    key.toLowerCase().includes("text") ||
-                                    key.toLowerCase().includes("headline") ||
-                                    key.toLowerCase().includes("legal")
+                                    key.toLowerCase().includes('text') ||
+                                    key.toLowerCase().includes('headline') ||
+                                    key.toLowerCase().includes('legal') ||
+                                    key.toLowerCase().includes('subheadline')
                                   ) {
-                                    let html = `${value}`;
-                                    let div = document.createElement("div");
-                                    div.innerHTML = html;
-                                    let textLegalHeading =
-                                      div.textContent || div.innerText || "";
+                                    let html = `${value}`
+                                    let div = document.createElement('div')
+                                    div.innerHTML = html
+                                    let textLegalHeading = div.textContent || div.innerText || ''
                                     defaultValues[key] = textLegalHeading.slice(
                                       0,
-                                      Math.round(textLegalHeading.length / 2)
-                                    );
-                                  } else defaultValues[key] = value;
+                                      Math.round(textLegalHeading.length / 2),
+                                    )
+                                  } else defaultValues[key] = value
                                 }
                                 templateVariants.push({
                                   variantName: variants_1,
@@ -878,10 +924,9 @@ export default function DoneLayout() {
                                   templateName: template.name,
                                   defaultValues: {
                                     ...defaultValues,
-                                    trigger:
-                                      possibleValues[possibleValuesKeys[0]][t],
+                                    trigger: possibleValues[possibleValuesKeys[0]][t],
                                   },
-                                });
+                                })
                               } else
                                 templateVariants.push({
                                   variantName: variants_1,
@@ -889,27 +934,26 @@ export default function DoneLayout() {
                                   templateName: template.name,
                                   defaultValues: {
                                     ...template.defaultDynamicFieldsValues,
-                                    trigger:
-                                      possibleValues[possibleValuesKeys[0]][t],
+                                    trigger: possibleValues[possibleValuesKeys[0]][t],
                                   },
-                                });
+                                })
                             }
-                            t++;
+                            t++
                           }
-                          g++;
+                          g++
                         }
                       }
                       let templatesVersions = {
                         templateId: template._id,
                         variants: templateVariants,
-                      };
-                      _templatesVersions.push(templatesVersions);
-                      __templates.push(template);
+                      }
+                      _templatesVersions.push(templatesVersions)
+                      __templates.push(template)
                     }
-                  });
-                  setLoading(!loading);
-                  dispatch(postTemplateVersion(_templatesVersions));
-                  _setTemplates(__templates);
+                  })
+                  setLoading(!loading)
+                  dispatch(postTemplateVersion(_templatesVersions))
+                  _setTemplates(__templates)
                 }}
               >
                 Done
@@ -919,5 +963,5 @@ export default function DoneLayout() {
         </div>
       </LayoutStyled>
     </>
-  );
+  )
 }

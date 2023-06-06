@@ -359,28 +359,26 @@ const ConfigureLayout = () => {
           margin: "35.8px auto 36px auto",
         }}
       >
-        {fetching && (
-          <Space
+        {fetching && <Space
+          style={{
+            zIndex: 99999,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          <Spin
+            size="large"
             style={{
-              zIndex: 99999,
+              top: "50%",
+              left: "50%",
               position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
+              transform: "translate(-50%, -50%)",
             }}
-          >
-            <Spin
-              size="large"
-              style={{
-                top: "50%",
-                left: "50%",
-                position: "absolute",
-                transform: "translate(-50%, -50%)",
-              }}
-            />
-          </Space>
-        )}
+          />
+        </Space>}
         <Space.Compact
           block
           style={{
@@ -430,7 +428,7 @@ const ConfigureLayout = () => {
           <Button onClick={handleSelectAll}>Select All</Button>
           <Button onClick={handleUnselectAll}>Unselect All</Button>
         </div> */}
-        {treeData.length > 1 && (<>
+        {treeData.length > 1 && <>
           <Space style={{
             marginBottom: 4.1
           }}>
@@ -461,7 +459,7 @@ const ConfigureLayout = () => {
               {renderTreeNodes(treeData)}
             </TreeSelectStyled>
           </Space.Compact>
-        </>)}
+        </>}
         <div>
           {templates.filter(tmpl => selectedValues.includes(tmpl.size + ' ' + tmpl.name)).map((template, index) => {
             return (
@@ -525,7 +523,7 @@ const ConfigureLayout = () => {
             );
           })}
         </div>
-        {treeData.length > 1 && (<Space wrap style={{ marginBottom: 25.6 }}>
+        {treeData.length > 1 && <Space wrap style={{ marginBottom: 25.6 }}>
           <Space.Compact block>
             <FloatLabel
               style={{
@@ -590,34 +588,30 @@ const ConfigureLayout = () => {
               showArrow={true}
             />
           </Space.Compact>
-          {singleTemplateSelection !== '' && (
-            <Space wrap>
-              <ButtonAddDeleteStyled
-                type="primary"
-                shape="circle"
-                onClick={addSelectTemplatesVersions}
-              >
-                +
-              </ButtonAddDeleteStyled>
-            </Space>
-          )}
-        </Space>)}
-        {templates.length > 0 && (
-          <Space.Compact block>
-            <ButtonGenerateStyled
+          {singleTemplateSelection !== '' && <Space wrap>
+            <ButtonAddDeleteStyled
               type="primary"
-              htmlType="submit"
-              onClick={() => {
-                navigate("/configure/generate/elements", {
-                  state: { templateName: templateName, templates: templates },
-                  replace: true,
-                });
-              }}
+              shape="circle"
+              onClick={addSelectTemplatesVersions}
             >
-              Generate
-            </ButtonGenerateStyled>
-          </Space.Compact>
-        )}
+              +
+            </ButtonAddDeleteStyled>
+          </Space>}
+        </Space>}
+        {templates.length > 0 && <Space.Compact block>
+          <ButtonGenerateStyled
+            type="primary"
+            htmlType="submit"
+            onClick={() => {
+              navigate("/configure/generate/elements", {
+                state: { templateName: templateName, templates: templates },
+                replace: true,
+              });
+            }}
+          >
+            Generate
+          </ButtonGenerateStyled>
+        </Space.Compact>}
       </div>
       {/* <Divider
         type="horizontal"
