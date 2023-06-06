@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const adLibSmartlyIo = require("../helpers/adLibSmartlyIo");
+// const multer = require('multer');
+// const storage = multer.memoryStorage();
+// const upload = multer({ storage });
 router.post("/getPartnerId", async (req, res) => {
   await adLibSmartlyIo.getPartner(req.body.conceptId, req.body.platform, res);
 });
@@ -38,5 +41,14 @@ router.post("/postTemplateVersionCloud", async (req, res) => {
 });
 router.get("/getTemplateSelectedVersion", async (req, res) => {
   await adLibSmartlyIo.getTemplateSelectedVersion(req, res);
+});
+// router.post("/postTemplateVersionImageCloud", upload.single('file'), async (req, res) => {
+//   await adLibSmartlyIo.postTemplateVersionImageVideoCloud(req, res);
+// });
+// router.post("/postTemplateVersionVideoCloud", upload.single('video'), async (req, res) => {
+//   await adLibSmartlyIo.postTemplateVersionImageVideoCloud(req, res);
+// });
+router.post("/postTemplateVersionImageVideoCloud", async (req, res) => {
+  await adLibSmartlyIo.postTemplateVersionImageVideoCloud(req, res);
 });
 module.exports = router;

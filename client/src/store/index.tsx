@@ -5,6 +5,7 @@ import templateVersionReducer from "../features/templateVersion/templateVersionS
 import sharedVariantReducer from "../features/SharedVariant/sharedVariantSlice";
 import configureReducer from "../features/Configure/configureSlice";
 import elementReducer from "../features/Configure/configureSlice";
+import doneReducer from "../features/Done/doneSlice";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     sharedVariant: sharedVariantReducer,
     configure: configureReducer,
     element: elementReducer,
+    done: doneReducer,
   },
   // middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
 });

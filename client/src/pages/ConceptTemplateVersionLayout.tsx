@@ -1,6 +1,6 @@
 // @ts-nocheck
-import React, { useEffect, useRef, useState } from "react";
-import styled from "styled-components";
+import React, {useEffect, useRef, useState} from 'react'
+import styled from 'styled-components'
 import {
   PlaySquareOutlined,
   PlusOutlined,
@@ -19,45 +19,63 @@ import {
   RedoOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-} from "@ant-design/icons";
-import { Badge, Card, Col, Menu, Row, Space, Spin, Typography, FloatButton, Select, Button, Modal, Drawer, QRCode, Input, } from "antd";
-import type { MenuProps, MenuTheme } from "antd/es/menu";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Layout } from "antd";
-const { Header, Content, Sider } = Layout;
-import { 
-  getTemplatesVersions, 
-  postSharedVariants
-} from "../features/templateVersion/templateVersionSlice";
-import { useSelector, useDispatch } from "react-redux";
-import { Collapse } from "antd";
-import { ThunkDispatch } from 'redux-thunk';
-import IFrameCard from "../components/IFrame/IFrameCard";
-type MenuItem = Required<MenuProps>["items"][number];
+} from '@ant-design/icons'
+import {
+  Badge,
+  Card,
+  Col,
+  Menu,
+  Row,
+  Space,
+  Spin,
+  Typography,
+  FloatButton,
+  Select,
+  Button,
+  Modal,
+  TreeSelect,
+  Drawer,
+  QRCode,
+  Input,
+} from 'antd'
+import type {MenuProps, MenuTheme} from 'antd/es/menu'
+import {useLocation, useNavigate} from 'react-router-dom'
+import {Layout} from 'antd'
+const {Header, Content, Sider} = Layout
+import {
+  getTemplatesVersions,
+  postSharedVariants,
+} from '../features/templateVersion/templateVersionSlice'
+import {useSelector, useDispatch} from 'react-redux'
+import {Collapse} from 'antd'
+import {ThunkDispatch} from 'redux-thunk'
+import IFrameCard from '../components/IFrame/IFrameCard'
+type MenuItem = Required<MenuProps>['items'][number]
 function getItem(
   label: React.ReactNode,
   key?: React.Key | null,
   icon?: React.ReactNode,
-  children?: MenuItem[]
+  children?: MenuItem[],
 ): MenuItem {
   return {
     key,
     icon,
     children,
     label,
-  } as MenuItem;
+  } as MenuItem
 }
+const {TreeNode} = TreeSelect
 const ContentStyled = styled(Content)`
   &::-webkit-scrollbar {
     display: none;
   }
-`;
+`
 const SiderStyled = styled(Sider)`
   background: #fff !important;
   border-inline-end: 1px solid rgba(5, 5, 5, 0.06);
-`;
+`
 interface MenuStyledProps {
-  windowinnerheight?: number;
+  windowinnerheight?: number
 }
 const ButtonMenuStyled = styled(Button)`
   color: #fff;
@@ -66,11 +84,11 @@ const ButtonMenuStyled = styled(Button)`
     color: #fff;
     background-color: unset;
   }
-  &.ant-btn-compact-item:focus, 
+  &.ant-btn-compact-item:focus,
   .ant-btn:not(:disabled):focus-visible {
     outline: unset;
   }
-`;
+`
 const DrawerStyled = styled(Drawer)`
   background: #001529 !important;
   .header {
@@ -81,10 +99,11 @@ const DrawerStyled = styled(Drawer)`
     font-size: 16px;
     text-align: center;
   }
-  .variant, .size {
+  .variant,
+  .size {
     font-weight: bold;
   }
-`;
+`
 // const MenuStyled = styled(Menu)<MenuStyledProps>`
 //   &.ant-menu-light.ant-menu-inline .ant-menu-sub.ant-menu-inline {
 //     overflow-y: scroll;
@@ -182,7 +201,7 @@ const ButtonStyled = styled(Button)`
   &.ant-btn:not(:disabled):focus-visible {
     outline: unset;
   }
-`;
+`
 const FloatButtonMobileShareStyled = styled(FloatButton)`
   &.ant-float-btn-primary:focus {
     outline: unset;
@@ -190,103 +209,128 @@ const FloatButtonMobileShareStyled = styled(FloatButton)`
   &.ant-float-btn-primary .ant-float-btn-body:hover {
     background: #1677ff;
   }
-`;
-const InputStyled = styled(Input)`
-`;
+`
+const InputStyled = styled(Input)``
 const ConceptTemplateVersionLayout: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const templateName:string = location.state.templateName;
-  // const templates:any = location.state.templates;
-  const dispatch: ThunkDispatch<undefined, undefined, undefined> = useDispatch();
-  const { 
-    isTemplatesVersionsSuccess, 
+  const navigate = useNavigate()
+  const location = useLocation()
+  const templateName: string = location.state.templateName
+  const templates: any = location.state.templates
+  const imageVideoFiles: any = location.state.imageVideoFiles
+  const dispatch: ThunkDispatch<undefined, undefined, undefined> = useDispatch()
+  const {
+    isTemplatesVersionsSuccess,
     templatesVersions,
     isAddSharedVariantSuccess,
     addSharedVariant,
-  } = useSelector(
-    (state: any) => state.templateVersion
-  );
-  const [drawerVisible, setDrawerVisible] = useState<boolean>(false);
+  } = useSelector((state: any) => state.templateVersion)
+  const [drawerVisible, setDrawerVisible] = useState<boolean>(false)
   //
   // const [collapsed, setCollapsed] = useState<boolean>(false);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false)
   // const [mode, setMode] = useState<"vertical" | "inline">("inline");
   // const [theme, setTheme] = useState<MenuTheme>("light");
-  const [templateId, setTemplateId] = useState<string>("");
-  const [variants, setVariants] = useState<any>([]);
-  const [combinations, setCombinations] = useState<number>(0);
-  const [variantsName, setVariantsName] = useState<any>([]);
-  const [variantSizes, setVariantSizes] = useState<any>([]);
-  const [selectedVariantNames, setSelectedVariantNames] = useState<any>([]);
-  const filteredOptionsVariantsName = variantsName.filter((o) => !selectedVariantNames.includes(o.value));
-  const [selectedVariantSizes, setSelectedVariantSizes] = useState<any>([]);
-  const filteredOptionsVariantSizes = variantSizes.filter((o) => !selectedVariantSizes.includes(o.value));
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedSharedVariantNames, setSelectedSharedVariantNames] = useState<any>([]);
-  const [selectedSharedVariantSizes, setSelectedSharedVariantSizes] = useState<any>([]);
-  const [sharedLoading, setSharedLoading] = useState<boolean>(false);
-  const sharedLinkRef = useRef<Input>(null);
+  const [templateId, setTemplateId] = useState<string>('')
+  const [variants, setVariants] = useState<any>([])
+  const [combinations, setCombinations] = useState<number>(0)
+  const [variantsName, setVariantsName] = useState<any>([])
+  const [variantSizes, setVariantSizes] = useState<any>([])
+  const [selectedVariantNames, setSelectedVariantNames] = useState<any>([])
+  const filteredOptionsVariantsName = variantsName.filter(
+    (o) => !selectedVariantNames.includes(o.value),
+  )
+  const [selectedVariantSizes, setSelectedVariantSizes] = useState<any>([])
+  const filteredOptionsVariantSizes = variantSizes.filter(
+    (o) => !selectedVariantSizes.includes(o.value),
+  )
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+  const [selectAllVariants, setSelectAllVariants] = useState<boolean>(false)
+  const [selectAllSizes, setSelectAllSizes] = useState<boolean>(false)
+  const [selectedSharedVariantNames, setSelectedSharedVariantNames] = useState<any>([])
+  const [selectedSharedVariantSizes, setSelectedSharedVariantSizes] = useState<any>([])
+  const [sharedLoading, setSharedLoading] = useState<boolean>(false)
+  const sharedLinkRef = useRef<Input>(null)
   // const [variantsRefreshes, setVariantsRefreshes] = useState<{ refresh: number }[]>([]);
   // const [variantPlay, setVarianPlay] = useState<any>({});
   // const [_play, _setPlay] = useState<boolean>(false);
   // const [_pause, _setPause] = useState<boolean>(false);
   // const [_replay, _setReplay] = useState<boolean>(false);
   useEffect(() => {
-    setLoading(!loading);
-    dispatch(getTemplatesVersions());
-  }, [
-    dispatch,
-  ]);
+    setLoading(!loading)
+    dispatch(getTemplatesVersions())
+  }, [dispatch])
   useEffect(() => {
     if (isTemplatesVersionsSuccess) {
-      let _variantsName = []; 
-      let _variantSizes = [];
-      templatesVersions.map(templateVersion => {
-        templateVersion.variants.map(variantName => {
-          const variantNameExist = _variantsName.some(el => el.value === variantName.variantName);
-          const variantSizeExist = _variantSizes.some(el => el.value === variantName.size);
-          if (!variantNameExist) _variantsName.push({
-            label: variantName.variantName,
-            value: variantName.variantName,
-          });
-          if (!variantSizeExist) _variantSizes.push({
-            label: variantName.size,
-            value: variantName.size,
-          });
-        });
-      });
-      setVariantsName(_variantsName);
-      setVariantSizes(_variantSizes);
-      let combinations = 0;
-      let filterVariants = [];
-      let i = 0;
-      templatesVersions.map(templateVersion => {
-        templateVersion.variants.map(variant => {
-          combinations += 1;
-          const variantSizeExist = filterVariants.some(el => el.size === variant.size);
+      let _variantsName = []
+      let _variantSizes = []
+      templatesVersions.map((templateVersion) => {
+        templateVersion.variants.map((variantName) => {
+          const variantNameExist = _variantsName.some((el) => el.value === variantName.variantName)
+          const variantSizeExist = _variantSizes.some((el) => el.value === variantName.size)
+          if (!variantNameExist)
+            _variantsName.push({
+              label: variantName.variantName,
+              value: variantName.variantName,
+            })
+          if (!variantSizeExist)
+            _variantSizes.push({
+              label: variantName.size,
+              value: variantName.size,
+            })
+        })
+      })
+      setVariantsName(_variantsName)
+      setVariantSizes(_variantSizes)
+      let combinations = 0
+      let filterVariants = []
+      let i = 0
+      templatesVersions.map((templateVersion) => {
+        let updatedDefaultValues = {}
+        let defaultValues = {}
+        let variantDefaultValues = {}
+        templateVersion.variants.map((variant) => {
+          combinations += 1
+          for (const [key, value] of Object.entries(variant.defaultValues)) {
+            imageVideoFiles.map((imageVideoFile) => {
+              if (imageVideoFile.creativeId === templateVersion._id)
+                imageVideoFile.files.map((file) => {
+                  if (file.dynamicElementKey === key)
+                    updatedDefaultValues[
+                      key
+                    ] = `https://storage.googleapis.com/creative-templates/${imageVideoFile.creativeId}/asset/${file.dynamicElementKey}/${file.fileData.name}`
+                })
+            })
+            defaultValues[key] = value
+          }
+          variantDefaultValues = Object.assign(defaultValues, updatedDefaultValues)
+          const variantSizeExist = filterVariants.some((el) => el.size === variant.size)
           if (!variantSizeExist) {
             filterVariants.push({
               _id: templateVersion._id,
               templateName: variant.templateName,
               size: variant.size,
-              variants: [{
-                variantName: variant.variantName,
-                defaultValues: variant.defaultValues,
-              }]
-            });
-            i++;
+              variants: [
+                {
+                  variantName: variant.variantName,
+                  defaultValues: variantDefaultValues,
+                },
+              ],
+            })
+            i++
           } else {
-            filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, { 
-              variantName: variant.variantName,
-              defaultValues: variant.defaultValues,
-            }];
+            filterVariants[i - 1].variants = [
+              ...filterVariants[i - 1].variants,
+              {
+                variantName: variant.variantName,
+                defaultValues: variantDefaultValues,
+              },
+            ]
           }
-        });
-      });
-      setCombinations(combinations);
-      setVariants(filterVariants);
+        })
+      })
+      setCombinations(combinations)
+      setVariants(filterVariants)
       //
       // setTemplateId(templates[0]._id);
       // setVariants(
@@ -296,51 +340,56 @@ const ConceptTemplateVersionLayout: React.FC = () => {
       //   )[0]
       // );
       const interval = setInterval(() => {
-        setLoading(false);
-      }, 60000);
-      return () => clearInterval(interval);
+        setLoading(false)
+      }, 6000)
+      return () => clearInterval(interval)
     }
-  }, [
-    templatesVersions,
-  ]);
+  }, [templatesVersions])
   const items: MenuProps['items'] = [
-    getItem(<Space>{templateName}</Space>, 'sub1', <PlaySquareOutlined />,
+    getItem(
+      <Space>{templateName}</Space>,
+      'sub1',
+      <PlaySquareOutlined />,
       [
-        getItem(<div style={{
-        }}>
-          <div>Variants</div>
-          <div>
-            <Select
-              size="small"
-              mode="multiple"
-              allowClear
-              style={{ width: '100%', padding: 4 }}
-              value={selectedVariantNames}
-              onChange={setSelectedVariantNames}
-              placeholder="Please select"
-              // defaultValue={['a10', 'c12']}
-              options={filteredOptionsVariantsName}
-            />
-          </div>
-        </div>, '1'),
-        getItem(<div style={{
-        }}>
-          <div>Sizes</div>
-          <div>
-            <Select
-              size="small"
-              mode="multiple"
-              allowClear
-              style={{ width: '100%', padding: 4 }}
-              value={selectedVariantSizes}
-              onChange={setSelectedVariantSizes}
-              placeholder="Please select"
-              // defaultValue={['a10', 'c12']}
-              options={filteredOptionsVariantSizes}
-            />
-          </div>
-        </div>, '2'),
-      ]
+        getItem(
+          <div style={{}}>
+            <div>Variants</div>
+            <div>
+              <Select
+                size="small"
+                mode="multiple"
+                allowClear
+                style={{width: '100%', padding: 4}}
+                value={selectedVariantNames}
+                onChange={setSelectedVariantNames}
+                placeholder="Please select"
+                // defaultValue={['a10', 'c12']}
+                options={filteredOptionsVariantsName}
+              />
+            </div>
+          </div>,
+          '1',
+        ),
+        getItem(
+          <div style={{}}>
+            <div>Sizes</div>
+            <div>
+              <Select
+                size="small"
+                mode="multiple"
+                allowClear
+                style={{width: '100%', padding: 4}}
+                value={selectedVariantSizes}
+                onChange={setSelectedVariantSizes}
+                placeholder="Please select"
+                // defaultValue={['a10', 'c12']}
+                options={filteredOptionsVariantSizes}
+              />
+            </div>
+          </div>,
+          '2',
+        ),
+      ],
       //
       // templates.map(
       //   (template: {
@@ -348,160 +397,194 @@ const ConceptTemplateVersionLayout: React.FC = () => {
       //     name: string;
       //     _id: React.Key | null | undefined;
       //   }, i: number) => getItem(template.size + "-" + template.name, template._id)
-      // ),    
+      // ),
     ),
-    getItem(<Space>Add New</Space>, "", <PlusOutlined />),
-  ];
+    getItem(<Space>Add New</Space>, '', <PlusOutlined />),
+  ]
   useEffect(() => {
     if (templatesVersions !== null) {
-      let filterVariants = [];
-      let i = 0;
-      templatesVersions.map(templateVersion => {
-        templateVersion.variants.map(variant => {
+      let filterVariants = []
+      let i = 0
+      templatesVersions.map((templateVersion) => {
+        let updatedDefaultValues = {}
+        let defaultValues = {}
+        let variantDefaultValues = {}
+        templateVersion.variants.map((variant) => {
+          for (const [key, value] of Object.entries(variant.defaultValues)) {
+            imageVideoFiles.map((imageVideoFile) => {
+              if (imageVideoFile.creativeId === templateVersion._id)
+                imageVideoFile.files.map((file) => {
+                  if (file.dynamicElementKey === key)
+                    updatedDefaultValues[
+                      key
+                    ] = `https://storage.googleapis.com/creative-templates/${imageVideoFile.creativeId}/asset/${file.dynamicElementKey}/${file.fileData.name}`
+                })
+            })
+            defaultValues[key] = value
+          }
+          variantDefaultValues = Object.assign(defaultValues, updatedDefaultValues)
           if (selectedVariantNames.length === 0 && selectedVariantSizes.length === 0) {
-            const variantSizeExist = filterVariants.some(el => el.size === variant.size);
+            const variantSizeExist = filterVariants.some((el) => el.size === variant.size)
             if (!variantSizeExist) {
               filterVariants.push({
                 _id: templateVersion._id,
                 templateName: variant.templateName,
                 size: variant.size,
-                variants: [{
-                  variantName: variant.variantName,
-                  defaultValues: variant.defaultValues,
-                }]
-              });
-              i++;
+                variants: [
+                  {
+                    variantName: variant.variantName,
+                    defaultValues: variantDefaultValues,
+                  },
+                ],
+              })
+              i++
             } else {
-              filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, { 
-                variantName: variant.variantName,
-                defaultValues: variant.defaultValues,
-              }];
+              filterVariants[i - 1].variants = [
+                ...filterVariants[i - 1].variants,
+                {
+                  variantName: variant.variantName,
+                  defaultValues: variantDefaultValues,
+                },
+              ]
             }
           }
           if (selectedVariantNames.length > 0 && selectedVariantSizes.length > 0) {
-            selectedVariantNames.map(selectedVariantName =>
-              selectedVariantSizes.map(selectedVariantSize => {
-                if (variant.variantName === selectedVariantName && variant.size === selectedVariantSize) {
-                  const variantExist = filterVariants.some(el => el.size === variant.size);
+            selectedVariantNames.map((selectedVariantName) =>
+              selectedVariantSizes.map((selectedVariantSize) => {
+                if (
+                  variant.variantName === selectedVariantName &&
+                  variant.size === selectedVariantSize
+                ) {
+                  const variantExist = filterVariants.some((el) => el.size === variant.size)
                   if (!variantExist) {
                     filterVariants.push({
                       _id: templateVersion._id,
                       templateName: variant.templateName,
                       size: variant.size,
-                      variants: [{
-                        variantName: variant.variantName,
-                        defaultValues: variant.defaultValues,
-                      }]
-                    });
-                    i++;
+                      variants: [
+                        {
+                          variantName: variant.variantName,
+                          defaultValues: variantDefaultValues,
+                        },
+                      ],
+                    })
+                    i++
                   } else {
-                    filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, { 
-                      variantName: variant.variantName,
-                      defaultValues: variant.defaultValues,
-                    }];
+                    filterVariants[i - 1].variants = [
+                      ...filterVariants[i - 1].variants,
+                      {
+                        variantName: variant.variantName,
+                        defaultValues: variantDefaultValues,
+                      },
+                    ]
                   }
                 }
-              })
-            );
+              }),
+            )
           }
           if (selectedVariantSizes.length === 0) {
-            selectedVariantNames.map(selectedVariantName => {
+            selectedVariantNames.map((selectedVariantName) => {
               if (variant.variantName === selectedVariantName) {
-                const variantSizeExist = filterVariants.some(el => el.size === variant.size);
+                const variantSizeExist = filterVariants.some((el) => el.size === variant.size)
                 if (!variantSizeExist) {
                   filterVariants.push({
                     _id: templateVersion._id,
                     templateName: variant.templateName,
                     size: variant.size,
-                    variants: [{
-                      variantName: variant.variantName,
-                      defaultValues: variant.defaultValues,
-                    }]
-                  });
-                  i++;
+                    variants: [
+                      {
+                        variantName: variant.variantName,
+                        defaultValues: variantDefaultValues,
+                      },
+                    ],
+                  })
+                  i++
                 } else {
-                  filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, { 
-                    variantName: variant.variantName,
-                    defaultValues: variant.defaultValues,
-                  }];
+                  filterVariants[i - 1].variants = [
+                    ...filterVariants[i - 1].variants,
+                    {
+                      variantName: variant.variantName,
+                      defaultValues: variantDefaultValues,
+                    },
+                  ]
                 }
               }
-            });
+            })
           }
           if (selectedVariantNames.length === 0) {
-            selectedVariantSizes.map(selectedVariantSize => {
+            selectedVariantSizes.map((selectedVariantSize) => {
               if (variant.size === selectedVariantSize) {
-                const variantSizeExist = filterVariants.some(el => el.size === variant.size);
+                const variantSizeExist = filterVariants.some((el) => el.size === variant.size)
                 if (!variantSizeExist) {
                   filterVariants.push({
                     _id: templateVersion._id,
                     templateName: variant.templateName,
                     size: variant.size,
-                    variants: [{
-                      variantName: variant.variantName,
-                      defaultValues: variant.defaultValues,
-                    }]
-                  });
-                  i++;
+                    variants: [
+                      {
+                        variantName: variant.variantName,
+                        defaultValues: variantDefaultValues,
+                      },
+                    ],
+                  })
+                  i++
                 } else {
-                  filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, { 
-                    variantName: variant.variantName,
-                    defaultValues: variant.defaultValues,
-                  }];
+                  filterVariants[i - 1].variants = [
+                    ...filterVariants[i - 1].variants,
+                    {
+                      variantName: variant.variantName,
+                      defaultValues: variantDefaultValues,
+                    },
+                  ]
                 }
               }
-            });
+            })
           }
-        });
-      });
-      setVariants(filterVariants);
+        })
+      })
+      setVariants(filterVariants)
     }
-  }, [
-    selectedVariantNames, 
-    selectedVariantSizes,
-  ]);
+  }, [selectedVariantNames, selectedVariantSizes])
   useEffect(() => {
-    if (isAddSharedVariantSuccess) setSharedLoading(false);
-  }, [isAddSharedVariantSuccess]);
-  const onClick: MenuProps["onClick"] = e => {
-    setLoading(!loading);
-    setTemplateId(e.key);
+    if (isAddSharedVariantSuccess) setSharedLoading(false)
+  }, [isAddSharedVariantSuccess])
+  const onClick: MenuProps['onClick'] = (e) => {
+    setLoading(!loading)
+    setTemplateId(e.key)
     setVariants(
-        templatesVersions.filter(
-          (templateVersion: { templateId: string }) =>
-            templateVersion.templateId === e.key
-        )[0]
-      );
-    let switches = [];
-    let refreshes = [];
-    let isPause = [];
-    let isShowPlay = [];
-    templatesVersions.filter(
-        (templateVersion: { templateId: string }) =>
-          templateVersion.templateId === e.key
-      )[0]?.variants.map((variant: any) => {
-      switches.push({
-        option: 'disable'
-      });
-      refreshes.push({
-        refresh: 0
-      });
-      isPause.push({
-        isPause: false
-      });
-      // isShowPlay.push({
-      //   isShowPlay: false
-      // });
-    });
+      templatesVersions.filter(
+        (templateVersion: {templateId: string}) => templateVersion.templateId === e.key,
+      )[0],
+    )
+    let switches = []
+    let refreshes = []
+    let isPause = []
+    let isShowPlay = []
+    templatesVersions
+      .filter((templateVersion: {templateId: string}) => templateVersion.templateId === e.key)[0]
+      ?.variants.map((variant: any) => {
+        switches.push({
+          option: 'disable',
+        })
+        refreshes.push({
+          refresh: 0,
+        })
+        isPause.push({
+          isPause: false,
+        })
+        // isShowPlay.push({
+        //   isShowPlay: false
+        // });
+      })
     // setSwitches(switches);
     // setRefreshes(refreshes);
     // setPause(isPause);
     // setShowPlay(isShowPlay);
     const interval = setInterval(() => {
-      setLoading(false);
-    }, 2000);
-    return () => clearInterval(interval);
-  };
+      setLoading(false)
+    }, 2000)
+    return () => clearInterval(interval)
+  }
   const onLoad = (e: any) => {
     // e.preventDefault();
     // let dataIsPause = [...isPause];
@@ -540,9 +623,9 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     //   dataIsPause[i]["isPause"] = false;
     //   // setPause(dataIsPause);
     // });
-  };
+  }
   return (
-    <Layout style={{ height: "calc(100vh - 64px)" }}>
+    <Layout style={{height: 'calc(100vh - 64px)'}}>
       <FloatButton.Group shape="square">
         <FloatButtonMobileShareStyled
           type="primary"
@@ -556,25 +639,25 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           tooltip={<Space>Share</Space>}
           onClick={() => setIsModalOpen(!isModalOpen)}
         />
-      </FloatButton.Group>  
+      </FloatButton.Group>
       {loading && (
         <Space
           style={{
             zIndex: 10,
-            position: "absolute",
+            position: 'absolute',
             top: 0,
             left: 0,
-            width: "100%",
-            height: "100%",
+            width: '100%',
+            height: '100%',
           }}
         >
           <Spin
             size="large"
             style={{
-              top: "50%",
-              left: "50%",
-              position: "absolute",
-              transform: "translate(-50%, -50%)",
+              top: '50%',
+              left: '50%',
+              position: 'absolute',
+              transform: 'translate(-50%, -50%)',
             }}
           />
         </Space>
@@ -582,44 +665,52 @@ const ConceptTemplateVersionLayout: React.FC = () => {
       <DrawerStyled
         title={
           <Space.Compact block className="header">
-            Filters <Space.Compact block style={{
-              justifyContent: 'right',
-              alignItems: 'center',
-            }}>
-              <MenuFoldOutlined 
-                onClick={() => setDrawerVisible(false)}
-              />
+            Filters{' '}
+            <Space.Compact
+              block
+              style={{
+                justifyContent: 'right',
+                alignItems: 'center',
+              }}
+            >
+              <MenuFoldOutlined onClick={() => setDrawerVisible(false)} />
             </Space.Compact>
           </Space.Compact>
         }
         placement="left"
         closable={false}
         onClose={() => setDrawerVisible(false)}
-        visible={drawerVisible}
+        open={drawerVisible}
       >
-        <Space.Compact block className="name">{templateName}</Space.Compact>
-        <Space.Compact block className="variant">Variants</Space.Compact>
+        <Space.Compact block className="name">
+          {templateName}
+        </Space.Compact>
+        <Space.Compact block className="variant">
+          Variants
+        </Space.Compact>
         <Space.Compact block>
           <Select
             className="selectVariants"
             size="small"
             mode="multiple"
             allowClear
-            style={{ width: '100%', padding: 4 }}
+            style={{width: '100%', padding: 4}}
             value={selectedVariantNames}
             onChange={setSelectedVariantNames}
             placeholder="Please select"
             options={filteredOptionsVariantsName}
           />
         </Space.Compact>
-        <Space.Compact block className="size">Sizes</Space.Compact>
+        <Space.Compact block className="size">
+          Sizes
+        </Space.Compact>
         <Space.Compact block>
           <Select
             className="selectSizes"
             size="small"
             mode="multiple"
             allowClear
-            style={{ width: '100%', padding: 4 }}
+            style={{width: '100%', padding: 4}}
             value={selectedVariantSizes}
             onChange={setSelectedVariantSizes}
             placeholder="Please select"
@@ -671,26 +762,27 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           }}
         />
       </Header> */}
-      <Layout style={{
-        pointerEvents: loading ? 'none' : 'unset',
-      }}>
-        <Space
-          direction="vertical"
-          size={0}
-          style={{ backgroundColor: "#fff" }}
-        >
+      <Layout
+        style={{
+          pointerEvents: loading ? 'none' : 'unset',
+        }}
+      >
+        <Space direction="vertical" size={0} style={{backgroundColor: '#fff'}}>
           {
             // !loading && variants?.variants && (
-              <Space.Compact block style={{
-                background: "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",
-                padding: "0 0 3px 0",
-              }}>
-                <ButtonMenuStyled
-                  type="text"
-                  icon={<MenuUnfoldOutlined />}
-                  onClick={() => setDrawerVisible(!drawerVisible)}
-                />
-                {/* <Space.Compact block style={{
+            <Space.Compact
+              block
+              style={{
+                background: 'linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)',
+                padding: '0 0 3px 0',
+              }}
+            >
+              <ButtonMenuStyled
+                type="text"
+                icon={<MenuUnfoldOutlined />}
+                onClick={() => setDrawerVisible(!drawerVisible)}
+              />
+              {/* <Space.Compact block style={{
                   marginLeft: 15.8,
                 }}>
                   <Space style={{
@@ -710,35 +802,36 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                     return template._id === templateId;
                   })[0].name}</Space>
                 </Space.Compact> */}
-                <Space.Compact block style={{
+              <Space.Compact
+                block
+                style={{
                   marginRight: 15.8,
                   justifyContent: 'right',
-                }}>
-                  <Space>
-                    <Badge
-                      count={
-                        combinations
-                      }
-                      overflowCount={combinations}
-                      color="#6F7782"
-                      style={{
-                        fontStyle: "normal",
-                        fontWeight: 400,
-                        color: "#fff",
-                        borderRadius: 5,
-                        padding: 0,
-                      }}
-                    />
-                    <Space
-                      style={{
-                        fontStyle: "normal",
-                      }}
-                    >
-                      Combinations
-                    </Space>
+                }}
+              >
+                <Space>
+                  <Badge
+                    count={combinations}
+                    overflowCount={combinations}
+                    color="#6F7782"
+                    style={{
+                      fontStyle: 'normal',
+                      fontWeight: 400,
+                      color: '#fff',
+                      borderRadius: 5,
+                      padding: 0,
+                    }}
+                  />
+                  <Space
+                    style={{
+                      fontStyle: 'normal',
+                    }}
+                  >
+                    Combinations
                   </Space>
-                </Space.Compact>
+                </Space>
               </Space.Compact>
+            </Space.Compact>
             // )
           }
         </Space>
@@ -748,97 +841,102 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             overflowY: 'scroll',
           }}
         >
-          {
-            isMobile
-              ?
-                variants.map(variant => <>
+          {isMobile
+            ? variants.map((variant) => (
+                <>
                   <Space.Compact block style={{marginBottom: 5}}>
-                    <Space.Compact block style={{
-                      justifyContent: 'center',
-                      background:
-                                "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",   
-                      color: '#fff',
-                      fontWeight: 'bold',
-                      borderRadius: 5,                 
-                    }}>{variant.templateName} {variant.size}</Space.Compact>
+                    <Space.Compact
+                      block
+                      style={{
+                        justifyContent: 'center',
+                        background: 'linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)',
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        borderRadius: 5,
+                      }}
+                    >
+                      {variant.templateName} {variant.size}
+                    </Space.Compact>
                   </Space.Compact>
-                  {
-                    variant.variants.map((defaultValue, i) => 
-                      <Row justify="center" style={{
+                  {variant.variants.map((defaultValue, i) => (
+                    <Row
+                      justify="center"
+                      style={{
                         marginBottom: 10,
-                      }}>
-                        <Col>
-                          <Space.Compact
-                            block
-                            style={{
-                              background:
-                                "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",
-                              borderTopLeftRadius: "5px",
-                              borderTopRightRadius: "5px",
-                              height: "5px",
-                            }}
-                          >
-                            {" "}
-                          </Space.Compact>
-                          <IFrameCard
-                            variant={variant}
-                            i={i} 
-                            // 
-                            // variant={variant} 
-                            // i={i} 
-                            // templates={templates}
-                            // templateId={templateId}
-                            // variants={variants}
-                          />
-                        </Col>
-                      </Row>
-                    )
-                  }
-                </>)
-              :
-                variants.map(variant => <>
+                      }}
+                    >
+                      <Col>
+                        <Space.Compact
+                          block
+                          style={{
+                            background: 'linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)',
+                            borderTopLeftRadius: '5px',
+                            borderTopRightRadius: '5px',
+                            height: '5px',
+                          }}
+                        >
+                          {' '}
+                        </Space.Compact>
+                        <IFrameCard
+                          variant={variant}
+                          i={i}
+                          //
+                          // variant={variant}
+                          // i={i}
+                          // templates={templates}
+                          // templateId={templateId}
+                          // variants={variants}
+                        />
+                      </Col>
+                    </Row>
+                  ))}
+                </>
+              ))
+            : variants.map((variant) => (
+                <>
                   <Space.Compact block style={{marginBottom: 5}}>
-                    <Space.Compact block style={{
-                      justifyContent: 'center',
-                      background:
-                                "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",   
-                      color: '#fff',
-                      fontWeight: 'bold',
-                      borderRadius: 5,                 
-                    }}>{variant.templateName} {variant.size}</Space.Compact>
+                    <Space.Compact
+                      block
+                      style={{
+                        justifyContent: 'center',
+                        background: 'linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)',
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        borderRadius: 5,
+                      }}
+                    >
+                      {variant.templateName} {variant.size}
+                    </Space.Compact>
                   </Space.Compact>
-                  <Row gutter={[15.9, 22.4]} style={{ width: "100%", justifyContent: 'center' }}>
-                    {
-                      variant.variants.map((defaultValue, i) => 
-                        <Col>
-                          <Space.Compact
-                            block
-                            style={{
-                              background:
-                                "linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)",
-                              borderTopLeftRadius: "5px",
-                              borderTopRightRadius: "5px",
-                              height: "5px",
-                            }}
-                          >
-                            {" "}
-                          </Space.Compact>
-                          <IFrameCard
-                            variant={variant}
-                            i={i} 
-                            // 
-                            // variant={variant} 
-                            // i={i} 
-                            // templates={templates}
-                            // templateId={templateId}
-                            // variants={variants}
-                          />
-                        </Col>
-                      )
-                    }
+                  <Row gutter={[15.9, 22.4]} style={{width: '100%', justifyContent: 'center'}}>
+                    {variant.variants.map((defaultValue, i) => (
+                      <Col>
+                        <Space.Compact
+                          block
+                          style={{
+                            background: 'linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)',
+                            borderTopLeftRadius: '5px',
+                            borderTopRightRadius: '5px',
+                            height: '5px',
+                          }}
+                        >
+                          {' '}
+                        </Space.Compact>
+                        <IFrameCard
+                          variant={variant}
+                          i={i}
+                          //
+                          // variant={variant}
+                          // i={i}
+                          // templates={templates}
+                          // templateId={templateId}
+                          // variants={variants}
+                        />
+                      </Col>
+                    ))}
                   </Row>
-                </>)
-          }
+                </>
+              ))}
           {/*  */}
           {/* { isMobile 
               ? 
@@ -906,222 +1004,275 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           } */}
         </ContentStyled>
       </Layout>
-      <Modal title="Shared Variants" 
+      <Modal
+        title="Shared Variants"
         maskClosable={sharedLoading ? false : true}
         closable={sharedLoading ? false : true}
         open={isModalOpen}
-        // onOk={() => setIsModalOpen(false)} 
-        okButtonProps={{ style: { display: sharedLoading ? 'none' : 'unset' } }}
+        // onOk={() => setIsModalOpen(false)}
+        okButtonProps={{style: {display: sharedLoading ? 'none' : 'unset'}}}
         onOk={() => {
-          let filterVariants = [];
-          let i = 0;
-          templatesVersions.map(templateVersion => {
-            templateVersion.variants.map(variant => {
-              if (selectedSharedVariantNames.length === 0 && selectedSharedVariantSizes.length === 0) {
-                const variantSizeExist = filterVariants.some(el => el.variants[0].size === variant.size);
+          let filterVariants = []
+          let i = 0
+          templatesVersions.map((templateVersion) => {
+            templateVersion.variants.map((variant) => {
+              if (
+                selectedSharedVariantNames.length === 0 &&
+                selectedSharedVariantSizes.length === 0
+              ) {
+                const variantSizeExist = filterVariants.some(
+                  (el) => el.variants[0].size === variant.size,
+                )
                 if (!variantSizeExist) {
                   filterVariants.push({
                     _id: templateVersion._id,
                     templateId: templateVersion.templateId,
-                    variants: [{
+                    variants: [
+                      {
+                        templateName: variant.templateName,
+                        size: variant.size,
+                        variantName: variant.variantName,
+                        defaultValues: variant.defaultValues,
+                      },
+                    ],
+                  })
+                  i++
+                } else {
+                  filterVariants[i - 1].variants = [
+                    ...filterVariants[i - 1].variants,
+                    {
                       templateName: variant.templateName,
                       size: variant.size,
                       variantName: variant.variantName,
                       defaultValues: variant.defaultValues,
-                    }]
-                  });
-                  i++;
-                } else {
-                  filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, {
-                    templateName: variant.templateName,
-                    size: variant.size,
-                    variantName: variant.variantName,
-                    defaultValues: variant.defaultValues,
-                  }];
+                    },
+                  ]
                 }
               }
               if (selectedSharedVariantNames.length > 0 && selectedSharedVariantSizes.length > 0) {
-                selectedSharedVariantNames.map(selectedVariantName =>
-                  selectedSharedVariantSizes.map(selectedVariantSize => {
-                    if (variant.variantName === selectedVariantName && variant.size === selectedVariantSize) {
-                      const variantExist = filterVariants.some(el => el.variants[0].size === variant.size);
+                selectedSharedVariantNames.map((selectedVariantName) =>
+                  selectedSharedVariantSizes.map((selectedVariantSize) => {
+                    if (
+                      variant.variantName === selectedVariantName &&
+                      variant.size === selectedVariantSize
+                    ) {
+                      const variantExist = filterVariants.some(
+                        (el) => el.variants[0].size === variant.size,
+                      )
                       if (!variantExist) {
                         filterVariants.push({
                           _id: templateVersion._id,
                           templateId: templateVersion.templateId,
-                          variants: [{
+                          variants: [
+                            {
+                              templateName: variant.templateName,
+                              size: variant.size,
+                              variantName: variant.variantName,
+                              defaultValues: variant.defaultValues,
+                            },
+                          ],
+                        })
+                        i++
+                      } else {
+                        filterVariants[i - 1].variants = [
+                          ...filterVariants[i - 1].variants,
+                          {
                             templateName: variant.templateName,
                             size: variant.size,
                             variantName: variant.variantName,
                             defaultValues: variant.defaultValues,
-                          }]
-                        });
-                        i++;
-                      } else {
-                        filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, {
-                          templateName: variant.templateName,
-                          size: variant.size,
-                          variantName: variant.variantName,
-                          defaultValues: variant.defaultValues,
-                        }];
+                          },
+                        ]
                       }
                     }
-                  })
-                );
+                  }),
+                )
               }
               if (selectedSharedVariantSizes.length === 0) {
-                selectedSharedVariantNames.map(selectedVariantName => {
+                selectedSharedVariantNames.map((selectedVariantName) => {
                   if (variant.variantName === selectedVariantName) {
-                    const variantSizeExist = filterVariants.some(el => el.variants[0].size === variant.size);
+                    const variantSizeExist = filterVariants.some(
+                      (el) => el.variants[0].size === variant.size,
+                    )
                     if (!variantSizeExist) {
                       filterVariants.push({
                         _id: templateVersion._id,
                         templateId: templateVersion.templateId,
-                        variants: [{
+                        variants: [
+                          {
+                            templateName: variant.templateName,
+                            size: variant.size,
+                            variantName: variant.variantName,
+                            defaultValues: variant.defaultValues,
+                          },
+                        ],
+                      })
+                      i++
+                    } else {
+                      filterVariants[i - 1].variants = [
+                        ...filterVariants[i - 1].variants,
+                        {
                           templateName: variant.templateName,
                           size: variant.size,
                           variantName: variant.variantName,
                           defaultValues: variant.defaultValues,
-                        }]
-                      });
-                      i++;
-                    } else {
-                      filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, {
-                        templateName: variant.templateName,
-                        size: variant.size,
-                        variantName: variant.variantName,
-                        defaultValues: variant.defaultValues,
-                      }];
+                        },
+                      ]
                     }
                   }
-                });
+                })
               }
               if (selectedSharedVariantNames.length === 0) {
-                selectedSharedVariantSizes.map(selectedVariantSize => {
+                selectedSharedVariantSizes.map((selectedVariantSize) => {
                   if (variant.size === selectedVariantSize) {
-                    const variantSizeExist = filterVariants.some(el => el.variants[0].size === variant.size);
+                    const variantSizeExist = filterVariants.some(
+                      (el) => el.variants[0].size === variant.size,
+                    )
                     if (!variantSizeExist) {
                       filterVariants.push({
                         _id: templateVersion._id,
                         templateId: templateVersion.templateId,
-                        variants: [{
+                        variants: [
+                          {
+                            templateName: variant.templateName,
+                            size: variant.size,
+                            variantName: variant.variantName,
+                            defaultValues: variant.defaultValues,
+                          },
+                        ],
+                      })
+                      i++
+                    } else {
+                      filterVariants[i - 1].variants = [
+                        ...filterVariants[i - 1].variants,
+                        {
                           templateName: variant.templateName,
                           size: variant.size,
                           variantName: variant.variantName,
                           defaultValues: variant.defaultValues,
-                        }]
-                      });
-                      i++;
-                    } else {
-                      filterVariants[i - 1].variants = [...filterVariants[i - 1].variants, {
-                        templateName: variant.templateName,
-                        size: variant.size,
-                        variantName: variant.variantName,
-                        defaultValues: variant.defaultValues,
-                      }];
+                        },
+                      ]
                     }
                   }
-                });
+                })
               }
-            });
-          });
-          setSharedLoading(!sharedLoading);
+            })
+          })
+          setSharedLoading(!sharedLoading)
           dispatch(
             postSharedVariants({
               templateName: templateName,
               templatesVersions: filterVariants,
-            })
-          );
+            }),
+          )
         }}
-        cancelButtonProps={{ style: { display: sharedLoading ? 'none' : 'unset' } }}
+        cancelButtonProps={{style: {display: sharedLoading ? 'none' : 'unset'}}}
         onCancel={() => setIsModalOpen(false)}
       >
-        {
-          sharedLoading && <Space
+        {sharedLoading && (
+          <Space
             style={{
               zIndex: 10,
-              position: "absolute",
+              position: 'absolute',
               top: 0,
               left: 0,
-              width: "100%",
-              height: "100%",
+              width: '100%',
+              height: '100%',
             }}
           >
             <Spin
               size="large"
               style={{
-                top: "50%",
-                left: "50%",
-                position: "absolute",
-                transform: "translate(-50%, -50%)",
+                top: '50%',
+                left: '50%',
+                position: 'absolute',
+                transform: 'translate(-50%, -50%)',
               }}
             />
           </Space>
-        }
-        {
-          addSharedVariant === null && (<>
-            <Space.Compact block className="variant">Variants</Space.Compact>
+        )}
+        {addSharedVariant === null && (
+          <>
+            <Space.Compact block className="variant">
+              Variants
+            </Space.Compact>
             <Space.Compact block>
               <Select
                 className="selectSharedVariants"
                 size="small"
                 mode="multiple"
                 allowClear
-                style={{ width: '100%', padding: 4 }}
+                style={{width: '100%', padding: 4}}
                 value={selectedSharedVariantNames}
                 onChange={setSelectedSharedVariantNames}
                 placeholder="Please select"
                 options={filteredOptionsVariantsName}
               />
             </Space.Compact>
-            <Space.Compact block className="size">Sizes</Space.Compact>
+            <Space.Compact block className="size">
+              Sizes
+            </Space.Compact>
             <Space.Compact block>
               <Select
                 className="selectSharedSizes"
                 size="small"
                 mode="multiple"
                 allowClear
-                style={{ width: '100%', padding: 4 }}
+                style={{width: '100%', padding: 4}}
                 value={selectedSharedVariantSizes}
                 onChange={setSelectedSharedVariantSizes}
                 placeholder="Please select"
                 options={filteredOptionsVariantSizes}
               />
             </Space.Compact>
-          </>)
-        }
-        {
-          addSharedVariant !== null && (<>
-            <Space style={{fontWeight: 'bold'}}>Link:</Space>
-            {' '}
-            {
-              addSharedVariant !== null 
-                ?
-                  <Space.Compact style={{ width: '92%' }}>
-                    <InputStyled ref={sharedLinkRef} defaultValue={window.location.origin + "/" + addSharedVariant.sharedVariants._id} readOnly />
-                    <Button type="primary" onClick={() => {
-                      if (sharedLinkRef.current) {
-                        sharedLinkRef.current.select();
-                        document.execCommand('copy');
-                      }
-                    }}>Copy</Button>
-                  </Space.Compact>
-                : "Not Generated"
-            }
-            <Space.Compact block style={{
-              fontWeight: 'bold',
-              justifyContent: 'center',
-            }}>QR</Space.Compact>
-            <Space style={{
-              display: 'flex',
-              justifyContent: 'center',
-            }}>
+          </>
+        )}
+        {addSharedVariant !== null && (
+          <>
+            <Space style={{fontWeight: 'bold'}}>Link:</Space>{' '}
+            {addSharedVariant !== null ? (
+              <Space.Compact style={{width: '92%'}}>
+                <InputStyled
+                  ref={sharedLinkRef}
+                  defaultValue={window.location.origin + '/' + addSharedVariant.sharedVariants._id}
+                  readOnly
+                />
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    if (sharedLinkRef.current) {
+                      sharedLinkRef.current.select()
+                      document.execCommand('copy')
+                    }
+                  }}
+                >
+                  Copy
+                </Button>
+              </Space.Compact>
+            ) : (
+              'Not Generated'
+            )}
+            <Space.Compact
+              block
+              style={{
+                fontWeight: 'bold',
+                justifyContent: 'center',
+              }}
+            >
+              QR
+            </Space.Compact>
+            <Space
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
               <QRCode value={window.location.origin + '/' + addSharedVariant.sharedVariants._id} />
             </Space>
-          </>)
-        }
+          </>
+        )}
       </Modal>
     </Layout>
-  );
-};
-export default ConceptTemplateVersionLayout;
+  )
+}
+export default ConceptTemplateVersionLayout

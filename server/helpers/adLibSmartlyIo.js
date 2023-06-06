@@ -7,6 +7,11 @@ const { Language } = require("../models/language");
 const { TemplateVersion } = require("../models/templateVersion");
 const { SharedVariant } = require("../models/sharedVariants");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const multerStorage = multer.memoryStorage();
+const uploadFile = multer({ multerStorage });
+const { v4: uuidv4 } = require("uuid");
+const fs = require("fs");
 const storage = new Storage({
   projectId: process.env.GCLOUD_PROJECT_ID,
   credentials: {
@@ -77,7 +82,7 @@ const getTemplateSelectedVersion = async (req, res) => {
           mode: "cors",
         }
       )
-        .then((response) => 
+        .then((response) =>
           response
             .json()
             .then((data) => ({ status: response.status, body: data }))
@@ -132,6 +137,7 @@ const getVersions = async (obj, res, platform, result) => {
 };
 const getPartner = async (cId, platform, res) => {
   return getAdlibToken(platform).then((result) => {
+    console.log(result, cId, platform);
     if (result.status === "ok") {
       fetch(
         `https://api-${platform}.ad-lib.io/api/v2/partners/conceptId/${cId}`,
@@ -318,9 +324,9 @@ const getTemplatesVersions = async (req, res) => {
 const postTemplateVersion = async (req, res) => {
   try {
     TemplateVersion.deleteMany({}, (err) => {
-        if (err) {
-            res.status(500).json(error);           
-        }
+      if (err) {
+        res.status(500).json(error);
+      }
     });
     const request = req;
     const templatesVersions = request;
@@ -336,7 +342,7 @@ const postTemplateVersion = async (req, res) => {
         //   }
         //   postTemplateVersionCloud(templatesVersionsCloud).then((response) =>
         //     console.log(response)
-        //   ).error((error) => console.log(error)); 
+        //   ).error((error) => console.log(error));
         // }
       }
     });
@@ -353,11 +359,11 @@ const postTemplateVersion = async (req, res) => {
 const postSharedVariants = async (req, res) => {
   try {
     SharedVariant.deleteMany({}, (err) => {
-        if (err) {
-            res.status(500).json(error);           
-        }
+      if (err) {
+        res.status(500).json(error);
+      }
     });
-    const sharedVariant = new SharedVariant({ 
+    const sharedVariant = new SharedVariant({
       variantsName: req.templateName,
       sharedVariants: req.templatesVersions,
     });
@@ -391,7 +397,7 @@ const postTemplateVersionCloud = async (req, res) => {
         .get(_template.templateUrl, {
           responseType: "arraybuffer",
         })
-        .catch((err) => err.response);  
+        .catch((err) => err.response);
       const zip = new AdmZip(response.data);
       for (let entry of zip.getEntries()) {
         pendingPromises.push(
@@ -402,7 +408,8 @@ const postTemplateVersionCloud = async (req, res) => {
                   // .join(
                   //   `<script src="${req.origin}preview/lib.js"></script></html>`
                   // ),
-                  entry.getData().toString("utf8").split("</html>").join(`<script>
+                  entry.getData().toString("utf8").split("</html>")
+                    .join(`<script>
                       window.addEventListener("message", (event) => {
                         if (typeof event.data.data === "object") {
                           defaultValues = event.data.data;
@@ -435,8 +442,63 @@ const postTemplateVersionCloud = async (req, res) => {
       .then((names) =>
         names.length === zip.getEntries().length ? true : false
       )
-      .catch((err) => err); 
+      .catch((err) => err);
     res.status(200).json(final);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+const postTemplateVersionImageVideoCloud = async (req, res) => {
+  try {
+    const fieldnameParser = multer({}).any();
+    fieldnameParser(req, res, async (err) => {
+      if (err) {
+        console.error(err);
+      }
+      let pendingAssetPromises = [];
+      const files = req.body.files;
+      Object.keys(files).forEach((key1) => {
+        const fileIdv1 = files[key1].creativeId;
+        Object.keys(files[key1].files).forEach((key2) => {
+          const nestedFile = files[key1].files[key2];
+          const fileIdv2 = nestedFile.dynamicElementKey;
+          for (const key in req.files) {
+            if (
+              req.files[key]["fieldname"] ===
+              `files[${fileIdv1}][files][${fileIdv2}][fileData]`
+            ) {
+              if (fileIdv1) {
+                pendingAssetPromises.push(
+                  new Promise((resolve, reject) => {
+                    const uploadedFile = req.files[key];
+                    const destinationFileName = `${fileIdv1}/asset/${fileIdv2}/${uploadedFile.originalname}`;
+                    const fileBuffer = uploadedFile.buffer;
+                    const file = bucket.file(destinationFileName);
+                    const writeStream = file.createWriteStream({
+                      resumable: false,
+                      gzip: true,
+                    });
+                    writeStream
+                      .on("error", (error) => {
+                        console.error("Error uploading files:", error);
+                      })
+                      .on("finish", () => {
+                        console.log("Files uploaded successfully.");
+                      })
+                      .end(fileBuffer);
+                  })
+                );
+              }
+            }
+          }
+        });
+      });
+      const finalAsset = Promise.all(pendingAssetPromises)
+        .then((names) => true)
+        .catch((err) => err);
+      res.status(200).json(finalAsset);
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
@@ -455,4 +517,5 @@ module.exports = {
   getSharedVariants,
   postTemplateVersionCloud,
   getTemplateSelectedVersion,
+  postTemplateVersionImageVideoCloud,
 };
