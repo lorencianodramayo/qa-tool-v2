@@ -12,9 +12,11 @@ import {
   Input,
   notification,
   Spin,
+  ColorPicker,
 } from 'antd'
+import type {Color, ColorPickerProps} from 'antd/es/color-picker'
 import FloatLabel from '../components/FloatLabel/FloatLabel'
-import {useEffect, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {
   CheckOutlined,
   CaretUpOutlined,
@@ -310,6 +312,12 @@ const ButtonGenerateStyled = styled(Button)`
     outline: none;
   }
 `
+const ColorPickerStyled = styled(ColorPicker)`
+  border-color: #d9d9d9;
+  &.ant-color-picker-trigger: hover {
+    border-color: #d9d9d9;
+  }
+`
 export default function ElementsLayout() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -333,6 +341,8 @@ export default function ElementsLayout() {
   const [replicates, setReplicates] = useState<any>([])
   const [language, setLanguage] = useState<string>('')
   const filesRef = useRef<any>([])
+  const [colorHex, setColorHex] = useState<Color[] | string[]>([])
+  const [formatHex, setFormatHex] = useState<ColorPickerProps['format']>('hex')
   useEffect(() => {
     if (!isLanguagesSuccess) dispatch(getLanguages())
     let lang = []
@@ -400,6 +410,9 @@ export default function ElementsLayout() {
     backgroundColor: '#1890ff',
     borderRadius: 5,
     color: '#fff',
+  }
+  const hexString = (i: number) => {
+    return colorHex[i] !== undefined ? colorHex[i] : '#339AF0'
   }
   function checkDynamicElementExists(defaultDynamicFieldsValuesFiles, dynamicElement) {
     for (let i = 0; i < defaultDynamicFieldsValuesFiles.length; i++) {
@@ -769,6 +782,139 @@ export default function ElementsLayout() {
                       })
                       setTemplates(newState)
                     }}
+                  />
+                </Space>
+              </Space>
+            )
+          else if (dynamicElement.includes('font') || dynamicElement.includes('Variable'))
+            return (
+              <Space
+                key={i}
+                direction="horizontal"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: 20.4,
+                  marginLeft: 15,
+                }}
+              >
+                <Space>
+                  <Space
+                    style={{
+                      fontWeight: 400,
+                      fontSize: 14,
+                      width: 132,
+                      color: '#000',
+                      justifyContent: 'flex-end',
+                    }}
+                  >
+                    {dynamicElement}:
+                  </Space>
+                </Space>
+                <Space>
+                  <InputNumberStyled
+                    style={{
+                      marginRight: 51.6,
+                    }}
+                    controls={{
+                      upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                      downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                    }}
+                    bordered={true}
+                    defaultValue={template.defaultDynamicFieldsValues[dynamicElement]}
+                    onChange={(value) => {
+                      if (value > 0) {
+                        let defaultDynamicFieldsValues =
+                          templates[templateIndex].defaultDynamicFieldsValues
+                        const newDefaultDynamicFieldsValues = {
+                          [dynamicElement]: value.toString(),
+                        }
+                        defaultDynamicFieldsValues = {
+                          ...defaultDynamicFieldsValues,
+                          ...newDefaultDynamicFieldsValues,
+                        }
+                        const newState = templates.map((template, i) => {
+                          if (templateIndex === i) {
+                            return {
+                              ...template,
+                              ...{
+                                ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                              },
+                            }
+                          }
+                          return template
+                        })
+                        setTemplates(newState)
+                      }
+                    }}
+                  />
+                </Space>
+              </Space>
+            )
+          else if (dynamicElement.includes('Element') || dynamicElement.includes('Color'))
+            return (
+              <Space
+                key={i}
+                direction="horizontal"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: 20.4,
+                  marginLeft: 15,
+                }}
+              >
+                <Space>
+                  <Space
+                    style={{
+                      fontWeight: 400,
+                      fontSize: 14,
+                      width: 132,
+                      color: '#000',
+                      justifyContent: 'flex-end',
+                    }}
+                  >
+                    {dynamicElement}:
+                  </Space>
+                  <Space
+                    style={{
+                      color: hexString(i),
+                    }}
+                  >
+                    {hexString(i)}
+                  </Space>
+                </Space>
+                <Space>
+                  <ColorPickerStyled
+                    style={{marginRight: 51.6}}
+                    format={formatHex}
+                    value={colorHex[i]}
+                    onChange={(_, hex: string) => {
+                      let dataColorHex = [...colorHex]
+                      dataColorHex[i] = hex
+                      setColorHex(dataColorHex)
+                      let defaultDynamicFieldsValues =
+                        templates[templateIndex].defaultDynamicFieldsValues
+                      const newDefaultDynamicFieldsValues = {
+                        [dynamicElement]: hex.toString(),
+                      }
+                      defaultDynamicFieldsValues = {
+                        ...defaultDynamicFieldsValues,
+                        ...newDefaultDynamicFieldsValues,
+                      }
+                      const newState = templates.map((template, i) => {
+                        if (templateIndex === i) {
+                          return {
+                            ...template,
+                            ...{
+                              ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                            },
+                          }
+                        }
+                        return template
+                      })
+                      setTemplates(newState)
+                    }}
+                    onFormatChange={setFormatHex}
                   />
                 </Space>
               </Space>
@@ -1330,13 +1476,14 @@ export default function ElementsLayout() {
             <ButtonGenerateStyled
               type="primary"
               onClick={() => {
-                navigate('/configure/generate/elements/done', {
-                  state: {
-                    templateName: templateName,
-                    templates: templates,
-                  },
-                  replace: true,
-                })
+                console.log(templates)
+                // navigate('/configure/generate/elements/done', {
+                //   state: {
+                //     templateName: templateName,
+                //     templates: templates,
+                //   },
+                //   replace: true,
+                // })
               }}
             >
               Generate
