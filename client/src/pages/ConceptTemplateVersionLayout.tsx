@@ -330,6 +330,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         })
       })
       setCombinations(combinations)
+      console.log(filterVariants)
       setVariants(filterVariants)
       //
       // setTemplateId(templates[0]._id);
@@ -542,6 +543,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           }
         })
       })
+      console.log(filterVariants)
       setVariants(filterVariants)
     }
   }, [selectedVariantNames, selectedVariantSizes])
