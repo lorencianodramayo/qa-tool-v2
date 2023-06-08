@@ -1476,14 +1476,13 @@ export default function ElementsLayout() {
             <ButtonGenerateStyled
               type="primary"
               onClick={() => {
-                console.log(templates)
-                // navigate('/configure/generate/elements/done', {
-                //   state: {
-                //     templateName: templateName,
-                //     templates: templates,
-                //   },
-                //   replace: true,
-                // })
+                navigate('/configure/generate/elements/done', {
+                  state: {
+                    templateName: templateName,
+                    templates: templates,
+                  },
+                  replace: true,
+                })
               }}
             >
               Generate

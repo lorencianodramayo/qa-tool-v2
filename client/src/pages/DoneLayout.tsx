@@ -216,6 +216,7 @@ export default function DoneLayout() {
   const [loading, setLoading] = useState<boolean>(false)
   const [_templates, _setTemplates] = useState<any>([])
   const [api, contextHolder] = notification.useNotification()
+  const [colorHex, setColorHex] = useState<Color[] | string[]>([])
   useEffect(() => {
     if (isAddTemplateVersionSuccess) {
       let templatesVersions = []
@@ -441,6 +442,83 @@ export default function DoneLayout() {
                       template.defaultDynamicFieldsValues[dynamicElement],
                     )}
                   />
+                </Space>
+              </Space>
+            )
+          else if (dynamicElement.includes('font') || dynamicElement.includes('Variable'))
+            return (
+              <Space
+                key={i}
+                direction="horizontal"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: 20.4,
+                  marginLeft: 15,
+                }}
+              >
+                <Space>
+                  <Space
+                    style={{
+                      fontWeight: 400,
+                      fontSize: 14,
+                      width: 132,
+                      color: '#000',
+                      justifyContent: 'flex-end',
+                    }}
+                  >
+                    {dynamicElement}:
+                  </Space>
+                </Space>
+                <Space>
+                  <InputNumberStyled
+                    style={{
+                      marginRight: 51.6,
+                    }}
+                    controls={{
+                      upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                      downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                    }}
+                    bordered={true}
+                    value={template.defaultDynamicFieldsValues[dynamicElement]}
+                  />
+                </Space>
+              </Space>
+            )
+          else if (dynamicElement.includes('Element') || dynamicElement.includes('Color'))
+            return (
+              <Space
+                key={i}
+                direction="horizontal"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginTop: 20.4,
+                  marginLeft: 15,
+                }}
+              >
+                <Space>
+                  <Space
+                    style={{
+                      fontWeight: 400,
+                      fontSize: 14,
+                      width: 132,
+                      color: '#000',
+                      justifyContent: 'flex-end',
+                    }}
+                  >
+                    {dynamicElement}:
+                  </Space>
+                  <Space
+                    style={{
+                      color:
+                        template.defaultDynamicFieldsValues[dynamicElement] === '#ffffff'
+                          ? '#000000'
+                          : template.defaultDynamicFieldsValues[dynamicElement],
+                    }}
+                  >
+                    {template.defaultDynamicFieldsValues[dynamicElement]}
+                  </Space>
                 </Space>
               </Space>
             )
