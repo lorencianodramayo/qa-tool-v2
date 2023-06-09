@@ -241,22 +241,32 @@ export default function DoneLayout() {
           })
       })
       const formData = new FormData()
-      files.forEach((fileObject) => {
-        formData.append(`files[${fileObject.creativeId}][creativeId]`, fileObject.creativeId)
-        fileObject.files.forEach((nestedFile) => {
-          formData.append(
-            `files[${fileObject.creativeId}][files][${nestedFile.dynamicElementKey}][dynamicElementKey]`,
-            nestedFile.dynamicElementKey,
-          )
-          formData.append(
-            `files[${fileObject.creativeId}][files][${nestedFile.dynamicElementKey}][fileData]`,
-            nestedFile.fileData,
-            nestedFile.fileData.name,
-          )
+      if (files.length > 0) {
+        files.forEach((fileObject) => {
+          formData.append(`files[${fileObject.creativeId}][creativeId]`, fileObject.creativeId)
+          fileObject.files.forEach((nestedFile) => {
+            formData.append(
+              `files[${fileObject.creativeId}][files][${nestedFile.dynamicElementKey}][dynamicElementKey]`,
+              nestedFile.dynamicElementKey,
+            )
+            formData.append(
+              `files[${fileObject.creativeId}][files][${nestedFile.dynamicElementKey}][fileData]`,
+              nestedFile.fileData,
+              nestedFile.fileData.name,
+            )
+          })
         })
-      })
-      setImageVideoFiles(files)
-      dispatchv2(postTemplateVersionImageVideoCloud(formData))
+        setImageVideoFiles(files)
+        dispatchv2(postTemplateVersionImageVideoCloud(formData))
+      } else
+        navigate('/concept_template_version', {
+          state: {
+            templateName: templateName,
+            templates: templates,
+            sharedVariants: addSharedVariant,
+          },
+          replace: true,
+        })
       // let files = [{
       //   id: '1',
       //   files: [{
