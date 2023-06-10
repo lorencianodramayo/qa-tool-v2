@@ -85,7 +85,8 @@ const ConfigureLayout = () => {
   const [singleVersionSelection, setSingleVersionSelection] = useState<boolean>(false)
   const [multipleTemplateSelection, setMultipleTemplateSelection] = useState<string>('')
   const [multipleVersionSelection, setMultipleVersionSelection] = useState<boolean>(false)
-  const [treeValues, setTreeValues] = useState<string[]>([])
+  // const [treeValues, setTreeValues] = useState<string[]>([])
+  const [newTemplates, setNewTemplates] = useState<any>([])
   interface TreeNodeData {
     title: string
     value: string
@@ -181,6 +182,7 @@ const ConfigureLayout = () => {
     setFetching(false)
   }
   const handleChange = (selectedValues: string[]) => {
+    setSelectAll(false)
     setSelectedValues(selectedValues)
   }
   const handleSelectAll = (e: CheckboxChangeEvent) => {
@@ -249,10 +251,9 @@ const ConfigureLayout = () => {
     })
     return defaultVersionValue
   }
-  const removeSelectTemplatesVersions = (index) => {
-    let data = [...templates]
-    data.splice(index, 1)
-    setTemplates(data)
+  const removeSelectTemplatesVersions = (template) => {
+    setSelectAll(false)
+    setSelectedValues(selectedValues.filter((item) => item !== template.size + ' ' + template.name))
   }
   return (
     <LayoutStyled>
@@ -357,7 +358,6 @@ const ConfigureLayout = () => {
       </Space>
       <div
         style={{
-          // margin: "35.8px auto 0 auto",
           margin: '35.8px auto 36px auto',
         }}
       >
@@ -425,10 +425,6 @@ const ConfigureLayout = () => {
             Invalid Concept Link
           </Space.Compact>
         )}
-        {/* <div>
-          <Button onClick={handleSelectAll}>Select All</Button>
-          <Button onClick={handleUnselectAll}>Unselect All</Button>
-        </div> */}
         {treeData.length > 1 && (
           <>
             <Space
@@ -436,7 +432,10 @@ const ConfigureLayout = () => {
                 marginBottom: 4.1,
               }}
             >
-              <Checkbox onChange={selectAll ? handleUnselectAll : handleSelectAll}>
+              <Checkbox
+                checked={selectAll}
+                onChange={selectAll ? handleUnselectAll : handleSelectAll}
+              >
                 {selectAll ? 'Unselect All' : 'Select All'}
               </Checkbox>
             </Space>
@@ -525,7 +524,7 @@ const ConfigureLayout = () => {
                         type="primary"
                         shape="circle"
                         danger
-                        onClick={() => removeSelectTemplatesVersions(index)}
+                        onClick={() => removeSelectTemplatesVersions(template)}
                         icon={<DeleteFilled />}
                       />
                     </Space>
@@ -534,7 +533,7 @@ const ConfigureLayout = () => {
               )
             })}
         </div>
-        {treeData.length > 1 && (
+        {/* {treeData.length > 1 && (
           <Space wrap style={{marginBottom: 25.6}}>
             <Space.Compact block>
               <FloatLabel
@@ -616,7 +615,7 @@ const ConfigureLayout = () => {
               </Space>
             )}
           </Space>
-        )}
+        )} */}
         {templates.length > 0 && (
           <Space.Compact block>
             <ButtonGenerateStyled
@@ -639,76 +638,6 @@ const ConfigureLayout = () => {
           </Space.Compact>
         )}
       </div>
-      {/* <Divider
-        type="horizontal"
-        style={{
-          width: "100%",
-          marginTop: 73.4,
-          minWidth: "unset",
-          marginBottom: 18,
-        }}
-      />
-      <Space
-        style={{
-          width: "100%",
-        }}
-      >
-        <Space
-          size={0}
-          direction="vertical"
-          style={{ margin: "0 0 20.2px 48.4px" }}
-        >
-          <Space
-            style={{
-              fontWeight: 400,
-              fontSize: 16,
-              color: "rgba(0, 0, 0, 0.45)",
-              marginBottom: 7.5,
-            }}
-          >
-            Instructions
-          </Space>
-          <Space
-            style={{
-              fontWeight: 400,
-              fontSize: 14,
-              color: "rgba(0, 0, 0, 0.45)",
-            }}
-          >
-            Lorem ipsum dolor sit amet.
-          </Space>
-          <Space
-            style={{
-              fontWeight: 400,
-              fontSize: 14,
-              color: "rgba(0, 0, 0, 0.45)",
-              marginBottom: 7.4,
-            }}
-          >
-            Lorem ipsum dolor sit amet. Vel officia consequatur sed porro
-            tenetur nam dolore voluptas ut assumenda tempora!
-          </Space>
-          <Space
-            style={{
-              fontWeight: 400,
-              fontSize: 14,
-              color: "rgba(0, 0, 0, 0.45)",
-            }}
-          >
-            Lorem ipsum dolor sit amet.
-          </Space>
-          <Space
-            style={{
-              fontWeight: 400,
-              fontSize: 14,
-              color: "rgba(0, 0, 0, 0.45)",
-            }}
-          >
-            Lorem ipsum dolor sit amet. Vel officia consequatur sed porro
-            tenetur nam dolore voluptas ut assumenda tempora!
-          </Space>
-        </Space>
-      </Space> */}
     </LayoutStyled>
   )
 }
