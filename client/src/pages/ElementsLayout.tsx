@@ -13,6 +13,7 @@ import {
   notification,
   Spin,
   ColorPicker,
+  Steps,
 } from 'antd'
 import type {Color, ColorPickerProps} from 'antd/es/color-picker'
 import FloatLabel from '../components/FloatLabel/FloatLabel'
@@ -46,6 +47,84 @@ const LayoutStyled = styled(Layout)`
   margin: 58.7px auto 0 auto;
   left: 0;
   right: 0;
+`
+const StepsStyled = styled(Steps)`
+  width: 628px;
+  &.ant-steps .ant-steps-item-container {
+    align-items: center;
+    display: flex;
+  }
+  &.ant-steps .ant-steps-item-process .ant-steps-item-icon {
+    width: 27.6px;
+    height: 27.6px;
+    background-color: rgb(24, 144, 255);
+    border-color: rgb(24, 144, 255);
+  }
+  &.ant-steps .ant-steps-item-wait .ant-steps-item-icon {
+    width: 27.6px;
+    height: 27.6px;
+    background-color: #fff;
+    border-color: rgba(0, 0, 0, 0.25);
+  }
+  &.ant-steps .ant-steps-item-process .ant-steps-item-icon > .ant-steps-icon {
+    color: #fff;
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &.ant-steps .ant-steps-item-wait .ant-steps-item-icon > .ant-steps-icon {
+    color: rgba(0, 0, 0, 0.25);
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &.ant-steps
+    .ant-steps-item-process
+    > .ant-steps-item-container
+    > .ant-steps-item-content
+    > .ant-steps-item-title {
+    color: rgba(0, 0, 0, 0.85);
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &.ant-steps
+    .ant-steps-item-wait
+    > .ant-steps-item-container
+    > .ant-steps-item-content
+    > .ant-steps-item-title {
+    color: rgba(0, 0, 0, 0.45);
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &.ant-steps
+    .ant-steps-item:not(.ant-steps-item-active):not(.ant-steps-item-process)
+    > .ant-steps-item-container[role='button']:hover
+    .ant-steps-item-icon {
+    border-color: rgb(24, 144, 255);
+  }
+  &.ant-steps
+    .ant-steps-item:not(.ant-steps-item-active):not(.ant-steps-item-process)
+    > .ant-steps-item-container[role='button']:hover
+    .ant-steps-item-icon
+    .ant-steps-icon {
+    color: rgb(24, 144, 255);
+  }
+  &.ant-steps
+    .ant-steps-item:not(.ant-steps-item-active)
+    > .ant-steps-item-container[role='button']:hover
+    .ant-steps-item-title {
+    color: rgb(24, 144, 255);
+  }
+  &.ant-steps .ant-steps-item-finish .ant-steps-item-icon {
+    background-color: #fff;
+    border-color: rgb(24, 144, 255);
+    width: 27.6px;
+    height: 27.6px;
+  }
+  &.ant-steps .ant-steps-item-icon .ant-steps-icon {
+    top: -2px;
+  }
+  &.ant-steps .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+    color: rgb(24, 144, 255);
+  }
 `
 const DivMenuStyled = styled.div`
   margin: 0 4px;
@@ -323,6 +402,7 @@ export default function ElementsLayout() {
   const location = useLocation()
   const dispatch = useDispatch()
   const dispatchv2 = useAppDispatch()
+  const [currentStep, setCurrentStep] = useState<number>(1)
   const {languages, isLanguagesSuccess, addLanguage, isAddLanguageSuccess} = useSelector(
     (state: any) => state.language,
   )
@@ -341,7 +421,7 @@ export default function ElementsLayout() {
   const [replicates, setReplicates] = useState<any>([])
   const [language, setLanguage] = useState<string>('')
   const filesRef = useRef<any>([])
-  const [colorHex, setColorHex] = useState<Color[] | string[]>([])
+  // const [colorHex, setColorHex] = useState<Color[] | string[]>([])
   const [formatHex, setFormatHex] = useState<ColorPickerProps['format']>('hex')
   useEffect(() => {
     if (!isLanguagesSuccess) dispatch(getLanguages())
@@ -411,9 +491,39 @@ export default function ElementsLayout() {
     borderRadius: 5,
     color: '#fff',
   }
-  const hexString = (i: number) => {
-    return colorHex[i] !== undefined ? colorHex[i] : '#339AF0'
+  const onChangeSteps = (value: number) => {
+    if (value === 0)
+      navigate('/configure/generate', {
+        state: {
+          templateName: templateName,
+          templates: location.state.templates.map((originalObj) => {
+            const newObj = templates.find((newObj) => newObj._id === originalObj._id)
+            return newObj ? {...originalObj, ...newObj} : originalObj
+          }),
+          conceptLinkValue: location.state.conceptLinkValue,
+          selectAll: location.state.selectAll,
+          selectedValues: location.state.selectedValues,
+        },
+        replace: true,
+      })
+    else
+      navigate('/configure/generate/elements/done', {
+        state: {
+          templateName: templateName,
+          templates: location.state.templates.map((originalObj) => {
+            const newObj = templates.find((newObj) => newObj._id === originalObj._id)
+            return newObj ? {...originalObj, ...newObj} : originalObj
+          }),
+          conceptLinkValue: location.state.conceptLinkValue,
+          selectAll: location.state.selectAll,
+          selectedValues: location.state.selectedValues,
+        },
+        replace: true,
+      })
   }
+  // const hexString = (i: number, template: any, dynamicElement: any) => {
+  //   return template.defaultDynamicFieldsValues[dynamicElement]
+  // }
   function checkDynamicElementExists(defaultDynamicFieldsValuesFiles, dynamicElement) {
     for (let i = 0; i < defaultDynamicFieldsValuesFiles.length; i++) {
       if (defaultDynamicFieldsValuesFiles[i].dynamicElementKey === dynamicElement) {
@@ -877,21 +987,21 @@ export default function ElementsLayout() {
                   </Space>
                   <Space
                     style={{
-                      color: hexString(i),
+                      color: template.defaultDynamicFieldsValues[dynamicElement],
                     }}
                   >
-                    {hexString(i)}
+                    {template.defaultDynamicFieldsValues[dynamicElement]}
                   </Space>
                 </Space>
                 <Space>
                   <ColorPickerStyled
                     style={{marginRight: 51.6}}
                     format={formatHex}
-                    value={colorHex[i]}
+                    value={template.defaultDynamicFieldsValues[dynamicElement]}
                     onChange={(_, hex: string) => {
-                      let dataColorHex = [...colorHex]
-                      dataColorHex[i] = hex
-                      setColorHex(dataColorHex)
+                      // let dataColorHex = [...colorHex]
+                      // dataColorHex[i] = hex
+                      // setColorHex(dataColorHex)
                       let defaultDynamicFieldsValues =
                         templates[templateIndex].defaultDynamicFieldsValues
                       const newDefaultDynamicFieldsValues = {
@@ -1221,7 +1331,7 @@ export default function ElementsLayout() {
         tooltip={<Space>Languages</Space>}
         onClick={() => setShowLanguageModal(!showLanguageModal)}
       />
-      <Space
+      {/* <Space
         style={{
           pointerEvents: loading ? 'none' : 'unset',
           display: 'flex',
@@ -1321,6 +1431,28 @@ export default function ElementsLayout() {
         >
           Done
         </Space>
+      </Space> */}
+      <Space
+        style={{
+          justifyContent: 'center',
+          marginTop: 42.1,
+        }}
+      >
+        <StepsStyled
+          current={currentStep}
+          onChange={onChangeSteps}
+          items={[
+            {
+              title: 'Configure',
+            },
+            {
+              title: 'Generate',
+            },
+            {
+              title: 'Done',
+            },
+          ]}
+        />
       </Space>
       <div style={{pointerEvents: loading ? 'none' : 'unset'}}>
         <Space style={{float: 'right', marginRight: 44}}>
@@ -1479,7 +1611,13 @@ export default function ElementsLayout() {
                 navigate('/configure/generate/elements/done', {
                   state: {
                     templateName: templateName,
-                    templates: templates,
+                    templates: location.state.templates.map((originalObj) => {
+                      const newObj = templates.find((newObj) => newObj._id === originalObj._id)
+                      return newObj ? {...originalObj, ...newObj} : originalObj
+                    }),
+                    conceptLinkValue: location.state.conceptLinkValue,
+                    selectAll: location.state.selectAll,
+                    selectedValues: location.state.selectedValues,
                   },
                   replace: true,
                 })

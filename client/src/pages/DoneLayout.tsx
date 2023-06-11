@@ -1,6 +1,6 @@
 // @ts-nocheck
 import styled from 'styled-components'
-import {Button, Divider, Input, InputNumber, Spin, Layout, Space, notification} from 'antd'
+import {Button, Divider, Input, InputNumber, Spin, Layout, Space, notification, Steps} from 'antd'
 import {useEffect, useState} from 'react'
 import {
   CheckOutlined,
@@ -31,6 +31,84 @@ const LayoutStyled = styled(Layout)`
   margin: 58.7px auto 0 auto;
   left: 0;
   right: 0;
+`
+const StepsStyled = styled(Steps)`
+  width: 628px;
+  &.ant-steps .ant-steps-item-container {
+    align-items: center;
+    display: flex;
+  }
+  &.ant-steps .ant-steps-item-process .ant-steps-item-icon {
+    width: 27.6px;
+    height: 27.6px;
+    background-color: rgb(24, 144, 255);
+    border-color: rgb(24, 144, 255);
+  }
+  &.ant-steps .ant-steps-item-wait .ant-steps-item-icon {
+    width: 27.6px;
+    height: 27.6px;
+    background-color: #fff;
+    border-color: rgba(0, 0, 0, 0.25);
+  }
+  &.ant-steps .ant-steps-item-process .ant-steps-item-icon > .ant-steps-icon {
+    color: #fff;
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &.ant-steps .ant-steps-item-wait .ant-steps-item-icon > .ant-steps-icon {
+    color: rgba(0, 0, 0, 0.25);
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &.ant-steps
+    .ant-steps-item-process
+    > .ant-steps-item-container
+    > .ant-steps-item-content
+    > .ant-steps-item-title {
+    color: rgba(0, 0, 0, 0.85);
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &.ant-steps
+    .ant-steps-item-wait
+    > .ant-steps-item-container
+    > .ant-steps-item-content
+    > .ant-steps-item-title {
+    color: rgba(0, 0, 0, 0.45);
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &.ant-steps
+    .ant-steps-item:not(.ant-steps-item-active):not(.ant-steps-item-process)
+    > .ant-steps-item-container[role='button']:hover
+    .ant-steps-item-icon {
+    border-color: rgb(24, 144, 255);
+  }
+  &.ant-steps
+    .ant-steps-item:not(.ant-steps-item-active):not(.ant-steps-item-process)
+    > .ant-steps-item-container[role='button']:hover
+    .ant-steps-item-icon
+    .ant-steps-icon {
+    color: rgb(24, 144, 255);
+  }
+  &.ant-steps
+    .ant-steps-item:not(.ant-steps-item-active)
+    > .ant-steps-item-container[role='button']:hover
+    .ant-steps-item-title {
+    color: rgb(24, 144, 255);
+  }
+  &.ant-steps .ant-steps-item-finish .ant-steps-item-icon {
+    background-color: #fff;
+    border-color: rgb(24, 144, 255);
+    width: 27.6px;
+    height: 27.6px;
+  }
+  &.ant-steps .ant-steps-item-icon .ant-steps-icon {
+    top: -2px;
+  }
+  &.ant-steps .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+    color: rgb(24, 144, 255);
+  }
 `
 const DivMenuStyled = styled.div`
   margin: 0 4px;
@@ -199,6 +277,7 @@ export default function DoneLayout() {
   const dispatchv2 = useAppDispatch()
   const templateName: string = location.state.templateName
   const templates: any = location.state.templates
+  const [currentStep, setCurrentStep] = useState<number>(2)
   const [templateIndex, setTemplateIndex] = useState<number>(0)
   const [imageVideoFiles, setImageVideoFiles] = useState<any>([])
   const {
@@ -336,6 +415,19 @@ export default function DoneLayout() {
     backgroundColor: '#1890ff',
     borderRadius: 5,
     color: '#fff',
+  }
+  const onChangeSteps = (value: number) => {
+    if (value === 1)
+      navigate('/configure/generate/elements', {
+        state: {
+          templateName: templateName,
+          templates: location.state.templates,
+          conceptLinkValue: location.state.conceptLinkValue,
+          selectAll: location.state.selectAll,
+          selectedValues: location.state.selectedValues,
+        },
+        replace: true,
+      })
   }
   function checkDynamicElementExists(defaultDynamicFieldsValuesFiles, dynamicElement) {
     for (let i = 0; i < defaultDynamicFieldsValuesFiles.length; i++) {
@@ -637,7 +729,7 @@ export default function DoneLayout() {
             />
           </Space>
         )}
-        <Space
+        {/* <Space
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -738,6 +830,28 @@ export default function DoneLayout() {
           >
             Done
           </Space>
+        </Space> */}
+        <Space
+          style={{
+            justifyContent: 'center',
+            marginTop: 42.1,
+          }}
+        >
+          <StepsStyled
+            current={currentStep}
+            onChange={onChangeSteps}
+            items={[
+              {
+                title: 'Configure',
+              },
+              {
+                title: 'Generate',
+              },
+              {
+                title: 'Done',
+              },
+            ]}
+          />
         </Space>
         <div
           style={{
