@@ -1,13 +1,24 @@
 // @ts-nocheck
 import styled from 'styled-components'
 import {useEffect, useState} from 'react'
-import {Layout, Space, Divider, Spin, Select, Checkbox, TreeSelect, Button} from 'antd'
+import {
+  Layout,
+  Space,
+  Divider,
+  Spin,
+  notification,
+  Select,
+  Checkbox,
+  TreeSelect,
+  Button,
+  Steps,
+} from 'antd'
 import type {CheckboxChangeEvent} from 'antd/es/checkbox'
 import FloatLabel from '../components/FloatLabel/FloatLabel'
 import {DeleteFilled} from '@ant-design/icons'
 import apiService from '../api/apiService'
 import {getTemplateSelectedVersion} from '../features/Configure/configureSlice'
-import {useNavigate} from 'react-router-dom'
+import {useLocation, useNavigate} from 'react-router-dom'
 import {useAppDispatch, useAppSelector} from '../store'
 import Cookies from 'js-cookie'
 import axios from 'axios'
@@ -22,6 +33,84 @@ const LayoutStyled = styled(Layout)`
   margin: 58.7px auto 0 auto;
   left: 0;
   right: 0;
+`
+const StepsStyled = styled(Steps)`
+  width: 628px;
+  &.ant-steps .ant-steps-item-container {
+    align-items: center;
+    display: flex;
+  }
+  &.ant-steps .ant-steps-item-process .ant-steps-item-icon {
+    width: 27.6px;
+    height: 27.6px;
+    background-color: rgb(24, 144, 255);
+    border-color: rgb(24, 144, 255);
+  }
+  &.ant-steps .ant-steps-item-wait .ant-steps-item-icon {
+    width: 27.6px;
+    height: 27.6px;
+    background-color: #fff;
+    border-color: rgba(0, 0, 0, 0.25);
+  }
+  &.ant-steps .ant-steps-item-process .ant-steps-item-icon > .ant-steps-icon {
+    color: #fff;
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &.ant-steps .ant-steps-item-wait .ant-steps-item-icon > .ant-steps-icon {
+    color: rgba(0, 0, 0, 0.25);
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &.ant-steps
+    .ant-steps-item-process
+    > .ant-steps-item-container
+    > .ant-steps-item-content
+    > .ant-steps-item-title {
+    color: rgba(0, 0, 0, 0.85);
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &.ant-steps
+    .ant-steps-item-wait
+    > .ant-steps-item-container
+    > .ant-steps-item-content
+    > .ant-steps-item-title {
+    color: rgba(0, 0, 0, 0.45);
+    font-weight: 400;
+    font-size: 16px;
+  }
+  &.ant-steps
+    .ant-steps-item:not(.ant-steps-item-active):not(.ant-steps-item-process)
+    > .ant-steps-item-container[role='button']:hover
+    .ant-steps-item-icon {
+    border-color: rgb(24, 144, 255);
+  }
+  &.ant-steps
+    .ant-steps-item:not(.ant-steps-item-active):not(.ant-steps-item-process)
+    > .ant-steps-item-container[role='button']:hover
+    .ant-steps-item-icon
+    .ant-steps-icon {
+    color: rgb(24, 144, 255);
+  }
+  &.ant-steps
+    .ant-steps-item:not(.ant-steps-item-active)
+    > .ant-steps-item-container[role='button']:hover
+    .ant-steps-item-title {
+    color: rgb(24, 144, 255);
+  }
+  &.ant-steps .ant-steps-item-finish .ant-steps-item-icon {
+    background-color: #fff;
+    border-color: rgb(24, 144, 255);
+    width: 27.6px;
+    height: 27.6px;
+  }
+  &.ant-steps .ant-steps-item-icon .ant-steps-icon {
+    top: -2px;
+  }
+  &.ant-steps .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+    color: rgb(24, 144, 255);
+  }
 `
 const TreeSelectStyled = styled(TreeSelect)`
   &.ant-select-multiple .ant-select-selector {
@@ -69,16 +158,21 @@ const ButtonGenerateStyled = styled(Button)`
 `
 const ConfigureLayout = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const dispatch = useAppDispatch()
-  const [conceptLinkValue, setConceptLinkValue] = useState<string>('')
+  const [currentStep, setCurrentStep] = useState<number>(0)
+  const [api, contextHolder] = notification.useNotification()
+  const [conceptLinkValue, setConceptLinkValue] = useState<string>(
+    location.state === null ? '' : location.state.conceptLinkValue,
+  )
   const [conceptLinkError, setConceptLinkError] = useState<boolean>(false)
-  const [templateValue, setTemplateValue] = useState<string>('')
-  const [defaultVersionValue, setDefaultVersionValue] = useState<string>('')
+  // const [templateValue, setTemplateValue] = useState<string>('')
+  // const [defaultVersionValue, setDefaultVersionValue] = useState<string>('')
   const [templateName, setTemplateName] = useState<string>('')
   const [templates, setTemplates] = useState<any>([])
   const [newVersionTemplate, setNewVersionTemplate] = useState<any>([])
   const [fetching, setFetching] = useState<boolean>(false)
-  const [selectOptionVersions, setSelectOptionVersions] = useState<any>([])
+  // const [selectOptionVersions, setSelectOptionVersions] = useState<any>([])
   const [platform, setPlatform] = useState<string>('')
   const [partnerId, setPartnerId] = useState<string>('')
   const [singleTemplateSelection, setSingleTemplateSelection] = useState<string>('')
@@ -86,30 +180,50 @@ const ConfigureLayout = () => {
   const [multipleTemplateSelection, setMultipleTemplateSelection] = useState<string>('')
   const [multipleVersionSelection, setMultipleVersionSelection] = useState<boolean>(false)
   // const [treeValues, setTreeValues] = useState<string[]>([])
-  const [newTemplates, setNewTemplates] = useState<any>([])
+  // const [newTemplates, setNewTemplates] = useState<any>([])
   interface TreeNodeData {
     title: string
     value: string
   }
   const [treeData, setTreeData] = useState<TreeNodeData[]>([])
-  const [authToken, setAuthToken] = useState(null)
+  // const [authToken, setAuthToken] = useState(null)
   const [searchValue, setSearchValue] = useState<string>('')
-  const [selectAll, setSelectAll] = useState<boolean>(false)
-  const [placement, SetPlacement] = useState<SelectCommonPlacement>('bottomLeft')
-  const [selectedValues, setSelectedValues] = useState<string[]>([])
+  const [selectAll, setSelectAll] = useState<boolean>(
+    location.state === null ? false : location.state.selectAll,
+  )
+  const [placement, setPlacement] = useState<SelectCommonPlacement>('bottomLeft')
+  const [selectedValues, setSelectedValues] = useState<string[]>(
+    location.state === null ? [] : location.state.selectedValues,
+  )
   const {templateSelectedVersion, isTemplateSelectedVersionsSuccess} = useAppSelector(
     (state: any) => state.configure,
   )
+  // useEffect(() => {
+  //   const handleCookieChange = () => {
+  //     const authToken = Cookies.get('session')
+  //     setAuthToken(authToken)
+  //   }
+  //   window.addEventListener('load', handleCookieChange)
+  //   window.addEventListener('cookiechange', handleCookieChange)
+  //   return () => {
+  //     window.removeEventListener('load', handleCookieChange)
+  //     window.removeEventListener('cookiechange', handleCookieChange)
+  //   }
+  // }, [])
   useEffect(() => {
-    const handleCookieChange = () => {
-      const authToken = Cookies.get('session')
-      setAuthToken(authToken)
-    }
-    window.addEventListener('load', handleCookieChange)
-    window.addEventListener('cookiechange', handleCookieChange)
-    return () => {
-      window.removeEventListener('load', handleCookieChange)
-      window.removeEventListener('cookiechange', handleCookieChange)
+    if (location.state !== null) {
+      let conceptLink = location.state.conceptLinkValue.split('/')
+      let platform = conceptLink[2].split('.')
+      setPlatform(platform[0])
+      let conceptId = conceptLink[4]
+      if (conceptId === undefined) setConceptLinkError(true)
+      else {
+        const adLibSmartlyIoPayload = {
+          platform: platform[0],
+          conceptId: conceptId,
+        }
+        adLibSmartlyIo(adLibSmartlyIoPayload)
+      }
     }
   }, [])
   useEffect(() => {
@@ -171,6 +285,31 @@ const ConfigureLayout = () => {
       setTreeData(treeData)
     }
   }, [templates])
+  const onChangeSteps = (value: number) => {
+    if (conceptLinkError || conceptLinkValue === '')
+      api.error({
+        message: 'Configure',
+        description: 'Invalid Concept Link!',
+      })
+    else if (selectedValues.length === 0)
+      api.info({
+        message: 'Configure',
+        description: 'Please Select or Add Template!',
+      })
+    else
+      navigate('/configure/generate/elements', {
+        state: {
+          templateName: templateName,
+          templates: templates.filter((tmpl) =>
+            selectedValues.includes(tmpl.size + ' ' + tmpl.name),
+          ),
+          conceptLinkValue: conceptLinkValue,
+          selectAll: selectAll,
+          selectedValues: selectedValues.length > 0 ? selectedValues : [],
+        },
+        replace: true,
+      })
+  }
   const adLibSmartlyIo = async (adLibSmartlyIoPayload: any) => {
     setFetching(true)
     const partner = await apiService.post('/getPartnerId', adLibSmartlyIoPayload)
@@ -178,7 +317,14 @@ const ConfigureLayout = () => {
     setPartnerId(partner.data.body.partnerId)
     const templates = await apiService.post('/getTemplates', adLibSmartlyIoPayload)
     setTemplateName(templates.data.body.name)
-    setTemplates(templates.data.body.templates)
+    if (location.state !== null)
+      setTemplates(
+        templates.data.body.templates.map((originalObj) => {
+          const newObj = location.state.templates.find((newObj) => newObj._id === originalObj._id)
+          return newObj ? {...originalObj, ...newObj} : originalObj
+        }),
+      )
+    else setTemplates(templates.data.body.templates)
     setFetching(false)
   }
   const handleChange = (selectedValues: string[]) => {
@@ -257,7 +403,8 @@ const ConfigureLayout = () => {
   }
   return (
     <LayoutStyled>
-      <Space
+      {contextHolder}
+      {/* <Space
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -355,6 +502,28 @@ const ConfigureLayout = () => {
         >
           Done
         </Space>
+      </Space> */}
+      <Space
+        style={{
+          justifyContent: 'center',
+          marginTop: 42.1,
+        }}
+      >
+        <StepsStyled
+          current={currentStep}
+          onChange={onChangeSteps}
+          items={[
+            {
+              title: 'Configure',
+            },
+            {
+              title: 'Generate',
+            },
+            {
+              title: 'Done',
+            },
+          ]}
+        />
       </Space>
       <div
         style={{
@@ -414,7 +583,10 @@ const ConfigureLayout = () => {
               } catch (error) {
                 setConceptLinkError(true)
               }
-              setConceptLinkValue(value)
+              setConceptLinkValue(value.target.value)
+              setSelectedValues([])
+              setTreeData([])
+              setTemplates([])
             }}
             value={conceptLinkValue}
             input={true}
@@ -622,15 +794,24 @@ const ConfigureLayout = () => {
               type="primary"
               htmlType="submit"
               onClick={() => {
-                navigate('/configure/generate/elements', {
-                  state: {
-                    templateName: templateName,
-                    templates: templates.filter((tmpl) =>
-                      selectedValues.includes(tmpl.size + ' ' + tmpl.name),
-                    ),
-                  },
-                  replace: true,
-                })
+                if (selectedValues.length === 0)
+                  api.info({
+                    message: 'Configure',
+                    description: 'Please Select or Add Template!',
+                  })
+                else
+                  navigate('/configure/generate/elements', {
+                    state: {
+                      templateName: templateName,
+                      templates: templates.filter((tmpl) =>
+                        selectedValues.includes(tmpl.size + ' ' + tmpl.name),
+                      ),
+                      conceptLinkValue: conceptLinkValue,
+                      selectAll: selectAll,
+                      selectedValues: selectedValues.length > 0 ? selectedValues : [],
+                    },
+                    replace: true,
+                  })
               }}
             >
               Generate
