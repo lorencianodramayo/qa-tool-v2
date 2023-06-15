@@ -1227,6 +1227,54 @@ export default function DoneLayout() {
                       }
                       _templatesVersions.push(templatesVersions)
                       __templates.push(template)
+                    } else {
+                      let variants = ['MAX', 'MIN']
+                      variants.forEach((variant) => {
+                        if (variant === 'MIN') {
+                          let defaultValues = {}
+                          for (const [key, value] of Object.entries(
+                            template.defaultDynamicFieldsValues,
+                          )) {
+                            if (
+                              key.toLowerCase().includes('text') ||
+                              key.toLowerCase().includes('headline') ||
+                              key.toLowerCase().includes('legal') ||
+                              key.toLowerCase().includes('subheadline')
+                            ) {
+                              let html = `${value}`
+                              let div = document.createElement('div')
+                              div.innerHTML = html
+                              let textLegalHeading = div.textContent || div.innerText || ''
+                              defaultValues[key] = textLegalHeading.slice(
+                                0,
+                                Math.round(textLegalHeading.length / 2),
+                              )
+                            } else defaultValues[key] = value
+                          }
+                          templateVariants.push({
+                            variantName: variant,
+                            size: template.size,
+                            templateName: template.name,
+                            defaultValues: {
+                              ...defaultValues,
+                            },
+                          })
+                        } else
+                          templateVariants.push({
+                            variantName: variant,
+                            size: template.size,
+                            templateName: template.name,
+                            defaultValues: {
+                              ...template.defaultDynamicFieldsValues,
+                            },
+                          })
+                      })
+                      let templatesVersions = {
+                        templateId: template._id,
+                        variants: templateVariants,
+                      }
+                      _templatesVersions.push(templatesVersions)
+                      __templates.push(template)
                     }
                   })
                   setLoading(!loading)
