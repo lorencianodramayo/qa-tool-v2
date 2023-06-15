@@ -401,13 +401,9 @@ export default function ElementsLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useDispatch()
-  const dispatchv2 = useAppDispatch()
   const [currentStep, setCurrentStep] = useState<number>(1)
   const {languages, isLanguagesSuccess, addLanguage, isAddLanguageSuccess} = useSelector(
     (state: any) => state.language,
-  )
-  const {templateVersionImageVideoCloud, isTemplateVersionImageVideoCloudSuccess} = useAppSelector(
-    (state: any) => state.done,
   )
   const [loading, setLoading] = useState<boolean>(false)
   const [languagesList, setLanguagesList] = useState<any>([])
@@ -2345,107 +2341,6 @@ export default function ElementsLayout() {
         tooltip={<Space>Languages</Space>}
         onClick={() => setShowLanguageModal(!showLanguageModal)}
       />
-      {/* <Space
-        style={{
-          pointerEvents: loading ? 'none' : 'unset',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginTop: 42.1,
-        }}
-      >
-        <Space
-          style={{
-            border: '1px solid #1890FF',
-            backgroundColor: '#FFF',
-            height: '27.6px',
-            width: '27.6px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginRight: 6.6,
-            color: '#1890FF',
-          }}
-        >
-          <CheckOutlined />
-        </Space>
-        <Space
-          style={{
-            color: 'rgba(0, 0, 0, 0.85)',
-            fontWeight: 400,
-            fontSize: 16,
-          }}
-        >
-          Configure
-        </Space>
-        <Divider
-          type="horizontal"
-          style={{
-            width: '118.4px',
-            margin: '0 14px 0 14px',
-            minWidth: 'unset',
-            backgroundColor: '#F0F0F0',
-          }}
-        />
-        <Space
-          style={{
-            backgroundColor: '#1890FF',
-            height: '27.6px',
-            width: '27.6px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#FFF',
-            marginRight: 6.6,
-          }}
-        >
-          2
-        </Space>
-        <Space
-          style={{
-            color: 'rgba(0, 0, 0, 0.45)',
-            fontWeight: 400,
-            fontSize: 16,
-          }}
-        >
-          Generate
-        </Space>
-        <Divider
-          type="horizontal"
-          style={{
-            width: '118.4px',
-            margin: '0 14px 0 14px',
-            minWidth: 'unset',
-            backgroundColor: '#F0F0F0',
-          }}
-        />
-        <Space
-          style={{
-            height: '27.6px',
-            width: '27.6px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'rgba(0, 0, 0, 0.25)',
-            border: '1px solid rgba(0, 0, 0, 0.25)',
-            marginRight: 6.6,
-          }}
-        >
-          3
-        </Space>
-        <Space
-          style={{
-            color: 'rgba(0, 0, 0, 0.45)',
-            fontWeight: 400,
-            fontSize: 16,
-          }}
-        >
-          Done
-        </Space>
-      </Space> */}
       <Space
         style={{
           justifyContent: 'center',
