@@ -421,8 +421,8 @@ export default function ElementsLayout() {
   const [replicates, setReplicates] = useState<any>([])
   const [language, setLanguage] = useState<string>('')
   const filesRef = useRef<any>([])
-  // const [colorHex, setColorHex] = useState<Color[] | string[]>([])
   const [formatHex, setFormatHex] = useState<ColorPickerProps['format']>('hex')
+  const [formatRgb, setFormatRgb] = useState<ColorPickerProps['format']>('rgb')
   useEffect(() => {
     if (!isLanguagesSuccess) dispatch(getLanguages())
     let lang = []
@@ -521,9 +521,6 @@ export default function ElementsLayout() {
         replace: true,
       })
   }
-  // const hexString = (i: number, template: any, dynamicElement: any) => {
-  //   return template.defaultDynamicFieldsValues[dynamicElement]
-  // }
   function checkDynamicElementExists(defaultDynamicFieldsValuesFiles, dynamicElement) {
     for (let i = 0; i < defaultDynamicFieldsValuesFiles.length; i++) {
       if (defaultDynamicFieldsValuesFiles[i].dynamicElementKey === dynamicElement) {
@@ -557,6 +554,82 @@ export default function ElementsLayout() {
     }
     return fileList
   }
+  function isMediaType(value) {
+    var imageExtensions = /\.(jpg|jpeg|png|gif|bmp)$/i
+    var videoExtensions = /\.(mp4|avi|mov|wmv|flv|mkv)$/i
+    if (value.match(imageExtensions) || value.match(videoExtensions)) {
+      return true
+    }
+  }
+  function isColor(value) {
+    function isRGBColor(value) {
+      if (value.startsWith('rgb(') && value.endsWith(')')) {
+        const values = value.substring(4, value.length - 1).split(',')
+        if (values.length === 3) {
+          const [r, g, b] = values.map(Number)
+          return r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255
+        }
+      }
+      return false
+    }
+    function isRGBAColor(value) {
+      if (value.startsWith('rgba(') && value.endsWith(')')) {
+        const values = value.substring(5, value.length - 1).split(',')
+        if (values.length === 4) {
+          const [r, g, b, a] = values.map(Number)
+          return r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1
+        }
+      }
+      return false
+    }
+    function isHexColor(value) {
+      if (value.startsWith('#') && (value.length === 4 || value.length === 7)) {
+        const hex = value.substring(1)
+        return /^[0-9A-Fa-f]{6}$|^[0-9A-Fa-f]{3}$/.test(hex)
+      }
+      return false
+    }
+    return isRGBColor(value) || isRGBAColor(value) || isHexColor(value)
+  }
+  function isRGBColor(value) {
+    if (value.startsWith('rgb(') && value.endsWith(')')) {
+      const values = value.substring(4, value.length - 1).split(',')
+      if (values.length === 3) {
+        const [r, g, b] = values.map(Number)
+        return r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255
+      }
+    }
+    return false
+  }
+  function isRGBAColor(value) {
+    if (value.startsWith('rgba(') && value.endsWith(')')) {
+      const values = value.substring(5, value.length - 1).split(',')
+      if (values.length === 4) {
+        const [r, g, b, a] = values.map(Number)
+        return r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1
+      }
+    }
+    return false
+  }
+  function isHexColor(value) {
+    if (value.startsWith('#') && (value.length === 4 || value.length === 7)) {
+      const hex = value.substring(1)
+      return /^[0-9A-Fa-f]{6}$|^[0-9A-Fa-f]{3}$/.test(hex)
+    }
+    return false
+  }
+  function isURL(url) {
+    try {
+      new URL(url)
+      return true
+    } catch (error) {
+      return false
+    }
+  }
+  function isNumberWithPercentage(value) {
+    const regex = /^-?\d+(\.\d+)?%$/
+    return regex.test(value)
+  }
   const renderTemplateConfigurations = (template) => {
     return (
       <Space direction="vertical" style={{marginLeft: 4}}>
@@ -569,47 +642,927 @@ export default function ElementsLayout() {
             {value: 'Lowercase', label: 'aa'},
             {value: 'Uppercase', label: 'AA'},
           ]
-          if (
-            dynamicElement.includes('Text') ||
-            dynamicElement.includes('Headline') ||
-            dynamicElement.includes('legal') ||
-            dynamicElement.includes('Subheadline')
-          )
-            return (
-              <Space
-                key={i}
-                direction="horizontal"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 20.4,
-                  marginLeft: 15,
-                }}
-              >
-                <Space>
+          if (!dynamicElement.includes('trigger') && !dynamicElement.includes('cssAttrib')) {
+            if (isMediaType(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                  </Space>
                   <Space
                     style={{
-                      fontWeight: 400,
-                      fontSize: 14,
-                      width: 132,
-                      color: '#000',
-                      justifyContent: 'flex-end',
+                      display: 'flex',
+                      alignItems: 'center',
                     }}
                   >
-                    {dynamicElement}:
-                  </Space>
-                  <Space>
-                    <InputStyled
-                      style={{width: 356}}
-                      placeholder={`${dynamicElement}`}
-                      value={template.defaultDynamicFieldsValues[dynamicElement]}
-                      onChange={(e) => {
+                    <UploadStyledv2
+                      maxCount={1}
+                      fileList={defaultFileList(template, dynamicElement)}
+                      showUploadList={{
+                        showRemoveIcon: true,
+                        removeIcon: (
+                          <CloseOutlined
+                            onClick={(e) => console.log(e, 'custom removeIcon event')}
+                          />
+                        ),
+                      }}
+                      customRequest={async ({onSuccess}) => {
+                        setTimeout(() => {
+                          onSuccess('ok')
+                        }, 0)
+                      }}
+                      beforeUpload={(file) => {
+                        const files = {
+                          dynamicElementKey: dynamicElement,
+                          fileData: file,
+                        }
+                        filesRef.current = [...filesRef.current, files]
                         let defaultDynamicFieldsValues = []
                         const newDefaultDynamicFieldsValues = {
-                          [dynamicElement]: e.target.value,
+                          [dynamicElement]: file.name,
                         }
                         defaultDynamicFieldsValues = {
                           ...template.defaultDynamicFieldsValues,
+                          ...newDefaultDynamicFieldsValues,
+                        }
+                        const newState = templates.map((template, i) => {
+                          if (templateIndex === i) {
+                            return {
+                              ...template,
+                              ...{
+                                ['defaultDynamicFieldsValuesFiles']: filesRef.current,
+                              },
+                              // ...{
+                              //   ["defaultDynamicFieldsValues"]:
+                              //     defaultDynamicFieldsValues,
+                              // },
+                            }
+                          }
+                          return template
+                        })
+                        setTemplates(newState)
+                        // let files = [{
+                        //   id: '1',
+                        //   files: [{
+                        //     id: 'logo',
+                        //     fileData: file
+                        //   }, {
+                        //     id: 'image',
+                        //     fileData: file
+                        //   }, {
+                        //     id: 'background',
+                        //     fileData: file
+                        //   }],
+                        // }, {
+                        //   id: '2',
+                        //   files: [{
+                        //     id: 'icon',
+                        //     fileData: file
+                        //   }, {
+                        //     id: 'photo',
+                        //     fileData: file
+                        //   }],
+                        // }];
+                        // const formData = new FormData();
+                        // files.forEach((fileObject) => {
+                        //   formData.append(`files[${fileObject.id}][id]`, fileObject.id);
+                        //   fileObject.files.forEach((nestedFile) => {
+                        //     formData.append(
+                        //       `files[${fileObject.id}][files][${nestedFile.id}][id]`,
+                        //       nestedFile.id
+                        //     );
+                        //     formData.append(
+                        //       `files[${fileObject.id}][files][${nestedFile.id}][file]`,
+                        //       nestedFile.fileData,
+                        //       nestedFile.fileData.name // Include the file name
+                        //     );
+                        //   });
+                        // });
+                        //
+                        // for (i = 0; i < 2; i++) {
+                        //   test.push({
+                        //     id: i + 1,
+                        //     files: [
+                        //       {
+                        //         element: 'logo',
+                        //         'file': file,
+                        //       },
+                        //       {
+                        //         element: 'background',
+                        //         'file': file,
+                        //       },
+                        //     ],
+                        //   });
+                        // }
+                        // let formData = new FormData();
+                        // test.forEach((item, index) => {
+                        //   item.files.forEach((fileItem, fileIndex) => {
+                        //     formData.append(`test[${index}][id]`, item.id);
+                        //     formData.append(`test[${index}][files][${fileIndex}][element]`, fileItem.element);
+                        //     formData.append(`test[${index}][files][${fileIndex}][file]`, fileItem.file);
+                        //   });
+                        // });
+                        // console.log(Object.fromEntries(formData));
+                        // dispatchv2(postTemplateVersionImageVideoCloud(formData));
+                      }}
+                    >
+                      <Button icon={<UploadOutlined />}>Upload</Button>
+                    </UploadStyledv2>
+                  </Space>
+                </Space>
+              )
+            else if (isColor(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space
+                      style={{
+                        color: template.defaultDynamicFieldsValues[dynamicElement],
+                      }}
+                    >
+                      {template.defaultDynamicFieldsValues[dynamicElement]}
+                    </Space>
+                  </Space>
+                  <Space>
+                    <ColorPickerStyled
+                      style={{marginRight: 51.6}}
+                      format={
+                        isRGBColor(template.defaultDynamicFieldsValues[dynamicElement])
+                          ? formatRgb
+                          : isHexColor(template.defaultDynamicFieldsValues[dynamicElement])
+                          ? formatHex
+                          : isRGBAColor(template.defaultDynamicFieldsValues[dynamicElement])
+                          ? formatRgb
+                          : formatHex
+                      }
+                      value={template.defaultDynamicFieldsValues[dynamicElement]}
+                      onChange={(value: Color) => {
+                        let color: string = ''
+                        if (isRGBColor(template.defaultDynamicFieldsValues[dynamicElement]))
+                          color = value.toRgbString()
+                        else if (isHexColor(template.defaultDynamicFieldsValues[dynamicElement]))
+                          color = value.toHexString()
+                        else color = value.toRgbString()
+                        let defaultDynamicFieldsValues =
+                          templates[templateIndex].defaultDynamicFieldsValues
+                        const newDefaultDynamicFieldsValues = {
+                          [dynamicElement]: color,
+                        }
+                        defaultDynamicFieldsValues = {
+                          ...defaultDynamicFieldsValues,
+                          ...newDefaultDynamicFieldsValues,
+                        }
+                        const newState = templates.map((template, i) => {
+                          if (templateIndex === i) {
+                            return {
+                              ...template,
+                              ...{
+                                ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                              },
+                            }
+                          }
+                          return template
+                        })
+                        setTemplates(newState)
+                      }}
+                      onFormatChange={
+                        isRGBColor(template.defaultDynamicFieldsValues[dynamicElement])
+                          ? setFormatRgb
+                          : isHexColor(template.defaultDynamicFieldsValues[dynamicElement])
+                          ? setFormatHex
+                          : isRGBAColor(template.defaultDynamicFieldsValues[dynamicElement])
+                          ? setFormatRgb
+                          : setFormatHex
+                      }
+                    />
+                  </Space>
+                </Space>
+              )
+            else if (isURL(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (/^-?\d*\.?\d+$/.test(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (isNumberWithPercentage(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (/^-?\d*\.?\d+$/.test(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (Number(template.defaultDynamicFieldsValues[dynamicElement]) > 0)
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                  </Space>
+                  <Space>
+                    <InputNumberStyled
+                      style={{
+                        marginRight: 51.6,
+                      }}
+                      controls={{
+                        upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                        downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                      }}
+                      bordered={true}
+                      defaultValue={template.defaultDynamicFieldsValues[dynamicElement]}
+                      onChange={(value) => {
+                        if (value > 0) {
+                          let defaultDynamicFieldsValues =
+                            templates[templateIndex].defaultDynamicFieldsValues
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: value.toString(),
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }
+                      }}
+                    />
+                  </Space>
+                </Space>
+              )
+            else if (Number(template.defaultDynamicFieldsValues[dynamicElement]) < 0)
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                  </Space>
+                  <Space>
+                    <InputNumberStyled
+                      style={{
+                        marginRight: 51.6,
+                      }}
+                      controls={{
+                        upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                        downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                      }}
+                      bordered={true}
+                      defaultValue={template.defaultDynamicFieldsValues[dynamicElement]}
+                      onChange={(value) => {
+                        if (value > 0) {
+                          let defaultDynamicFieldsValues =
+                            templates[templateIndex].defaultDynamicFieldsValues
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: value.toString(),
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }
+                      }}
+                    />
+                  </Space>
+                </Space>
+              )
+            else if (/^\d+(,\d+)*$/.test(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (
+              /^\((-?\d+(\.\d+)?|-\.\d+)\)$/.test(
+                template.defaultDynamicFieldsValues[dynamicElement],
+              )
+            )
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                  <Space>
+                    <Space>
+                      {buttonCases.map((buttonCase) => (
+                        <ButtonCaseStyled
+                          style={
+                            template.hasOwnProperty('dynamicElementsStyles')
+                              ? template.dynamicElementsStyles.find((obj) => {
+                                  return obj[dynamicElement]
+                                })
+                                ? template.dynamicElementsStyles.find((obj) => {
+                                    return obj[dynamicElement]
+                                  })[dynamicElement].case === buttonCase.value
+                                  ? {
+                                      backgroundColor: '#339af0',
+                                      color: '#fff',
+                                      outline: 'unset',
+                                      borderColor: '#339af0',
+                                    }
+                                  : {}
+                                : {}
+                              : {}
+                          }
+                          size="large"
+                          onClick={() => {
+                            let dynamicElementsStyles = []
+                            let defaultDynamicFieldsValues = []
+                            if (template.hasOwnProperty('dynamicElementsStyles')) {
+                              let dynamicElementsStylesExists =
+                                template.dynamicElementsStyles.filter((dynamicElementStyle) => {
+                                  return dynamicElementStyle.hasOwnProperty(dynamicElement)
+                                }).length > 0
+                              if (dynamicElementsStylesExists) {
+                                const newDynamicElementsStylesState =
+                                  template.dynamicElementsStyles.map((dynamicElementStyle) => {
+                                    if (dynamicElementStyle.hasOwnProperty(dynamicElement))
+                                      return {
+                                        ...dynamicElementStyle,
+                                        [dynamicElement]: {
+                                          case: buttonCase.value,
+                                          number: dynamicElementStyle[dynamicElement].number,
+                                        },
+                                      }
+                                    return dynamicElementStyle
+                                  })
+                                newDynamicElementsStylesState.map((newDynamicElementStyleState) =>
+                                  dynamicElementsStyles.push(newDynamicElementStyleState),
+                                )
+                              } else
+                                dynamicElementsStyles.push(...template.dynamicElementsStyles, {
+                                  [dynamicElement]: {
+                                    case: buttonCase.value,
+                                    number: 0,
+                                  },
+                                })
+                              const newDefaultDynamicFieldsValues = {
+                                [dynamicElement]: textHeadingLegalCase(
+                                  template.defaultDynamicFieldsValues[dynamicElement],
+                                  buttonCase.value,
+                                ),
+                              }
+                              defaultDynamicFieldsValues = {
+                                ...template.defaultDynamicFieldsValues,
+                                ...newDefaultDynamicFieldsValues,
+                              }
+                            } else {
+                              dynamicElementsStyles.push({
+                                [dynamicElement]: {
+                                  case: buttonCase.value,
+                                  number: 0,
+                                },
+                              })
+                              const newDefaultDynamicFieldsValues = {
+                                [dynamicElement]: textHeadingLegalCase(
+                                  template.defaultDynamicFieldsValues[dynamicElement],
+                                  buttonCase.value,
+                                ),
+                              }
+                              defaultDynamicFieldsValues = {
+                                ...template.defaultDynamicFieldsValues,
+                                ...newDefaultDynamicFieldsValues,
+                              }
+                            }
+                            const newState = templates.map((template, i) => {
+                              if (templateIndex === i) {
+                                return {
+                                  ...template,
+                                  dynamicElementsStyles,
+                                  ...{
+                                    ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                  },
+                                }
+                              }
+                              return template
+                            })
+                            setTemplates(newState)
+                          }}
+                        >
+                          {buttonCase.label}
+                        </ButtonCaseStyled>
+                      ))}
+                    </Space>
+                    <InputNumberStyled
+                      style={{
+                        marginRight: 51.6,
+                      }}
+                      controls={{
+                        upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                        downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                      }}
+                      bordered={true}
+                      defaultValue={textHeadingLegalMaxValue(
+                        template.defaultDynamicFieldsValues[dynamicElement],
+                      )}
+                      onStep={(value, type) => {
+                        if (value > 1000)
+                          api['warning']({
+                            message: `${dynamicElement}`,
+                            description: 'Character Limit Exceeds!',
+                          })
+                        const filteredLanguage = languages.filter((lang) => {
+                          if (language === '') return lang.language === 'Latin'
+                          else return lang.language === language
+                        })
+                        let defaultDynamicFieldsValues =
+                          templates[templateIndex].defaultDynamicFieldsValues
+                        const newDefaultDynamicFieldsValues = {
+                          [dynamicElement]: filteredLanguage[0].content.substring(0, value),
+                        }
+                        defaultDynamicFieldsValues = {
+                          ...defaultDynamicFieldsValues,
+                          ...newDefaultDynamicFieldsValues,
+                        }
+                        const newState = templates.map((template, i) => {
+                          if (templateIndex === i) {
+                            return {
+                              ...template,
+                              ...{
+                                ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                              },
+                            }
+                          }
+                          return template
+                        })
+                        setTemplates(newState)
+                      }}
+                      onChange={(value) => {
+                        if (value > 1000)
+                          api['warning']({
+                            message: `${dynamicElement}`,
+                            description: 'Character Limit Exceeds!',
+                          })
+                        const filteredLanguage = languages.filter((lang) => {
+                          if (language === '') return lang.language === 'Latin'
+                          else return lang.language === language
+                        })
+                        let defaultDynamicFieldsValues =
+                          templates[templateIndex].defaultDynamicFieldsValues
+                        const newDefaultDynamicFieldsValues = {
+                          // [dynamicElement]: dataInputString[i],
+                          [dynamicElement]: filteredLanguage[0].content.substring(0, value),
+                        }
+                        defaultDynamicFieldsValues = {
+                          ...defaultDynamicFieldsValues,
                           ...newDefaultDynamicFieldsValues,
                         }
                         const newState = templates.map((template, i) => {
@@ -628,558 +1581,619 @@ export default function ElementsLayout() {
                     />
                   </Space>
                 </Space>
-                <Space>
-                  <Space>
-                    {buttonCases.map((buttonCase) => (
-                      <ButtonCaseStyled
-                        style={
-                          template.hasOwnProperty('dynamicElementsStyles')
-                            ? template.dynamicElementsStyles.find((obj) => {
-                                return obj[dynamicElement]
-                              })
-                              ? template.dynamicElementsStyles.find((obj) => {
-                                  return obj[dynamicElement]
-                                })[dynamicElement].case === buttonCase.value
-                                ? {
-                                    backgroundColor: '#339af0',
-                                    color: '#fff',
-                                    outline: 'unset',
-                                    borderColor: '#339af0',
-                                  }
-                                : {}
-                              : {}
-                            : {}
-                        }
-                        size="large"
-                        onClick={() => {
-                          let dynamicElementsStyles = []
-                          let defaultDynamicFieldsValues = []
-                          if (template.hasOwnProperty('dynamicElementsStyles')) {
-                            let dynamicElementsStylesExists =
-                              template.dynamicElementsStyles.filter((dynamicElementStyle) => {
-                                return dynamicElementStyle.hasOwnProperty(dynamicElement)
-                              }).length > 0
-                            if (dynamicElementsStylesExists) {
-                              const newDynamicElementsStylesState =
-                                template.dynamicElementsStyles.map((dynamicElementStyle) => {
-                                  if (dynamicElementStyle.hasOwnProperty(dynamicElement))
-                                    return {
-                                      ...dynamicElementStyle,
-                                      [dynamicElement]: {
-                                        case: buttonCase.value,
-                                        number: dynamicElementStyle[dynamicElement].number,
-                                      },
-                                    }
-                                  return dynamicElementStyle
-                                })
-                              newDynamicElementsStylesState.map((newDynamicElementStyleState) =>
-                                dynamicElementsStyles.push(newDynamicElementStyleState),
-                              )
-                            } else
-                              dynamicElementsStyles.push(...template.dynamicElementsStyles, {
-                                [dynamicElement]: {
-                                  case: buttonCase.value,
-                                  number: 0,
-                                },
-                              })
-                            const newDefaultDynamicFieldsValues = {
-                              [dynamicElement]: textHeadingLegalCase(
-                                template.defaultDynamicFieldsValues[dynamicElement],
-                                buttonCase.value,
-                              ),
-                            }
-                            defaultDynamicFieldsValues = {
-                              ...template.defaultDynamicFieldsValues,
-                              ...newDefaultDynamicFieldsValues,
-                            }
-                          } else {
-                            dynamicElementsStyles.push({
-                              [dynamicElement]: {
-                                case: buttonCase.value,
-                                number: 0,
-                              },
-                            })
-                            const newDefaultDynamicFieldsValues = {
-                              [dynamicElement]: textHeadingLegalCase(
-                                template.defaultDynamicFieldsValues[dynamicElement],
-                                buttonCase.value,
-                              ),
-                            }
-                            defaultDynamicFieldsValues = {
-                              ...template.defaultDynamicFieldsValues,
-                              ...newDefaultDynamicFieldsValues,
-                            }
-                          }
-                          const newState = templates.map((template, i) => {
-                            if (templateIndex === i) {
-                              return {
-                                ...template,
-                                dynamicElementsStyles,
-                                ...{
-                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                },
-                              }
-                            }
-                            return template
-                          })
-                          setTemplates(newState)
-                        }}
-                      >
-                        {buttonCase.label}
-                      </ButtonCaseStyled>
-                    ))}
-                  </Space>
-                  <InputNumberStyled
-                    style={{
-                      marginRight: 51.6,
-                    }}
-                    controls={{
-                      upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-                      downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-                    }}
-                    bordered={true}
-                    defaultValue={textHeadingLegalMaxValue(
-                      template.defaultDynamicFieldsValues[dynamicElement],
-                    )}
-                    onStep={(value, type) => {
-                      // let dataInputString = [...inputString];
-                      // let dataRemovedCharacter = [...removedCharacter]
-                      // if (type.type === 'down') {
-                      //   const numToRemoveValidated = Math.min(numToRemove[i], inputString[i].length);
-                      //   // if (numToRemoveValidated > 0) {
-                      //     const removed = inputString[i].slice(-numToRemoveValidated);
-                      //     const newInputString = inputString[i].slice(0, -numToRemoveValidated);
-                      //     dataInputString[i] = newInputString;
-                      //     dataRemovedCharacter[i] = removed + removedCharacter[i];
-                      //     setInputString(dataInputString);
-                      //     setRemovedCharacter(dataRemovedCharacter);
-                      //   // }
-                      // } else {
-                      //   if (removedCharacter[i].length === 0) {
-                      //     let characters = null;
-                      //     if (language !== '') {
-                      //       const filteredLanguage = languages.filter(lang => {
-                      //         return lang.language === language;
-                      //       });
-                      //       filteredLanguage.map(language => characters = language.content.split(''));
-                      //     } else characters = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin non velit a dolor euismod sollicitudin eu eget dolor. Mauris nec risus sed libero sagittis porta et ut massa. Nulla vel ipsum vehicula, varius lectus vel, varius neque. Phasellus id diam magna. Integer pellentesque semper purus. Cras consequat lacinia est nec lacinia. Cras massa sapien, fermentum sit amet orci sed, imperdiet tempus quam. Duis tincidunt sem a finibus faucibus. Duis id leo vel velit imperdiet imperdiet ut nec metus. Nam aliquam ante vel vestibulum blandit. Suspendisse pharetra erat a lorem scelerisque convallis. Nam imperdiet tincidunt magna ac rutrum. Aliquam consectetur aliquam massa vitae hendrerit. Etiam imperdiet sed mauris vel iaculis. Etiam vitae arcu vitae ante pretium vehicula. Curabitur eget vulputate ipsum. Aliquam quis blandit dui. Vivamus placerat congue dolor vel convallis. Nunc neque nulla, convallis ac eros in, maximus varius odio. Morbi cursus nisi eget leo lobortis porttitor. Nam nibh sapien, mattis ut elementum porttitor, iaculis id enim. Quisque iaculis quam in diam maximus feugiat. Duis finibus dui ut dui posuere vestibulum. Sed porta viverra dolor, sed rutrum odio varius ornare. Donec ultricies pellentesque ligula. Aenean dictum ante quis sapien malesuada suscipit. Morbi metus massa, lacinia id aliquet vel, semper eget felis. Maecenas hendrerit rhoncus varius. Sed massa mi, blandit id tellus sed, aliquam viverra justo. Mauris rhoncus leo quis ullamcorper pellentesque. Nunc libero justo, laoreet hendrerit leo quis, facilisis facilisis massa. Aliquam sed erat mi. Duis ac imperdiet nibh. Ut eu dolor viverra, pulvinar ante ut, mattis dolor. Etiam volutpat dui at molestie ultrices. Mauris blandit, eros a convallis egestas, dolor augue convallis augue, vitae pretium massa purus nec mauris. Aenean eget hendrerit augue. Suspendisse hendrerit, dui in luctus lobortis, massa sapien blandit velit, vitae viverra diam sapien eget sapien. Proin pulvinar sollicitudin cursus. Phasellus ullamcorper ex a lorem fermentum maximus. Donec in ipsum non lectus convallis blandit. Sed lacus augue, cursus ut ipsum sed, posuere ultrices nunc. Suspendisse ac tincidunt velit, id tincidunt risus. Nam vulputate gravida cursus. Pellentesque et luctus arcu. Proin accumsan tortor sed lectus rutrum commodo eget ut eros. Duis neque lectus, aliquet sit amet tincidunt at, finibus at dui. Aliquam ultricies arcu lacinia massa pretium finibus. Proin mollis lobortis efficitur. Curabitur sollicitudin justo non diam tincidunt, nec consectetur lacus faucibus. Integer commodo quis tellus vitae vestibulum. Aliquam dictum turpis aliquam leo sagittis lacinia. Nulla dapibus sodales est, non feugiat dui fringilla ut. Proin convallis augue at magna luctus bibendum. Suspendisse et velit ipsum. Sed non magna tincidunt mauris pellentesque cursus. Phasellus libero massa, convallis volutpat elit sed, gravida imperdiet lectus. Vivamus non commodo lectus. Nunc a cursus arcu, vitae aliquet risus. Pellentesque ac dolor purus. Aliquam auctor felis malesuada neque tristique gravida. Vestibulum nibh nibh, volutpat at eros at, maximus mattis sapien. Integer consectetur ultricies urna vitae dictum. Nullam id quam a arcu varius ultrices nec sit amet nisl. Nulla porta nec lacus sed pellentesque.'.split('');
-                      //     const index = Math.floor(Math.random() * characters.length) + 1;
-                      //     dataInputString[i] = inputString[i] + characters[index];
-                      //     setInputString(dataInputString);
-                      //   } else {
-                      //     const numToAddValidated = Math.min(numToAdd[i], removedCharacter[i].length);
-                      //     // if (numToAddValidated > 0) {
-                      //       const added = removedCharacter[i].slice(0, numToAddValidated);
-                      //       const newRemovedCharacter = removedCharacter[i].slice(numToAddValidated);
-                      //       dataInputString[i] = inputString[i] + added;
-                      //       dataRemovedCharacter[i] = newRemovedCharacter;
-                      //       setInputString(dataInputString);
-                      //       setRemovedCharacter(dataRemovedCharacter);
-                      //     // }
-                      //   }
-                      // }
-                      if (value > 1000)
-                        api['warning']({
-                          message: `${dynamicElement}`,
-                          description: 'Character Limit Exceeds!',
-                        })
-                      const filteredLanguage = languages.filter((lang) => {
-                        if (language === '') return lang.language === 'Latin'
-                        else return lang.language === language
-                      })
-                      let defaultDynamicFieldsValues =
-                        templates[templateIndex].defaultDynamicFieldsValues
-                      const newDefaultDynamicFieldsValues = {
-                        // [dynamicElement]: dataInputString[i],
-                        [dynamicElement]: filteredLanguage[0].content.substring(0, value),
-                      }
-                      defaultDynamicFieldsValues = {
-                        ...defaultDynamicFieldsValues,
-                        ...newDefaultDynamicFieldsValues,
-                      }
-                      const newState = templates.map((template, i) => {
-                        if (templateIndex === i) {
-                          return {
-                            ...template,
-                            ...{
-                              ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                            },
-                          }
-                        }
-                        return template
-                      })
-                      setTemplates(newState)
-                    }}
-                    onChange={(value) => {
-                      // let dataInputString = [...inputString];
-                      // let dataRemovedCharacter = [...removedCharacter];
-                      // // if (removedCharacter[i].length === 0) {
-                      // //   // if (value < inputString[i].length) {
-                      // //   //   const numToRemoveValidated = Math.min(value, inputString[i].length);
-                      // //   //   if (numToRemoveValidated > 0) {
-                      // //   //     const removed = inputString[i].slice(-numToRemoveValidated);
-                      // //   //     const newInputString = inputString[i].slice(0, -numToRemoveValidated);
-                      // //   //     dataInputString[i] = newInputString;
-                      // //   //     dataRemovedCharacter[i] = removed + removedCharacter[i];
-                      // //   //     setInputString(dataInputString);
-                      // //   //     setRemovedCharacter(dataRemovedCharacter);
-                      // //   //   }
-                      // //   // }
-                      // // } else {
-                      //   if (value < inputString[i].length) {
-                      //     const numToRemoveValidated = Math.min(value, inputString[i].length);
-                      //     const removed = inputString[i].slice(-numToRemoveValidated);
-                      //     const newInputString = inputString[i].slice(0, -numToRemoveValidated);
-                      //     dataInputString[i] = newInputString;
-                      //     dataRemovedCharacter[i] = removed + removedCharacter[i];
-                      //     setInputString(dataInputString);
-                      //     setRemovedCharacter(dataRemovedCharacter);
-                      //   } else {
-                      //     const numToAddValidated = Math.min(value, removedCharacter[i].length);
-                      //     const added = removedCharacter[i].slice(0, numToAddValidated);
-                      //     const newRemovedCharacter = removedCharacter[i].slice(numToAddValidated);
-                      //     dataInputString[i] = inputString[i] + added;
-                      //     dataRemovedCharacter[i] = newRemovedCharacter;
-                      //     if (value !== dataInputString[i].length) {
-                      //       let newDataInputString = dataInputString[i];
-                      //       let characters = null;
-                      //       let n = value - dataInputString[i].length;
-                      //       for (let i = 0; i < n; i++) {
-                      //         if (language !== '') {
-                      //           const filteredLanguage = languages.filter(lang => {
-                      //             return lang.language === language;
-                      //           });
-                      //           filteredLanguage.map(language => characters = language.content.split(''));
-                      //         } else characters = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin non velit a dolor euismod sollicitudin eu eget dolor. Mauris nec risus sed libero sagittis porta et ut massa. Nulla vel ipsum vehicula, varius lectus vel, varius neque. Phasellus id diam magna. Integer pellentesque semper purus. Cras consequat lacinia est nec lacinia. Cras massa sapien, fermentum sit amet orci sed, imperdiet tempus quam. Duis tincidunt sem a finibus faucibus. Duis id leo vel velit imperdiet imperdiet ut nec metus. Nam aliquam ante vel vestibulum blandit. Suspendisse pharetra erat a lorem scelerisque convallis. Nam imperdiet tincidunt magna ac rutrum. Aliquam consectetur aliquam massa vitae hendrerit. Etiam imperdiet sed mauris vel iaculis. Etiam vitae arcu vitae ante pretium vehicula. Curabitur eget vulputate ipsum. Aliquam quis blandit dui. Vivamus placerat congue dolor vel convallis. Nunc neque nulla, convallis ac eros in, maximus varius odio. Morbi cursus nisi eget leo lobortis porttitor. Nam nibh sapien, mattis ut elementum porttitor, iaculis id enim. Quisque iaculis quam in diam maximus feugiat. Duis finibus dui ut dui posuere vestibulum. Sed porta viverra dolor, sed rutrum odio varius ornare. Donec ultricies pellentesque ligula. Aenean dictum ante quis sapien malesuada suscipit. Morbi metus massa, lacinia id aliquet vel, semper eget felis. Maecenas hendrerit rhoncus varius. Sed massa mi, blandit id tellus sed, aliquam viverra justo. Mauris rhoncus leo quis ullamcorper pellentesque. Nunc libero justo, laoreet hendrerit leo quis, facilisis facilisis massa. Aliquam sed erat mi. Duis ac imperdiet nibh. Ut eu dolor viverra, pulvinar ante ut, mattis dolor. Etiam volutpat dui at molestie ultrices. Mauris blandit, eros a convallis egestas, dolor augue convallis augue, vitae pretium massa purus nec mauris. Aenean eget hendrerit augue. Suspendisse hendrerit, dui in luctus lobortis, massa sapien blandit velit, vitae viverra diam sapien eget sapien. Proin pulvinar sollicitudin cursus. Phasellus ullamcorper ex a lorem fermentum maximus. Donec in ipsum non lectus convallis blandit. Sed lacus augue, cursus ut ipsum sed, posuere ultrices nunc. Suspendisse ac tincidunt velit, id tincidunt risus. Nam vulputate gravida cursus. Pellentesque et luctus arcu. Proin accumsan tortor sed lectus rutrum commodo eget ut eros. Duis neque lectus, aliquet sit amet tincidunt at, finibus at dui. Aliquam ultricies arcu lacinia massa pretium finibus. Proin mollis lobortis efficitur. Curabitur sollicitudin justo non diam tincidunt, nec consectetur lacus faucibus. Integer commodo quis tellus vitae vestibulum. Aliquam dictum turpis aliquam leo sagittis lacinia. Nulla dapibus sodales est, non feugiat dui fringilla ut. Proin convallis augue at magna luctus bibendum. Suspendisse et velit ipsum. Sed non magna tincidunt mauris pellentesque cursus. Phasellus libero massa, convallis volutpat elit sed, gravida imperdiet lectus. Vivamus non commodo lectus. Nunc a cursus arcu, vitae aliquet risus. Pellentesque ac dolor purus. Aliquam auctor felis malesuada neque tristique gravida. Vestibulum nibh nibh, volutpat at eros at, maximus mattis sapien. Integer consectetur ultricies urna vitae dictum. Nullam id quam a arcu varius ultrices nec sit amet nisl. Nulla porta nec lacus sed pellentesque.'.split('');
-                      //         const index = Math.floor(Math.random() * characters.length) + 1;
-                      //         newDataInputString = newDataInputString + characters[index];
-                      //       }
-                      //       dataInputString[i] = newDataInputString;
-                      //     }
-                      //     setInputString(dataInputString);
-                      //     setRemovedCharacter(dataRemovedCharacter);
-                      //   }
-                      // // }
-                      if (value > 1000)
-                        api['warning']({
-                          message: `${dynamicElement}`,
-                          description: 'Character Limit Exceeds!',
-                        })
-                      const filteredLanguage = languages.filter((lang) => {
-                        if (language === '') return lang.language === 'Latin'
-                        else return lang.language === language
-                      })
-                      let defaultDynamicFieldsValues =
-                        templates[templateIndex].defaultDynamicFieldsValues
-                      const newDefaultDynamicFieldsValues = {
-                        // [dynamicElement]: dataInputString[i],
-                        [dynamicElement]: filteredLanguage[0].content.substring(0, value),
-                      }
-                      defaultDynamicFieldsValues = {
-                        ...defaultDynamicFieldsValues,
-                        ...newDefaultDynamicFieldsValues,
-                      }
-                      const newState = templates.map((template, i) => {
-                        if (templateIndex === i) {
-                          return {
-                            ...template,
-                            ...{
-                              ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                            },
-                          }
-                        }
-                        return template
-                      })
-                      setTemplates(newState)
-                    }}
-                  />
-                </Space>
-              </Space>
-            )
-          else if (dynamicElement.includes('font') || dynamicElement.includes('Variable'))
-            return (
-              <Space
-                key={i}
-                direction="horizontal"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 20.4,
-                  marginLeft: 15,
-                }}
-              >
-                <Space>
-                  <Space
-                    style={{
-                      fontWeight: 400,
-                      fontSize: 14,
-                      width: 132,
-                      color: '#000',
-                      justifyContent: 'flex-end',
-                    }}
-                  >
-                    {dynamicElement}:
-                  </Space>
-                </Space>
-                <Space>
-                  <InputNumberStyled
-                    style={{
-                      marginRight: 51.6,
-                    }}
-                    controls={{
-                      upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-                      downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-                    }}
-                    bordered={true}
-                    defaultValue={template.defaultDynamicFieldsValues[dynamicElement]}
-                    onChange={(value) => {
-                      if (value > 0) {
-                        let defaultDynamicFieldsValues =
-                          templates[templateIndex].defaultDynamicFieldsValues
-                        const newDefaultDynamicFieldsValues = {
-                          [dynamicElement]: value.toString(),
-                        }
-                        defaultDynamicFieldsValues = {
-                          ...defaultDynamicFieldsValues,
-                          ...newDefaultDynamicFieldsValues,
-                        }
-                        const newState = templates.map((template, i) => {
-                          if (templateIndex === i) {
-                            return {
-                              ...template,
-                              ...{
-                                ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                              },
-                            }
-                          }
-                          return template
-                        })
-                        setTemplates(newState)
-                      }
-                    }}
-                  />
-                </Space>
-              </Space>
-            )
-          else if (dynamicElement.includes('Element') || dynamicElement.includes('Color'))
-            return (
-              <Space
-                key={i}
-                direction="horizontal"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 20.4,
-                  marginLeft: 15,
-                }}
-              >
-                <Space>
-                  <Space
-                    style={{
-                      fontWeight: 400,
-                      fontSize: 14,
-                      width: 132,
-                      color: '#000',
-                      justifyContent: 'flex-end',
-                    }}
-                  >
-                    {dynamicElement}:
-                  </Space>
-                  <Space
-                    style={{
-                      color: template.defaultDynamicFieldsValues[dynamicElement],
-                    }}
-                  >
-                    {template.defaultDynamicFieldsValues[dynamicElement]}
-                  </Space>
-                </Space>
-                <Space>
-                  <ColorPickerStyled
-                    style={{marginRight: 51.6}}
-                    format={formatHex}
-                    value={template.defaultDynamicFieldsValues[dynamicElement]}
-                    onChange={(_, hex: string) => {
-                      // let dataColorHex = [...colorHex]
-                      // dataColorHex[i] = hex
-                      // setColorHex(dataColorHex)
-                      let defaultDynamicFieldsValues =
-                        templates[templateIndex].defaultDynamicFieldsValues
-                      const newDefaultDynamicFieldsValues = {
-                        [dynamicElement]: hex.toString(),
-                      }
-                      defaultDynamicFieldsValues = {
-                        ...defaultDynamicFieldsValues,
-                        ...newDefaultDynamicFieldsValues,
-                      }
-                      const newState = templates.map((template, i) => {
-                        if (templateIndex === i) {
-                          return {
-                            ...template,
-                            ...{
-                              ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                            },
-                          }
-                        }
-                        return template
-                      })
-                      setTemplates(newState)
-                    }}
-                    onFormatChange={setFormatHex}
-                  />
-                </Space>
-              </Space>
-            )
-          else if (
-            dynamicElement.includes('logo') ||
-            dynamicElement.includes('Background') ||
-            dynamicElement.includes('Image') ||
-            dynamicElement.includes('Video') ||
-            dynamicElement.includes('Overlay') ||
-            dynamicElement.includes('packshot')
-          )
-            return (
-              <Space
-                key={i}
-                direction="horizontal"
-                style={{
-                  display: 'flex',
-                  marginTop: 20.4,
-                  marginLeft: 15,
-                }}
-              >
-                <Space>
-                  <Space
-                    style={{
-                      fontWeight: 400,
-                      fontSize: 14,
-                      width: 132,
-                      color: '#000',
-                      justifyContent: 'flex-end',
-                    }}
-                  >
-                    {dynamicElement}:
-                  </Space>
-                </Space>
-                <Space
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  <UploadStyledv2
-                    maxCount={1}
-                    fileList={defaultFileList(template, dynamicElement)}
-                    showUploadList={{
-                      showRemoveIcon: true,
-                      removeIcon: (
-                        <CloseOutlined onClick={(e) => console.log(e, 'custom removeIcon event')} />
-                      ),
-                    }}
-                    customRequest={async ({onSuccess}) => {
-                      setTimeout(() => {
-                        onSuccess('ok')
-                      }, 0)
-                    }}
-                    beforeUpload={(file) => {
-                      const files = {
-                        dynamicElementKey: dynamicElement,
-                        fileData: file,
-                      }
-                      filesRef.current = [...filesRef.current, files]
-                      let defaultDynamicFieldsValues = []
-                      const newDefaultDynamicFieldsValues = {
-                        [dynamicElement]: file.name,
-                      }
-                      defaultDynamicFieldsValues = {
-                        ...template.defaultDynamicFieldsValues,
-                        ...newDefaultDynamicFieldsValues,
-                      }
-                      const newState = templates.map((template, i) => {
-                        if (templateIndex === i) {
-                          return {
-                            ...template,
-                            ...{
-                              ['defaultDynamicFieldsValuesFiles']: filesRef.current,
-                            },
-                            // ...{
-                            //   ["defaultDynamicFieldsValues"]:
-                            //     defaultDynamicFieldsValues,
-                            // },
-                          }
-                        }
-                        return template
-                      })
-                      setTemplates(newState)
-                      // let files = [{
-                      //   id: '1',
-                      //   files: [{
-                      //     id: 'logo',
-                      //     fileData: file
-                      //   }, {
-                      //     id: 'image',
-                      //     fileData: file
-                      //   }, {
-                      //     id: 'background',
-                      //     fileData: file
-                      //   }],
-                      // }, {
-                      //   id: '2',
-                      //   files: [{
-                      //     id: 'icon',
-                      //     fileData: file
-                      //   }, {
-                      //     id: 'photo',
-                      //     fileData: file
-                      //   }],
-                      // }];
-                      // const formData = new FormData();
-                      // files.forEach((fileObject) => {
-                      //   formData.append(`files[${fileObject.id}][id]`, fileObject.id);
-                      //   fileObject.files.forEach((nestedFile) => {
-                      //     formData.append(
-                      //       `files[${fileObject.id}][files][${nestedFile.id}][id]`,
-                      //       nestedFile.id
-                      //     );
-                      //     formData.append(
-                      //       `files[${fileObject.id}][files][${nestedFile.id}][file]`,
-                      //       nestedFile.fileData,
-                      //       nestedFile.fileData.name // Include the file name
-                      //     );
-                      //   });
-                      // });
-                      //
-                      // for (i = 0; i < 2; i++) {
-                      //   test.push({
-                      //     id: i + 1,
-                      //     files: [
-                      //       {
-                      //         element: 'logo',
-                      //         'file': file,
-                      //       },
-                      //       {
-                      //         element: 'background',
-                      //         'file': file,
-                      //       },
-                      //     ],
-                      //   });
-                      // }
-                      // let formData = new FormData();
-                      // test.forEach((item, index) => {
-                      //   item.files.forEach((fileItem, fileIndex) => {
-                      //     formData.append(`test[${index}][id]`, item.id);
-                      //     formData.append(`test[${index}][files][${fileIndex}][element]`, fileItem.element);
-                      //     formData.append(`test[${index}][files][${fileIndex}][file]`, fileItem.file);
-                      //   });
-                      // });
-                      // console.log(Object.fromEntries(formData));
-                      // dispatchv2(postTemplateVersionImageVideoCloud(formData));
-                    }}
-                  >
-                    <Button icon={<UploadOutlined />}>Upload</Button>
-                  </UploadStyledv2>
-                </Space>
-              </Space>
-            )
+              )
+          }
+          // if (
+          //   dynamicElement.includes('Text') ||
+          //   dynamicElement.includes('Headline') ||
+          //   dynamicElement.includes('legal') ||
+          //   dynamicElement.includes('Subheadline')
+          // )
+          // return (
+          //   <Space
+          //     key={i}
+          //     direction="horizontal"
+          //     style={{
+          //       display: 'flex',
+          //       justifyContent: 'space-between',
+          //       marginTop: 20.4,
+          //       marginLeft: 15,
+          //     }}
+          //   >
+          //     <Space>
+          //       <Space
+          //         style={{
+          //           fontWeight: 400,
+          //           fontSize: 14,
+          //           width: 132,
+          //           color: '#000',
+          //           justifyContent: 'flex-end',
+          //         }}
+          //       >
+          //         {dynamicElement}:
+          //       </Space>
+          //       <Space>
+          //         <InputStyled
+          //           style={{width: 356}}
+          //           placeholder={`${dynamicElement}`}
+          //           value={template.defaultDynamicFieldsValues[dynamicElement]}
+          //           onChange={(e) => {
+          //             let defaultDynamicFieldsValues = []
+          //             const newDefaultDynamicFieldsValues = {
+          //               [dynamicElement]: e.target.value,
+          //             }
+          //             defaultDynamicFieldsValues = {
+          //               ...template.defaultDynamicFieldsValues,
+          //               ...newDefaultDynamicFieldsValues,
+          //             }
+          //             const newState = templates.map((template, i) => {
+          //               if (templateIndex === i) {
+          //                 return {
+          //                   ...template,
+          //                   ...{
+          //                     ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+          //                   },
+          //                 }
+          //               }
+          //               return template
+          //             })
+          //             setTemplates(newState)
+          //           }}
+          //         />
+          //       </Space>
+          //     </Space>
+          //     <Space>
+          //       <Space>
+          //         {buttonCases.map((buttonCase) => (
+          //           <ButtonCaseStyled
+          //             style={
+          //               template.hasOwnProperty('dynamicElementsStyles')
+          //                 ? template.dynamicElementsStyles.find((obj) => {
+          //                     return obj[dynamicElement]
+          //                   })
+          //                   ? template.dynamicElementsStyles.find((obj) => {
+          //                       return obj[dynamicElement]
+          //                     })[dynamicElement].case === buttonCase.value
+          //                     ? {
+          //                         backgroundColor: '#339af0',
+          //                         color: '#fff',
+          //                         outline: 'unset',
+          //                         borderColor: '#339af0',
+          //                       }
+          //                     : {}
+          //                   : {}
+          //                 : {}
+          //             }
+          //             size="large"
+          //             onClick={() => {
+          //               let dynamicElementsStyles = []
+          //               let defaultDynamicFieldsValues = []
+          //               if (template.hasOwnProperty('dynamicElementsStyles')) {
+          //                 let dynamicElementsStylesExists =
+          //                   template.dynamicElementsStyles.filter((dynamicElementStyle) => {
+          //                     return dynamicElementStyle.hasOwnProperty(dynamicElement)
+          //                   }).length > 0
+          //                 if (dynamicElementsStylesExists) {
+          //                   const newDynamicElementsStylesState =
+          //                     template.dynamicElementsStyles.map((dynamicElementStyle) => {
+          //                       if (dynamicElementStyle.hasOwnProperty(dynamicElement))
+          //                         return {
+          //                           ...dynamicElementStyle,
+          //                           [dynamicElement]: {
+          //                             case: buttonCase.value,
+          //                             number: dynamicElementStyle[dynamicElement].number,
+          //                           },
+          //                         }
+          //                       return dynamicElementStyle
+          //                     })
+          //                   newDynamicElementsStylesState.map((newDynamicElementStyleState) =>
+          //                     dynamicElementsStyles.push(newDynamicElementStyleState),
+          //                   )
+          //                 } else
+          //                   dynamicElementsStyles.push(...template.dynamicElementsStyles, {
+          //                     [dynamicElement]: {
+          //                       case: buttonCase.value,
+          //                       number: 0,
+          //                     },
+          //                   })
+          //                 const newDefaultDynamicFieldsValues = {
+          //                   [dynamicElement]: textHeadingLegalCase(
+          //                     template.defaultDynamicFieldsValues[dynamicElement],
+          //                     buttonCase.value,
+          //                   ),
+          //                 }
+          //                 defaultDynamicFieldsValues = {
+          //                   ...template.defaultDynamicFieldsValues,
+          //                   ...newDefaultDynamicFieldsValues,
+          //                 }
+          //               } else {
+          //                 dynamicElementsStyles.push({
+          //                   [dynamicElement]: {
+          //                     case: buttonCase.value,
+          //                     number: 0,
+          //                   },
+          //                 })
+          //                 const newDefaultDynamicFieldsValues = {
+          //                   [dynamicElement]: textHeadingLegalCase(
+          //                     template.defaultDynamicFieldsValues[dynamicElement],
+          //                     buttonCase.value,
+          //                   ),
+          //                 }
+          //                 defaultDynamicFieldsValues = {
+          //                   ...template.defaultDynamicFieldsValues,
+          //                   ...newDefaultDynamicFieldsValues,
+          //                 }
+          //               }
+          //               const newState = templates.map((template, i) => {
+          //                 if (templateIndex === i) {
+          //                   return {
+          //                     ...template,
+          //                     dynamicElementsStyles,
+          //                     ...{
+          //                       ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+          //                     },
+          //                   }
+          //                 }
+          //                 return template
+          //               })
+          //               setTemplates(newState)
+          //             }}
+          //           >
+          //             {buttonCase.label}
+          //           </ButtonCaseStyled>
+          //         ))}
+          //       </Space>
+          //       <InputNumberStyled
+          //         style={{
+          //           marginRight: 51.6,
+          //         }}
+          //         controls={{
+          //           upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+          //           downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+          //         }}
+          //         bordered={true}
+          //         defaultValue={textHeadingLegalMaxValue(
+          //           template.defaultDynamicFieldsValues[dynamicElement],
+          //         )}
+          //         onStep={(value, type) => {
+          //           // let dataInputString = [...inputString];
+          //           // let dataRemovedCharacter = [...removedCharacter]
+          //           // if (type.type === 'down') {
+          //           //   const numToRemoveValidated = Math.min(numToRemove[i], inputString[i].length);
+          //           //   // if (numToRemoveValidated > 0) {
+          //           //     const removed = inputString[i].slice(-numToRemoveValidated);
+          //           //     const newInputString = inputString[i].slice(0, -numToRemoveValidated);
+          //           //     dataInputString[i] = newInputString;
+          //           //     dataRemovedCharacter[i] = removed + removedCharacter[i];
+          //           //     setInputString(dataInputString);
+          //           //     setRemovedCharacter(dataRemovedCharacter);
+          //           //   // }
+          //           // } else {
+          //           //   if (removedCharacter[i].length === 0) {
+          //           //     let characters = null;
+          //           //     if (language !== '') {
+          //           //       const filteredLanguage = languages.filter(lang => {
+          //           //         return lang.language === language;
+          //           //       });
+          //           //       filteredLanguage.map(language => characters = language.content.split(''));
+          //           //     } else characters = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin non velit a dolor euismod sollicitudin eu eget dolor. Mauris nec risus sed libero sagittis porta et ut massa. Nulla vel ipsum vehicula, varius lectus vel, varius neque. Phasellus id diam magna. Integer pellentesque semper purus. Cras consequat lacinia est nec lacinia. Cras massa sapien, fermentum sit amet orci sed, imperdiet tempus quam. Duis tincidunt sem a finibus faucibus. Duis id leo vel velit imperdiet imperdiet ut nec metus. Nam aliquam ante vel vestibulum blandit. Suspendisse pharetra erat a lorem scelerisque convallis. Nam imperdiet tincidunt magna ac rutrum. Aliquam consectetur aliquam massa vitae hendrerit. Etiam imperdiet sed mauris vel iaculis. Etiam vitae arcu vitae ante pretium vehicula. Curabitur eget vulputate ipsum. Aliquam quis blandit dui. Vivamus placerat congue dolor vel convallis. Nunc neque nulla, convallis ac eros in, maximus varius odio. Morbi cursus nisi eget leo lobortis porttitor. Nam nibh sapien, mattis ut elementum porttitor, iaculis id enim. Quisque iaculis quam in diam maximus feugiat. Duis finibus dui ut dui posuere vestibulum. Sed porta viverra dolor, sed rutrum odio varius ornare. Donec ultricies pellentesque ligula. Aenean dictum ante quis sapien malesuada suscipit. Morbi metus massa, lacinia id aliquet vel, semper eget felis. Maecenas hendrerit rhoncus varius. Sed massa mi, blandit id tellus sed, aliquam viverra justo. Mauris rhoncus leo quis ullamcorper pellentesque. Nunc libero justo, laoreet hendrerit leo quis, facilisis facilisis massa. Aliquam sed erat mi. Duis ac imperdiet nibh. Ut eu dolor viverra, pulvinar ante ut, mattis dolor. Etiam volutpat dui at molestie ultrices. Mauris blandit, eros a convallis egestas, dolor augue convallis augue, vitae pretium massa purus nec mauris. Aenean eget hendrerit augue. Suspendisse hendrerit, dui in luctus lobortis, massa sapien blandit velit, vitae viverra diam sapien eget sapien. Proin pulvinar sollicitudin cursus. Phasellus ullamcorper ex a lorem fermentum maximus. Donec in ipsum non lectus convallis blandit. Sed lacus augue, cursus ut ipsum sed, posuere ultrices nunc. Suspendisse ac tincidunt velit, id tincidunt risus. Nam vulputate gravida cursus. Pellentesque et luctus arcu. Proin accumsan tortor sed lectus rutrum commodo eget ut eros. Duis neque lectus, aliquet sit amet tincidunt at, finibus at dui. Aliquam ultricies arcu lacinia massa pretium finibus. Proin mollis lobortis efficitur. Curabitur sollicitudin justo non diam tincidunt, nec consectetur lacus faucibus. Integer commodo quis tellus vitae vestibulum. Aliquam dictum turpis aliquam leo sagittis lacinia. Nulla dapibus sodales est, non feugiat dui fringilla ut. Proin convallis augue at magna luctus bibendum. Suspendisse et velit ipsum. Sed non magna tincidunt mauris pellentesque cursus. Phasellus libero massa, convallis volutpat elit sed, gravida imperdiet lectus. Vivamus non commodo lectus. Nunc a cursus arcu, vitae aliquet risus. Pellentesque ac dolor purus. Aliquam auctor felis malesuada neque tristique gravida. Vestibulum nibh nibh, volutpat at eros at, maximus mattis sapien. Integer consectetur ultricies urna vitae dictum. Nullam id quam a arcu varius ultrices nec sit amet nisl. Nulla porta nec lacus sed pellentesque.'.split('');
+          //           //     const index = Math.floor(Math.random() * characters.length) + 1;
+          //           //     dataInputString[i] = inputString[i] + characters[index];
+          //           //     setInputString(dataInputString);
+          //           //   } else {
+          //           //     const numToAddValidated = Math.min(numToAdd[i], removedCharacter[i].length);
+          //           //     // if (numToAddValidated > 0) {
+          //           //       const added = removedCharacter[i].slice(0, numToAddValidated);
+          //           //       const newRemovedCharacter = removedCharacter[i].slice(numToAddValidated);
+          //           //       dataInputString[i] = inputString[i] + added;
+          //           //       dataRemovedCharacter[i] = newRemovedCharacter;
+          //           //       setInputString(dataInputString);
+          //           //       setRemovedCharacter(dataRemovedCharacter);
+          //           //     // }
+          //           //   }
+          //           // }
+          //           if (value > 1000)
+          //             api['warning']({
+          //               message: `${dynamicElement}`,
+          //               description: 'Character Limit Exceeds!',
+          //             })
+          //           const filteredLanguage = languages.filter((lang) => {
+          //             if (language === '') return lang.language === 'Latin'
+          //             else return lang.language === language
+          //           })
+          //           let defaultDynamicFieldsValues =
+          //             templates[templateIndex].defaultDynamicFieldsValues
+          //           const newDefaultDynamicFieldsValues = {
+          //             // [dynamicElement]: dataInputString[i],
+          //             [dynamicElement]: filteredLanguage[0].content.substring(0, value),
+          //           }
+          //           defaultDynamicFieldsValues = {
+          //             ...defaultDynamicFieldsValues,
+          //             ...newDefaultDynamicFieldsValues,
+          //           }
+          //           const newState = templates.map((template, i) => {
+          //             if (templateIndex === i) {
+          //               return {
+          //                 ...template,
+          //                 ...{
+          //                   ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+          //                 },
+          //               }
+          //             }
+          //             return template
+          //           })
+          //           setTemplates(newState)
+          //         }}
+          //         onChange={(value) => {
+          //           // let dataInputString = [...inputString];
+          //           // let dataRemovedCharacter = [...removedCharacter];
+          //           // // if (removedCharacter[i].length === 0) {
+          //           // //   // if (value < inputString[i].length) {
+          //           // //   //   const numToRemoveValidated = Math.min(value, inputString[i].length);
+          //           // //   //   if (numToRemoveValidated > 0) {
+          //           // //   //     const removed = inputString[i].slice(-numToRemoveValidated);
+          //           // //   //     const newInputString = inputString[i].slice(0, -numToRemoveValidated);
+          //           // //   //     dataInputString[i] = newInputString;
+          //           // //   //     dataRemovedCharacter[i] = removed + removedCharacter[i];
+          //           // //   //     setInputString(dataInputString);
+          //           // //   //     setRemovedCharacter(dataRemovedCharacter);
+          //           // //   //   }
+          //           // //   // }
+          //           // // } else {
+          //           //   if (value < inputString[i].length) {
+          //           //     const numToRemoveValidated = Math.min(value, inputString[i].length);
+          //           //     const removed = inputString[i].slice(-numToRemoveValidated);
+          //           //     const newInputString = inputString[i].slice(0, -numToRemoveValidated);
+          //           //     dataInputString[i] = newInputString;
+          //           //     dataRemovedCharacter[i] = removed + removedCharacter[i];
+          //           //     setInputString(dataInputString);
+          //           //     setRemovedCharacter(dataRemovedCharacter);
+          //           //   } else {
+          //           //     const numToAddValidated = Math.min(value, removedCharacter[i].length);
+          //           //     const added = removedCharacter[i].slice(0, numToAddValidated);
+          //           //     const newRemovedCharacter = removedCharacter[i].slice(numToAddValidated);
+          //           //     dataInputString[i] = inputString[i] + added;
+          //           //     dataRemovedCharacter[i] = newRemovedCharacter;
+          //           //     if (value !== dataInputString[i].length) {
+          //           //       let newDataInputString = dataInputString[i];
+          //           //       let characters = null;
+          //           //       let n = value - dataInputString[i].length;
+          //           //       for (let i = 0; i < n; i++) {
+          //           //         if (language !== '') {
+          //           //           const filteredLanguage = languages.filter(lang => {
+          //           //             return lang.language === language;
+          //           //           });
+          //           //           filteredLanguage.map(language => characters = language.content.split(''));
+          //           //         } else characters = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin non velit a dolor euismod sollicitudin eu eget dolor. Mauris nec risus sed libero sagittis porta et ut massa. Nulla vel ipsum vehicula, varius lectus vel, varius neque. Phasellus id diam magna. Integer pellentesque semper purus. Cras consequat lacinia est nec lacinia. Cras massa sapien, fermentum sit amet orci sed, imperdiet tempus quam. Duis tincidunt sem a finibus faucibus. Duis id leo vel velit imperdiet imperdiet ut nec metus. Nam aliquam ante vel vestibulum blandit. Suspendisse pharetra erat a lorem scelerisque convallis. Nam imperdiet tincidunt magna ac rutrum. Aliquam consectetur aliquam massa vitae hendrerit. Etiam imperdiet sed mauris vel iaculis. Etiam vitae arcu vitae ante pretium vehicula. Curabitur eget vulputate ipsum. Aliquam quis blandit dui. Vivamus placerat congue dolor vel convallis. Nunc neque nulla, convallis ac eros in, maximus varius odio. Morbi cursus nisi eget leo lobortis porttitor. Nam nibh sapien, mattis ut elementum porttitor, iaculis id enim. Quisque iaculis quam in diam maximus feugiat. Duis finibus dui ut dui posuere vestibulum. Sed porta viverra dolor, sed rutrum odio varius ornare. Donec ultricies pellentesque ligula. Aenean dictum ante quis sapien malesuada suscipit. Morbi metus massa, lacinia id aliquet vel, semper eget felis. Maecenas hendrerit rhoncus varius. Sed massa mi, blandit id tellus sed, aliquam viverra justo. Mauris rhoncus leo quis ullamcorper pellentesque. Nunc libero justo, laoreet hendrerit leo quis, facilisis facilisis massa. Aliquam sed erat mi. Duis ac imperdiet nibh. Ut eu dolor viverra, pulvinar ante ut, mattis dolor. Etiam volutpat dui at molestie ultrices. Mauris blandit, eros a convallis egestas, dolor augue convallis augue, vitae pretium massa purus nec mauris. Aenean eget hendrerit augue. Suspendisse hendrerit, dui in luctus lobortis, massa sapien blandit velit, vitae viverra diam sapien eget sapien. Proin pulvinar sollicitudin cursus. Phasellus ullamcorper ex a lorem fermentum maximus. Donec in ipsum non lectus convallis blandit. Sed lacus augue, cursus ut ipsum sed, posuere ultrices nunc. Suspendisse ac tincidunt velit, id tincidunt risus. Nam vulputate gravida cursus. Pellentesque et luctus arcu. Proin accumsan tortor sed lectus rutrum commodo eget ut eros. Duis neque lectus, aliquet sit amet tincidunt at, finibus at dui. Aliquam ultricies arcu lacinia massa pretium finibus. Proin mollis lobortis efficitur. Curabitur sollicitudin justo non diam tincidunt, nec consectetur lacus faucibus. Integer commodo quis tellus vitae vestibulum. Aliquam dictum turpis aliquam leo sagittis lacinia. Nulla dapibus sodales est, non feugiat dui fringilla ut. Proin convallis augue at magna luctus bibendum. Suspendisse et velit ipsum. Sed non magna tincidunt mauris pellentesque cursus. Phasellus libero massa, convallis volutpat elit sed, gravida imperdiet lectus. Vivamus non commodo lectus. Nunc a cursus arcu, vitae aliquet risus. Pellentesque ac dolor purus. Aliquam auctor felis malesuada neque tristique gravida. Vestibulum nibh nibh, volutpat at eros at, maximus mattis sapien. Integer consectetur ultricies urna vitae dictum. Nullam id quam a arcu varius ultrices nec sit amet nisl. Nulla porta nec lacus sed pellentesque.'.split('');
+          //           //         const index = Math.floor(Math.random() * characters.length) + 1;
+          //           //         newDataInputString = newDataInputString + characters[index];
+          //           //       }
+          //           //       dataInputString[i] = newDataInputString;
+          //           //     }
+          //           //     setInputString(dataInputString);
+          //           //     setRemovedCharacter(dataRemovedCharacter);
+          //           //   }
+          //           // // }
+          //           if (value > 1000)
+          //             api['warning']({
+          //               message: `${dynamicElement}`,
+          //               description: 'Character Limit Exceeds!',
+          //             })
+          //           const filteredLanguage = languages.filter((lang) => {
+          //             if (language === '') return lang.language === 'Latin'
+          //             else return lang.language === language
+          //           })
+          //           let defaultDynamicFieldsValues =
+          //             templates[templateIndex].defaultDynamicFieldsValues
+          //           const newDefaultDynamicFieldsValues = {
+          //             // [dynamicElement]: dataInputString[i],
+          //             [dynamicElement]: filteredLanguage[0].content.substring(0, value),
+          //           }
+          //           defaultDynamicFieldsValues = {
+          //             ...defaultDynamicFieldsValues,
+          //             ...newDefaultDynamicFieldsValues,
+          //           }
+          //           const newState = templates.map((template, i) => {
+          //             if (templateIndex === i) {
+          //               return {
+          //                 ...template,
+          //                 ...{
+          //                   ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+          //                 },
+          //               }
+          //             }
+          //             return template
+          //           })
+          //           setTemplates(newState)
+          //         }}
+          //       />
+          //     </Space>
+          //   </Space>
+          // )
+          // else if (dynamicElement.includes('font') || dynamicElement.includes('Variable'))
+          // return (
+          //   <Space
+          //     key={i}
+          //     direction="horizontal"
+          //     style={{
+          //       display: 'flex',
+          //       justifyContent: 'space-between',
+          //       marginTop: 20.4,
+          //       marginLeft: 15,
+          //     }}
+          //   >
+          //     <Space>
+          //       <Space
+          //         style={{
+          //           fontWeight: 400,
+          //           fontSize: 14,
+          //           width: 132,
+          //           color: '#000',
+          //           justifyContent: 'flex-end',
+          //         }}
+          //       >
+          //         {dynamicElement}:
+          //       </Space>
+          //     </Space>
+          //     <Space>
+          //       <InputNumberStyled
+          //         style={{
+          //           marginRight: 51.6,
+          //         }}
+          //         controls={{
+          //           upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+          //           downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+          //         }}
+          //         bordered={true}
+          //         defaultValue={template.defaultDynamicFieldsValues[dynamicElement]}
+          //         onChange={(value) => {
+          //           if (value > 0) {
+          //             let defaultDynamicFieldsValues =
+          //               templates[templateIndex].defaultDynamicFieldsValues
+          //             const newDefaultDynamicFieldsValues = {
+          //               [dynamicElement]: value.toString(),
+          //             }
+          //             defaultDynamicFieldsValues = {
+          //               ...defaultDynamicFieldsValues,
+          //               ...newDefaultDynamicFieldsValues,
+          //             }
+          //             const newState = templates.map((template, i) => {
+          //               if (templateIndex === i) {
+          //                 return {
+          //                   ...template,
+          //                   ...{
+          //                     ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+          //                   },
+          //                 }
+          //               }
+          //               return template
+          //             })
+          //             setTemplates(newState)
+          //           }
+          //         }}
+          //       />
+          //     </Space>
+          //   </Space>
+          // )
+          // else if (dynamicElement.includes('Element') || dynamicElement.includes('Color'))
+          // return (
+          //   <Space
+          //     key={i}
+          //     direction="horizontal"
+          //     style={{
+          //       display: 'flex',
+          //       justifyContent: 'space-between',
+          //       marginTop: 20.4,
+          //       marginLeft: 15,
+          //     }}
+          //   >
+          //     <Space>
+          //       <Space
+          //         style={{
+          //           fontWeight: 400,
+          //           fontSize: 14,
+          //           width: 132,
+          //           color: '#000',
+          //           justifyContent: 'flex-end',
+          //         }}
+          //       >
+          //         {dynamicElement}:
+          //       </Space>
+          //       <Space
+          //         style={{
+          //           color: template.defaultDynamicFieldsValues[dynamicElement],
+          //         }}
+          //       >
+          //         {template.defaultDynamicFieldsValues[dynamicElement]}
+          //       </Space>
+          //     </Space>
+          //     <Space>
+          //       <ColorPickerStyled
+          //         style={{marginRight: 51.6}}
+          //         format={formatHex}
+          //         value={template.defaultDynamicFieldsValues[dynamicElement]}
+          //         onChange={(_, hex: string) => {
+          //           // let dataColorHex = [...colorHex]
+          //           // dataColorHex[i] = hex
+          //           // setColorHex(dataColorHex)
+          //           let defaultDynamicFieldsValues =
+          //             templates[templateIndex].defaultDynamicFieldsValues
+          //           const newDefaultDynamicFieldsValues = {
+          //             [dynamicElement]: hex.toString(),
+          //           }
+          //           defaultDynamicFieldsValues = {
+          //             ...defaultDynamicFieldsValues,
+          //             ...newDefaultDynamicFieldsValues,
+          //           }
+          //           const newState = templates.map((template, i) => {
+          //             if (templateIndex === i) {
+          //               return {
+          //                 ...template,
+          //                 ...{
+          //                   ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+          //                 },
+          //               }
+          //             }
+          //             return template
+          //           })
+          //           setTemplates(newState)
+          //         }}
+          //         onFormatChange={setFormatHex}
+          //       />
+          //     </Space>
+          //   </Space>
+          // )
+          // else if (
+          //   dynamicElement.includes('logo') ||
+          //   dynamicElement.includes('Background') ||
+          //   dynamicElement.includes('Image') ||
+          //   dynamicElement.includes('Video') ||
+          //   dynamicElement.includes('Overlay') ||
+          //   dynamicElement.includes('packshot')
+          // )
+          //   return (
+          //     <Space
+          //       key={i}
+          //       direction="horizontal"
+          //       style={{
+          //         display: 'flex',
+          //         marginTop: 20.4,
+          //         marginLeft: 15,
+          //       }}
+          //     >
+          //       <Space>
+          //         <Space
+          //           style={{
+          //             fontWeight: 400,
+          //             fontSize: 14,
+          //             width: 132,
+          //             color: '#000',
+          //             justifyContent: 'flex-end',
+          //           }}
+          //         >
+          //           {dynamicElement}:
+          //         </Space>
+          //       </Space>
+          //       <Space
+          //         style={{
+          //           display: 'flex',
+          //           alignItems: 'center',
+          //         }}
+          //       >
+          //         <UploadStyledv2
+          //           maxCount={1}
+          //           fileList={defaultFileList(template, dynamicElement)}
+          //           showUploadList={{
+          //             showRemoveIcon: true,
+          //             removeIcon: (
+          //               <CloseOutlined onClick={(e) => console.log(e, 'custom removeIcon event')} />
+          //             ),
+          //           }}
+          //           customRequest={async ({onSuccess}) => {
+          //             setTimeout(() => {
+          //               onSuccess('ok')
+          //             }, 0)
+          //           }}
+          //           beforeUpload={(file) => {
+          //             const files = {
+          //               dynamicElementKey: dynamicElement,
+          //               fileData: file,
+          //             }
+          //             filesRef.current = [...filesRef.current, files]
+          //             let defaultDynamicFieldsValues = []
+          //             const newDefaultDynamicFieldsValues = {
+          //               [dynamicElement]: file.name,
+          //             }
+          //             defaultDynamicFieldsValues = {
+          //               ...template.defaultDynamicFieldsValues,
+          //               ...newDefaultDynamicFieldsValues,
+          //             }
+          //             const newState = templates.map((template, i) => {
+          //               if (templateIndex === i) {
+          //                 return {
+          //                   ...template,
+          //                   ...{
+          //                     ['defaultDynamicFieldsValuesFiles']: filesRef.current,
+          //                   },
+          //                   // ...{
+          //                   //   ["defaultDynamicFieldsValues"]:
+          //                   //     defaultDynamicFieldsValues,
+          //                   // },
+          //                 }
+          //               }
+          //               return template
+          //             })
+          //             setTemplates(newState)
+          //             // let files = [{
+          //             //   id: '1',
+          //             //   files: [{
+          //             //     id: 'logo',
+          //             //     fileData: file
+          //             //   }, {
+          //             //     id: 'image',
+          //             //     fileData: file
+          //             //   }, {
+          //             //     id: 'background',
+          //             //     fileData: file
+          //             //   }],
+          //             // }, {
+          //             //   id: '2',
+          //             //   files: [{
+          //             //     id: 'icon',
+          //             //     fileData: file
+          //             //   }, {
+          //             //     id: 'photo',
+          //             //     fileData: file
+          //             //   }],
+          //             // }];
+          //             // const formData = new FormData();
+          //             // files.forEach((fileObject) => {
+          //             //   formData.append(`files[${fileObject.id}][id]`, fileObject.id);
+          //             //   fileObject.files.forEach((nestedFile) => {
+          //             //     formData.append(
+          //             //       `files[${fileObject.id}][files][${nestedFile.id}][id]`,
+          //             //       nestedFile.id
+          //             //     );
+          //             //     formData.append(
+          //             //       `files[${fileObject.id}][files][${nestedFile.id}][file]`,
+          //             //       nestedFile.fileData,
+          //             //       nestedFile.fileData.name // Include the file name
+          //             //     );
+          //             //   });
+          //             // });
+          //             //
+          //             // for (i = 0; i < 2; i++) {
+          //             //   test.push({
+          //             //     id: i + 1,
+          //             //     files: [
+          //             //       {
+          //             //         element: 'logo',
+          //             //         'file': file,
+          //             //       },
+          //             //       {
+          //             //         element: 'background',
+          //             //         'file': file,
+          //             //       },
+          //             //     ],
+          //             //   });
+          //             // }
+          //             // let formData = new FormData();
+          //             // test.forEach((item, index) => {
+          //             //   item.files.forEach((fileItem, fileIndex) => {
+          //             //     formData.append(`test[${index}][id]`, item.id);
+          //             //     formData.append(`test[${index}][files][${fileIndex}][element]`, fileItem.element);
+          //             //     formData.append(`test[${index}][files][${fileIndex}][file]`, fileItem.file);
+          //             //   });
+          //             // });
+          //             // console.log(Object.fromEntries(formData));
+          //             // dispatchv2(postTemplateVersionImageVideoCloud(formData));
+          //           }}
+          //         >
+          //           <Button icon={<UploadOutlined />}>Upload</Button>
+          //         </UploadStyledv2>
+          //       </Space>
+          //     </Space>
+          //   )
         })}
       </Space>
     )
