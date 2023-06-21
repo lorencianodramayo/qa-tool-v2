@@ -162,26 +162,34 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           })
         })
         setVariantNameTreeData(treeDataVariantNames)
-        const filteredVariantNameValues = treeDataVariantNames
-          .filter((node) => filterVariantTreeNode(searchVariantNameValue, node))
-          .map((node) => node.value)
-        setSelectedVariantNameValues(filteredVariantNameValues)
+        if (selectAllVariantNames) {
+          const filteredVariantNameValues = treeDataVariantNames
+            .filter((node) => filterVariantTreeNode(searchVariantNameValue, node))
+            .map((node) => node.value)
+          setSelectedVariantNameValues(filteredVariantNameValues)
+        }
         setVariantSizeTreeData(treeDataVariantSizes)
-        const filteredVariantSizeValues = treeDataVariantSizes
-          .filter((node) => filterVariantTreeNode(searchVariantSizeValue, node))
-          .map((node) => node.value)
-        setSelectedVariantSizeValues(filteredVariantSizeValues)
+        if (selectAllVariantSizes) {
+          const filteredVariantSizeValues = treeDataVariantSizes
+            .filter((node) => filterVariantTreeNode(searchVariantSizeValue, node))
+            .map((node) => node.value)
+          setSelectedVariantSizeValues(filteredVariantSizeValues)
+        }
         //
         setShareVariantNameTreeData(treeDataVariantNames)
-        const filteredShareVariantNameValues = treeDataVariantNames
-          .filter((node) => filterVariantTreeNode(shareSearchVariantNameValue, node))
-          .map((node) => node.value)
-        setShareSelectedVariantNameValues(filteredShareVariantNameValues)
+        if (shareSelectAllVariantNames) {
+          const filteredShareVariantNameValues = treeDataVariantNames
+            .filter((node) => filterVariantTreeNode(shareSearchVariantNameValue, node))
+            .map((node) => node.value)
+          setShareSelectedVariantNameValues(filteredShareVariantNameValues)
+        }
         setShareVariantSizeTreeData(treeDataVariantSizes)
-        const filteredShareVariantSizeValues = treeDataVariantSizes
-          .filter((node) => filterVariantTreeNode(shareSearchVariantSizeValue, node))
-          .map((node) => node.value)
-        setShareSelectedVariantSizeValues(filteredShareVariantSizeValues)
+        if (shareSelectAllVariantSizes) {
+          const filteredShareVariantSizeValues = treeDataVariantSizes
+            .filter((node) => filterVariantTreeNode(shareSearchVariantSizeValue, node))
+            .map((node) => node.value)
+          setShareSelectedVariantSizeValues(filteredShareVariantSizeValues)
+        }
         let combinations = 0
         let filterVariants = []
         let i = 0
@@ -234,10 +242,16 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         setCombinations(combinations)
         setVariants(filterVariants)
         setLoading(false)
-      }, 6000)
+      }, 8000)
       return () => clearInterval(interval)
     }
-  }, [templatesVersions])
+  }, [
+    templatesVersions,
+    selectAllVariantNames,
+    selectAllVariantSizes,
+    shareSelectAllVariantNames,
+    shareSelectAllVariantSizes,
+  ])
   // useEffect(() => {
   //   if (templatesVersions !== null) {
   //     let filterVariants = []
@@ -541,7 +555,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         <Space.Compact block className="variant">
           Variants
         </Space.Compact>
-        <Space>
+        {/* <Space>
           <Checkbox
             style={{color: '#fff'}}
             checked={selectAllVariantNames}
@@ -551,7 +565,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           >
             {selectAllVariantNames ? 'Unselect All' : 'Select All'}
           </Checkbox>
-        </Space>
+        </Space> */}
         <Space.Compact block>
           <TreeSelectStyled
             style={{
@@ -563,20 +577,48 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             allowClear={true}
             value={selectedVariantNameValues}
             onChange={handleVariantNameChange}
-            treeNodeFilterProp="title"
-            treeDefaultExpandAll
+            // treeNodeFilterProp="title"
+            // treeDefaultExpandAll
             treeCheckable
-            showCheckedStrategy={TreeSelect.SHOW_ALL}
+            // showCheckedStrategy={TreeSelect.SHOW_ALL}
             filterTreeNode={filterVariantTreeNode}
-            placement={placement}
+            // placement={placement}
+            dropdownRender={(menu) => (
+              <div>
+                <Space
+                  style={{
+                    marginBottom: 4.1,
+                  }}
+                >
+                  <Checkbox
+                    style={{color: '#000'}}
+                    checked={selectAllVariantNames}
+                    onChange={
+                      selectAllVariantNames
+                        ? handleUnselectAllVariantNames
+                        : handleSelectAllVariantNames
+                    }
+                  >
+                    {selectAllVariantNames ? 'Unselect All' : 'Select All'}
+                  </Checkbox>
+                </Space>
+                {menu}
+              </div>
+            )}
           >
-            {renderTreeNodes(variantNameTreeData)}
+            {renderTreeNodes(
+              searchVariantNameValue !== ''
+                ? variantNameTreeData.filter((data) =>
+                    data.title.toLowerCase().includes(searchVariantNameValue.toLowerCase()),
+                  )
+                : variantNameTreeData,
+            )}
           </TreeSelectStyled>
         </Space.Compact>
         <Space.Compact block className="size">
           Sizes
         </Space.Compact>
-        <Space>
+        {/* <Space>
           <Checkbox
             style={{color: '#fff'}}
             checked={selectAllVariantSizes}
@@ -586,7 +628,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
           >
             {selectAllVariantSizes ? 'Unselect All' : 'Select All'}
           </Checkbox>
-        </Space>
+        </Space> */}
         <Space.Compact block>
           <TreeSelectStyled
             style={{
@@ -598,14 +640,40 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             allowClear={true}
             value={selectedVariantSizeValues}
             onChange={handleVariantSizeChange}
-            treeNodeFilterProp="title"
-            treeDefaultExpandAll
+            // treeNodeFilterProp="title"
+            // treeDefaultExpandAll
             treeCheckable
-            showCheckedStrategy={TreeSelect.SHOW_ALL}
+            // showCheckedStrategy={TreeSelect.SHOW_ALL}
             filterTreeNode={filterVariantTreeNode}
-            placement={placement}
+            // placement={placement}
+            dropdownRender={(menu) => (
+              <div>
+                <Space
+                  style={{
+                    marginBottom: 4.1,
+                  }}
+                >
+                  <Checkbox
+                    style={{color: '#000'}}
+                    checked={selectAllVariantSizes}
+                    onChange={
+                      selectAllVariantSizes
+                        ? handleUnselectAllVariantSizes
+                        : handleSelectAllVariantSizes
+                    }
+                  >
+                    {selectAllVariantSizes ? 'Unselect All' : 'Select All'}
+                  </Checkbox>
+                </Space>
+                {menu}
+              </div>
+            )}
           >
-            {renderTreeNodes(variantSizeTreeData)}
+            {renderTreeNodes(
+              searchVariantSizeValue !== ''
+                ? variantSizeTreeData.filter((data) => data.title.includes(searchVariantSizeValue))
+                : variantSizeTreeData,
+            )}
           </TreeSelectStyled>
         </Space.Compact>
       </DrawerStyled>
@@ -629,26 +697,6 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 icon={<MenuUnfoldOutlined />}
                 onClick={() => setDrawerVisible(!drawerVisible)}
               />
-              {/* <Space.Compact block style={{
-                  marginLeft: 15.8,
-                }}>
-                  <Space style={{
-                    fontStyle: "normal",
-                    fontWeight: 'bold',
-                    fontSize: 16,
-                  }}>Version {templates.filter((template: { _id: string }) => {
-                    return template._id === templateId;
-                  })[0].defaultVersion + 1}</Space>
-                  <Space style={{
-                    fontStyle: "normal",
-                    marginLeft: 4.8,
-                  }}>{templates.filter((template: { _id: string }) => {
-                      return template._id === templateId;
-                    })[0].size + "-" +
-                  templates.filter((template: { _id: string }) => {
-                    return template._id === templateId;
-                  })[0].name}</Space>
-                </Space.Compact> */}
               <Space.Compact
                 block
                 style={{
@@ -975,7 +1023,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             <Space.Compact block className="variant">
               Variants
             </Space.Compact>
-            <Space>
+            {/* <Space>
               <Checkbox
                 checked={shareSelectAllVariantNames}
                 onChange={
@@ -986,7 +1034,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
               >
                 {shareSelectAllVariantNames ? 'Unselect All' : 'Select All'}
               </Checkbox>
-            </Space>
+            </Space> */}
             <Space.Compact block>
               <TreeSelectStyled
                 style={{
@@ -998,20 +1046,49 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 allowClear={true}
                 value={shareSelectedVariantNameValues}
                 onChange={handleShareVariantNameChange}
-                treeNodeFilterProp="title"
-                treeDefaultExpandAll
+                // treeNodeFilterProp="title"
+                // treeDefaultExpandAll
                 treeCheckable
-                showCheckedStrategy={TreeSelect.SHOW_ALL}
+                // showCheckedStrategy={TreeSelect.SHOW_ALL}
                 filterTreeNode={filterVariantTreeNode}
-                placement={placement}
+                // placement={placement}
+                dropdownRender={(menu) => (
+                  <div>
+                    <Space
+                      style={{
+                        marginBottom: 4.1,
+                      }}
+                    >
+                      <Checkbox
+                        checked={shareSelectAllVariantNames}
+                        onChange={
+                          shareSelectAllVariantNames
+                            ? handleShareUnselectAllVariantNames
+                            : handleShareSelectAllVariantNames
+                        }
+                      >
+                        {shareSelectAllVariantNames ? 'Unselect All' : 'Select All'}
+                      </Checkbox>
+                    </Space>
+                    {menu}
+                  </div>
+                )}
               >
-                {renderTreeNodes(shareVariantNameTreeData)}
+                {renderTreeNodes(
+                  shareSearchVariantNameValue !== ''
+                    ? shareVariantNameTreeData.filter((data) =>
+                        data.title
+                          .toLowerCase()
+                          .includes(shareSearchVariantNameValue.toLowerCase()),
+                      )
+                    : shareVariantNameTreeData,
+                )}
               </TreeSelectStyled>
             </Space.Compact>
             <Space.Compact block className="size">
               Sizes
             </Space.Compact>
-            <Space>
+            {/* <Space>
               <Checkbox
                 checked={shareSelectAllVariantSizes}
                 onChange={
@@ -1022,7 +1099,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
               >
                 {shareSelectAllVariantSizes ? 'Unselect All' : 'Select All'}
               </Checkbox>
-            </Space>
+            </Space> */}
             <Space.Compact block>
               <TreeSelectStyled
                 style={{
@@ -1034,14 +1111,43 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 allowClear={true}
                 value={shareSelectedVariantSizeValues}
                 onChange={handleShareVariantSizeChange}
-                treeNodeFilterProp="title"
-                treeDefaultExpandAll
+                // treeNodeFilterProp="title"
+                // treeDefaultExpandAll
                 treeCheckable
-                showCheckedStrategy={TreeSelect.SHOW_ALL}
+                // showCheckedStrategy={TreeSelect.SHOW_ALL}
                 filterTreeNode={filterVariantTreeNode}
-                placement={placement}
+                // placement={placement}
+                dropdownRender={(menu) => (
+                  <div>
+                    <Space
+                      style={{
+                        marginBottom: 4.1,
+                      }}
+                    >
+                      <Checkbox
+                        checked={shareSelectAllVariantSizes}
+                        onChange={
+                          shareSelectAllVariantSizes
+                            ? handleShareUnselectAllVariantSizes
+                            : handleShareSelectAllVariantSizes
+                        }
+                      >
+                        {shareSelectAllVariantSizes ? 'Unselect All' : 'Select All'}
+                      </Checkbox>
+                    </Space>
+                    {menu}
+                  </div>
+                )}
               >
-                {renderTreeNodes(shareVariantSizeTreeData)}
+                {renderTreeNodes(
+                  shareSearchVariantSizeValue !== ''
+                    ? shareVariantSizeTreeData.filter((data) =>
+                        data.title
+                          .toLowerCase()
+                          .includes(shareSearchVariantSizeValue.toLowerCase()),
+                      )
+                    : shareVariantSizeTreeData,
+                )}
               </TreeSelectStyled>
             </Space.Compact>
           </>

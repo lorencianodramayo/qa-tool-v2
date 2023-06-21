@@ -14,6 +14,7 @@ import {
   Spin,
   ColorPicker,
   Steps,
+  Collapse,
 } from 'antd'
 import type {Color, ColorPickerProps} from 'antd/es/color-picker'
 import FloatLabel from '../components/FloatLabel/FloatLabel'
@@ -26,6 +27,8 @@ import {
   CloseOutlined,
   ProfileFilled,
   TranslationOutlined,
+  CaretRightOutlined,
+  LinkOutlined,
 } from '@ant-design/icons'
 import type {UploadProps} from 'antd'
 import {Upload} from 'antd'
@@ -35,6 +38,7 @@ import {getLanguages, postLanguage} from '../features/language/languageSlice'
 import apiService from '../api/apiService'
 import {postTemplateVersionImageVideoCloud} from '../features/Done/doneSlice'
 import {useAppDispatch, useAppSelector} from '../store'
+const {Panel} = Collapse
 type LayoutType = Parameters<typeof Form>[0]['layout']
 const LayoutStyled = styled(Layout)`
   width: 71.7em;
@@ -57,8 +61,8 @@ const StepsStyled = styled(Steps)`
   &.ant-steps .ant-steps-item-process .ant-steps-item-icon {
     width: 27.6px;
     height: 27.6px;
-    background-color: rgb(24, 144, 255);
-    border-color: rgb(24, 144, 255);
+    background-color: #1890ff;
+    border-color: #1890ff;
   }
   &.ant-steps .ant-steps-item-wait .ant-steps-item-icon {
     width: 27.6px;
@@ -98,24 +102,24 @@ const StepsStyled = styled(Steps)`
     .ant-steps-item:not(.ant-steps-item-active):not(.ant-steps-item-process)
     > .ant-steps-item-container[role='button']:hover
     .ant-steps-item-icon {
-    border-color: rgb(24, 144, 255);
+    border-color: #1890ff;
   }
   &.ant-steps
     .ant-steps-item:not(.ant-steps-item-active):not(.ant-steps-item-process)
     > .ant-steps-item-container[role='button']:hover
     .ant-steps-item-icon
     .ant-steps-icon {
-    color: rgb(24, 144, 255);
+    color: #1890ff;
   }
   &.ant-steps
     .ant-steps-item:not(.ant-steps-item-active)
     > .ant-steps-item-container[role='button']:hover
     .ant-steps-item-title {
-    color: rgb(24, 144, 255);
+    color: #1890ff;
   }
   &.ant-steps .ant-steps-item-finish .ant-steps-item-icon {
     background-color: #fff;
-    border-color: rgb(24, 144, 255);
+    border-color: #1890ff;
     width: 27.6px;
     height: 27.6px;
   }
@@ -123,7 +127,7 @@ const StepsStyled = styled(Steps)`
     top: -2px;
   }
   &.ant-steps .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
-    color: rgb(24, 144, 255);
+    color: #1890ff;
   }
 `
 const DivMenuStyled = styled.div`
@@ -138,10 +142,22 @@ const DivMenuItemStyled = styled.div`
   margin-bottom: 4px;
   margin-top: 4px;
   :hover {
-    background: #1890ff;
+    background-color: #1890ff !important;
     cursor: pointer;
     border-radius: 5px;
     color: #fff;
+  }
+`
+const CollapseStyled = styled(Collapse)`
+  background-color: #1890ff;
+  border-color: #1890ff;
+  &.ant-collapse>.ant-collapse-item: last-child>.ant-collapse-header {
+    color: #fff;
+    font-weight: bold;
+  }
+  &.ant-collapse .ant-collapse-content > .ant-collapse-content-box {
+    padding: 0;
+    margin-bottom: 1px;
   }
 `
 const InputStyled = styled(Input)`
@@ -380,9 +396,11 @@ const ButtonAddLanguageStyled = styled(Button)`
     border-color: #ff4d4f !important;
   }
 `
-const ButtonGenerateStyled = styled(Button)`
+const ButtonStyled = styled(Button)`
+  background-color: #1890ff;
   &.ant-btn-primary:not(:disabled):hover {
-    background: #1677ff;
+    background-color: #1890ff;
+    border-color: #1890ff;
   }
   &.ant-btn-primary:not(:disabled):focus {
     outline: none;
@@ -401,7 +419,7 @@ export default function ElementsLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useDispatch()
-  const [currentStep, setCurrentStep] = useState<number>(1)
+  const [currentStep, _] = useState<number>(1)
   const {languages, isLanguagesSuccess, addLanguage, isAddLanguageSuccess} = useSelector(
     (state: any) => state.language,
   )
@@ -409,6 +427,7 @@ export default function ElementsLayout() {
   const [languagesList, setLanguagesList] = useState<any>([])
   const templateName: string = location.state.templateName
   const [templates, setTemplates] = useState<any>(location.state.templates)
+  const [possibleValues, setPossibleValues] = useState<any>([])
   const [templateIndex, setTemplateIndex] = useState<number>(0)
   const [showLanguageModal, setShowLanguageModal] = useState<boolean>(false)
   const [form] = Form.useForm()
@@ -464,6 +483,26 @@ export default function ElementsLayout() {
         }),
       )
     setReplicates(replicate)
+    if (
+      typeof templates[templateIndex].possibleValues === 'object' &&
+      templates[templateIndex].possibleValues !== null &&
+      !Array.isArray(templates[templateIndex].possibleValues)
+    ) {
+      for (const [key, _] of Object.entries(templates[templateIndex].possibleValues)) {
+        setPossibleValues((possibleValues) => [...possibleValues, key])
+      }
+    }
+    if (
+      Array.isArray(templates[templateIndex].possibleValues) &&
+      templates[templateIndex].possibleValues.every(
+        (item) => typeof item === 'object' && item !== null && !Array.isArray(item),
+      )
+    ) {
+      for (const obj of templates[templateIndex].possibleValues) {
+        const key = obj.key
+        setPossibleValues((possibleValues) => [...possibleValues, key])
+      }
+    }
   }, [templateIndex])
   useEffect(() => {
     templates[templateIndex]['dynamicElements'].map(async (dynamicElement) => {
@@ -626,9 +665,22 @@ export default function ElementsLayout() {
     const regex = /^-?\d+(\.\d+)?%$/
     return regex.test(value)
   }
-  const renderTemplateConfigurations = (template) => {
+  const renderTemplateConfigurations = (template, possibleValues) => {
     return (
       <Space direction="vertical" style={{marginLeft: 4}}>
+        <CollapseStyled
+          expandIcon={({isActive}) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+          defaultActiveKey={['1']}
+          accordion
+        >
+          <Panel header={template.dynamicElements.length + ' Dynamic Elements'} key={0}>
+            {template.dynamicElements.map((dynamicElement) => (
+              <Space.Compact block style={{fontWeight: 'bold', paddingLeft: 10, color: '#1890ff'}}>
+                {dynamicElement}
+              </Space.Compact>
+            ))}
+          </Panel>
+        </CollapseStyled>
         {template.dynamicElements.map((dynamicElement, i) => {
           const buttonCases = [
             {
@@ -638,7 +690,7 @@ export default function ElementsLayout() {
             {value: 'Lowercase', label: 'aa'},
             {value: 'Uppercase', label: 'AA'},
           ]
-          if (!dynamicElement.includes('trigger') && !dynamicElement.includes('cssAttrib')) {
+          if (!possibleValues.includes(dynamicElement) || possibleValues.length === 0) {
             if (isMediaType(template.defaultDynamicFieldsValues[dynamicElement]))
               return (
                 <Space
@@ -926,7 +978,90 @@ export default function ElementsLayout() {
                       />
                     </Space>
                   </Space>
+                  <Space>
+                    <Space style={{marginRight: 51.6}}>
+                      <ButtonStyled
+                        type="primary"
+                        icon={<LinkOutlined />}
+                        onClick={() => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: 'https://www.google.com',
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
                 </Space>
+                // <Space
+                //   key={i}
+                //   direction="horizontal"
+                //   style={{
+                //     display: 'flex',
+                //     justifyContent: 'space-between',
+                //     marginTop: 20.4,
+                //     marginLeft: 15,
+                //   }}
+                // >
+                //   <Space>
+                //     <Space
+                //       style={{
+                //         fontWeight: 400,
+                //         fontSize: 14,
+                //         width: 132,
+                //         color: '#000',
+                //         justifyContent: 'flex-end',
+                //       }}
+                //     >
+                //       {dynamicElement}:
+                //     </Space>
+                //     <Space>
+                //       <InputStyled
+                //         style={{width: 356}}
+                //         placeholder={`${dynamicElement}`}
+                //         value={template.defaultDynamicFieldsValues[dynamicElement]}
+                //         onChange={(e) => {
+                //           let defaultDynamicFieldsValues = []
+                //           const newDefaultDynamicFieldsValues = {
+                //             [dynamicElement]: e.target.value,
+                //           }
+                //           defaultDynamicFieldsValues = {
+                //             ...template.defaultDynamicFieldsValues,
+                //             ...newDefaultDynamicFieldsValues,
+                //           }
+                //           const newState = templates.map((template, i) => {
+                //             if (templateIndex === i) {
+                //               return {
+                //                 ...template,
+                //                 ...{
+                //                   ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                //                 },
+                //               }
+                //             }
+                //             return template
+                //           })
+                //           setTemplates(newState)
+                //         }}
+                //       />
+                //     </Space>
+                //   </Space>
+                // </Space>
               )
             else if (/^-?\d*\.?\d+$/.test(template.defaultDynamicFieldsValues[dynamicElement]))
               return (
@@ -1040,62 +1175,62 @@ export default function ElementsLayout() {
                   </Space>
                 </Space>
               )
-            else if (/^-?\d*\.?\d+$/.test(template.defaultDynamicFieldsValues[dynamicElement]))
-              return (
-                <Space
-                  key={i}
-                  direction="horizontal"
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    marginTop: 20.4,
-                    marginLeft: 15,
-                  }}
-                >
-                  <Space>
-                    <Space
-                      style={{
-                        fontWeight: 400,
-                        fontSize: 14,
-                        width: 132,
-                        color: '#000',
-                        justifyContent: 'flex-end',
-                      }}
-                    >
-                      {dynamicElement}:
-                    </Space>
-                    <Space>
-                      <InputStyled
-                        style={{width: 356}}
-                        placeholder={`${dynamicElement}`}
-                        value={template.defaultDynamicFieldsValues[dynamicElement]}
-                        onChange={(e) => {
-                          let defaultDynamicFieldsValues = []
-                          const newDefaultDynamicFieldsValues = {
-                            [dynamicElement]: e.target.value,
-                          }
-                          defaultDynamicFieldsValues = {
-                            ...template.defaultDynamicFieldsValues,
-                            ...newDefaultDynamicFieldsValues,
-                          }
-                          const newState = templates.map((template, i) => {
-                            if (templateIndex === i) {
-                              return {
-                                ...template,
-                                ...{
-                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                },
-                              }
-                            }
-                            return template
-                          })
-                          setTemplates(newState)
-                        }}
-                      />
-                    </Space>
-                  </Space>
-                </Space>
-              )
+            // else if (/^-?\d*\.?\d+$/.test(template.defaultDynamicFieldsValues[dynamicElement]))
+            //   return (
+            //     <Space
+            //       key={i}
+            //       direction="horizontal"
+            //       style={{
+            //         display: 'flex',
+            //         justifyContent: 'space-between',
+            //         marginTop: 20.4,
+            //         marginLeft: 15,
+            //       }}
+            //     >
+            //       <Space>
+            //         <Space
+            //           style={{
+            //             fontWeight: 400,
+            //             fontSize: 14,
+            //             width: 132,
+            //             color: '#000',
+            //             justifyContent: 'flex-end',
+            //           }}
+            //         >
+            //           {dynamicElement}:
+            //         </Space>
+            //         <Space>
+            //           <InputStyled
+            //             style={{width: 356}}
+            //             placeholder={`${dynamicElement}`}
+            //             value={template.defaultDynamicFieldsValues[dynamicElement]}
+            //             onChange={(e) => {
+            //               let defaultDynamicFieldsValues = []
+            //               const newDefaultDynamicFieldsValues = {
+            //                 [dynamicElement]: e.target.value,
+            //               }
+            //               defaultDynamicFieldsValues = {
+            //                 ...template.defaultDynamicFieldsValues,
+            //                 ...newDefaultDynamicFieldsValues,
+            //               }
+            //               const newState = templates.map((template, i) => {
+            //                 if (templateIndex === i) {
+            //                   return {
+            //                     ...template,
+            //                     ...{
+            //                       ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+            //                     },
+            //                   }
+            //                 }
+            //                 return template
+            //               })
+            //               setTemplates(newState)
+            //             }}
+            //           />
+            //         </Space>
+            //       </Space>
+            //     </Space>
+            //   )
             else if (Number(template.defaultDynamicFieldsValues[dynamicElement]) > 0)
               return (
                 <Space
@@ -1287,6 +1422,62 @@ export default function ElementsLayout() {
                 template.defaultDynamicFieldsValues[dynamicElement],
               )
             )
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (dynamicElement.includes('cssAttrib') || dynamicElement.includes('Variable'))
               return (
                 <Space
                   key={i}
@@ -2510,11 +2701,11 @@ export default function ElementsLayout() {
             borderLeft: '1px solid #F0F0F0',
           }}
         >
-          {renderTemplateConfigurations(templates[templateIndex])}
+          {renderTemplateConfigurations(templates[templateIndex], possibleValues)}
         </Space>
         <Space style={{width: '100%', justifyContent: 'right'}}>
           <Space style={{margin: '10px 20px 0 0'}}>
-            <ButtonGenerateStyled
+            <ButtonStyled
               type="primary"
               onClick={() => {
                 navigate('/configure/generate/elements/done', {
@@ -2533,7 +2724,7 @@ export default function ElementsLayout() {
               }}
             >
               Generate
-            </ButtonGenerateStyled>
+            </ButtonStyled>
           </Space>
         </Space>
       </div>

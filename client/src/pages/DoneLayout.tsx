@@ -1,6 +1,17 @@
 // @ts-nocheck
 import styled from 'styled-components'
-import {Button, Divider, Input, InputNumber, Spin, Layout, Space, notification, Steps} from 'antd'
+import {
+  Button,
+  Divider,
+  Input,
+  InputNumber,
+  Spin,
+  Layout,
+  Space,
+  notification,
+  Steps,
+  Collapse,
+} from 'antd'
 import {useEffect, useState} from 'react'
 import {
   CheckOutlined,
@@ -8,6 +19,7 @@ import {
   CaretDownOutlined,
   CloseOutlined,
   ProfileFilled,
+  CaretRightOutlined,
 } from '@ant-design/icons'
 import type {UploadProps} from 'antd'
 import {message, Upload} from 'antd'
@@ -20,6 +32,7 @@ import {
 import {useDispatch, useSelector} from 'react-redux'
 import {postTemplateVersionImageVideoCloud} from '../features/Done/doneSlice'
 import {useAppDispatch, useAppSelector} from '../store'
+const {Panel} = Collapse
 const LayoutStyled = styled(Layout)`
   width: 71.7em;
   border-radius: 10px;
@@ -41,8 +54,8 @@ const StepsStyled = styled(Steps)`
   &.ant-steps .ant-steps-item-process .ant-steps-item-icon {
     width: 27.6px;
     height: 27.6px;
-    background-color: rgb(24, 144, 255);
-    border-color: rgb(24, 144, 255);
+    background-color: #1890ff;
+    border-color: #1890ff;
   }
   &.ant-steps .ant-steps-item-wait .ant-steps-item-icon {
     width: 27.6px;
@@ -82,24 +95,24 @@ const StepsStyled = styled(Steps)`
     .ant-steps-item:not(.ant-steps-item-active):not(.ant-steps-item-process)
     > .ant-steps-item-container[role='button']:hover
     .ant-steps-item-icon {
-    border-color: rgb(24, 144, 255);
+    border-color: #1890ff;
   }
   &.ant-steps
     .ant-steps-item:not(.ant-steps-item-active):not(.ant-steps-item-process)
     > .ant-steps-item-container[role='button']:hover
     .ant-steps-item-icon
     .ant-steps-icon {
-    color: rgb(24, 144, 255);
+    color: #1890ff;
   }
   &.ant-steps
     .ant-steps-item:not(.ant-steps-item-active)
     > .ant-steps-item-container[role='button']:hover
     .ant-steps-item-title {
-    color: rgb(24, 144, 255);
+    color: #1890ff;
   }
   &.ant-steps .ant-steps-item-finish .ant-steps-item-icon {
     background-color: #fff;
-    border-color: rgb(24, 144, 255);
+    border-color: #1890ff;
     width: 27.6px;
     height: 27.6px;
   }
@@ -107,7 +120,7 @@ const StepsStyled = styled(Steps)`
     top: -2px;
   }
   &.ant-steps .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
-    color: rgb(24, 144, 255);
+    color: #1890ff;
   }
 `
 const DivMenuStyled = styled.div`
@@ -122,152 +135,35 @@ const DivMenuItemStyled = styled.div`
   margin-bottom: 4px;
   margin-top: 4px;
   :hover {
-    background: #1890ff;
+    background-color: #1890ff !important;
     cursor: pointer;
     border-radius: 5px;
     color: #fff;
   }
 `
-const InputStyled = styled(Input)`
-  border-color: #d9d9d9;
-  :hover,
-  :focus-visible {
-    border-color: #d9d9d9;
+const CollapseStyled = styled(Collapse)`
+  background-color: #1890ff;
+  border-color: #1890ff;
+  &.ant-collapse>.ant-collapse-item: last-child>.ant-collapse-header {
+    color: #fff;
+    font-weight: bold;
   }
-`
-const ButtonCaseStyled = styled(Button)`
-  margin-right: 0.4px;
-  &.ant-btn.ant-btn-lg {
+  &.ant-collapse .ant-collapse-content > .ant-collapse-content-box {
     padding: 0;
-    width: 27.2px;
-    background-color: #fff;
-    border-color: #000;
-    font-weight: 600;
-    font-size: 14px;
-    height: 24px;
-    border-radius: 5px;
-  }
-  .ant-btn-default:not(:disabled):hover,
-  :focus,
-  :hover,
-  :focus-visible {
-    background-color: #339af0 !important;
-    color: #fff !important;
-    outline: unset;
-    border-color: #339af0 !important;
-  }
-`
-const InputNumberStyled = styled(InputNumber)`
-  &.ant-input-number {
-    border-color: #339af0;
-    height: 24px;
-    width: 84.6px;
-    border-radius: 8px;
-  }
-  &.ant-input-number .ant-input-number-input {
-    vertical-align: text-top;
-    height: 18px;
-    font-size: 14px;
-    font-weight: 400;
-    padding: 1.9px 10.6px;
-  }
-  &.ant-input-number .ant-input-number-handler-wrap {
-    opacity: unset !important;
-  }
-  &.ant-input-number .ant-input-number-handler-wrap .ant-input-number-handler {
-    border-left-color: #339af0;
-    border-right-color: #339af0;
-    border-top-color: #339af0;
-  }
-  &.ant-input-number
-    .ant-input-number-handler-wrap
-    .ant-input-number-handler
-    .ant-input-number-handler-up-inner {
-    font-size: 10px !important;
-  }
-  &.ant-input-number
-    .ant-input-number-handler-wrap
-    .ant-input-number-handler
-    .ant-input-number-handler-down-inner {
-    font-size: 10px !important;
-  }
-`
-const UploadStyled = styled(Upload)`
-  margin-right: 51.6px;
-  &.ant-upload-wrapper {
-    position: relative;
-  }
-  &.ant-upload-wrapper .ant-upload-list {
-    position: absolute;
-    left: -555px;
-    top: -12px;
-    overflow-x: auto;
-    display: flex;
-    width: 554px;
-    ::-webkit-scrollbar {
-      display: none;
-    }
-  }
-  &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item-container {
-    width: 96px;
-    margin-right: 4px;
-    transition: unset;
-  }
-  &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item .ant-upload-list-item-name {
-    font-size: 12px;
-    font-weight: 400;
-    color: #339af0;
-    padding-left: 4px;
-  }
-  &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item .ant-upload-icon {
-    display: none;
-  }
-  &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item {
-    background: #fff;
-    margin-top: 0;
-    border: 1px solid #339af0;
-    border-radius: 5px;
-    height: 24px;
-  }
-  &.ant-upload-wrapper
-    .ant-upload-list
-    .ant-upload-list-item
-    .ant-upload-list-item-actions
-    .ant-upload-list-item-action {
-    display: none;
-  }
-  Button {
-    font-size: 12px;
-    font-weight: 400;
-    border-color: #d9d9d9;
-    width: 84.8px;
-    height: 24px;
-    padding: 2.2px 13.5px !important;
-    :hover,
-    :active {
-      border-color: #d9d9d9 !important;
-      color: #000 !important;
-    }
-    :focus-visible,
-    :focus {
-      outline: unset !important;
-      outline-offset: unset !important;
-      transition: unset !important;
-    }
+    margin-bottom: 1px;
   }
 `
 const ButtonDoneStyled = styled(Button)`
-  background-color: rgb(24, 144, 255);
-  box-shadow: unset;
-  &:active {
-    background-color: rgb(24, 144, 255) !important;
+  background-color: #1890ff;
+  &.ant-btn-primary:not(:disabled):hover {
+    background-color: #1890ff;
+    border-color: #1890ff;
   }
-  &:focus {
-    outline: unset;
+  &.ant-btn-primary:not(:disabled):focus {
+    outline: none;
   }
-  &:hover {
-    background-color: rgb(24, 144, 255) !important;
-    border-color: rgb(24, 144, 255);
+  &.ant-btn:not(:disabled):focus-visible {
+    outline: none;
   }
 `
 export default function DoneLayout() {
@@ -277,7 +173,8 @@ export default function DoneLayout() {
   const dispatchv2 = useAppDispatch()
   const templateName: string = location.state.templateName
   const templates: any = location.state.templates
-  const [currentStep, setCurrentStep] = useState<number>(2)
+  const [possibleValues, setPossibleValues] = useState<any>([])
+  const [currentStep, _] = useState<number>(2)
   const [templateIndex, setTemplateIndex] = useState<number>(0)
   const [imageVideoFiles, setImageVideoFiles] = useState<any>([])
   const {
@@ -296,6 +193,28 @@ export default function DoneLayout() {
   const [_templates, _setTemplates] = useState<any>([])
   const [api, contextHolder] = notification.useNotification()
   const [colorHex, setColorHex] = useState<Color[] | string[]>([])
+  useEffect(() => {
+    if (
+      typeof templates[templateIndex].possibleValues === 'object' &&
+      templates[templateIndex].possibleValues !== null &&
+      !Array.isArray(templates[templateIndex].possibleValues)
+    ) {
+      for (const [key, _] of Object.entries(templates[templateIndex].possibleValues)) {
+        setPossibleValues((possibleValues) => [...possibleValues, key])
+      }
+    }
+    if (
+      Array.isArray(templates[templateIndex].possibleValues) &&
+      templates[templateIndex].possibleValues.every(
+        (item) => typeof item === 'object' && item !== null && !Array.isArray(item),
+      )
+    ) {
+      for (const obj of templates[templateIndex].possibleValues) {
+        const key = obj.key
+        setPossibleValues((possibleValues) => [...possibleValues, key])
+      }
+    }
+  }, [templateIndex])
   useEffect(() => {
     if (isAddTemplateVersionSuccess) {
       let templatesVersions = []
@@ -429,27 +348,6 @@ export default function DoneLayout() {
         replace: true,
       })
   }
-  function checkDynamicElementExists(defaultDynamicFieldsValuesFiles, dynamicElement) {
-    for (let i = 0; i < defaultDynamicFieldsValuesFiles.length; i++) {
-      if (defaultDynamicFieldsValuesFiles[i].dynamicElementKey === dynamicElement) {
-        return defaultDynamicFieldsValuesFiles[i]
-      }
-    }
-    return false
-  }
-  const defaultFileList = (template, dynamicElement) => {
-    let fileName = ''
-    if (template.hasOwnProperty('defaultDynamicFieldsValuesFiles')) {
-      if (!checkDynamicElementExists(template.defaultDynamicFieldsValuesFiles, dynamicElement))
-        fileName = template.defaultDynamicFieldsValues[dynamicElement]
-      else
-        fileName = checkDynamicElementExists(
-          template.defaultDynamicFieldsValuesFiles,
-          dynamicElement,
-        ).fileData.name
-    } else fileName = template.defaultDynamicFieldsValues[dynamicElement]
-    return fileName
-  }
   function isMediaType(value) {
     var imageExtensions = /\.(jpg|jpeg|png|gif|bmp)$/i
     var videoExtensions = /\.(mp4|avi|mov|wmv|flv|mkv)$/i
@@ -487,33 +385,6 @@ export default function DoneLayout() {
     }
     return isRGBColor(value) || isRGBAColor(value) || isHexColor(value)
   }
-  function isRGBColor(value) {
-    if (value.startsWith('rgb(') && value.endsWith(')')) {
-      const values = value.substring(4, value.length - 1).split(',')
-      if (values.length === 3) {
-        const [r, g, b] = values.map(Number)
-        return r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255
-      }
-    }
-    return false
-  }
-  function isRGBAColor(value) {
-    if (value.startsWith('rgba(') && value.endsWith(')')) {
-      const values = value.substring(5, value.length - 1).split(',')
-      if (values.length === 4) {
-        const [r, g, b, a] = values.map(Number)
-        return r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1
-      }
-    }
-    return false
-  }
-  function isHexColor(value) {
-    if (value.startsWith('#') && (value.length === 4 || value.length === 7)) {
-      const hex = value.substring(1)
-      return /^[0-9A-Fa-f]{6}$|^[0-9A-Fa-f]{3}$/.test(hex)
-    }
-    return false
-  }
   function isURL(url) {
     try {
       new URL(url)
@@ -526,242 +397,660 @@ export default function DoneLayout() {
     const regex = /^-?\d+(\.\d+)?%$/
     return regex.test(value)
   }
-  const renderTemplateConfigurations = (template) => {
+  const renderTemplateConfigurations = (template, possibleValues) => {
     return (
-      <Space direction="vertical" style={{width: '100%'}}>
+      <Space direction="vertical" style={{width: '100%', marginLeft: 18}}>
+        <CollapseStyled
+          expandIcon={({isActive}) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+          defaultActiveKey={['1']}
+          accordion
+        >
+          <Panel header={template.dynamicElements.length + ' Dynamic Elements'} key={0}>
+            {template.dynamicElements.map((dynamicElement) => (
+              <Space.Compact block style={{fontWeight: 'bold', paddingLeft: 10, color: '#1890ff'}}>
+                {dynamicElement}
+              </Space.Compact>
+            ))}
+          </Panel>
+        </CollapseStyled>
         {template.dynamicElements.map((dynamicElement, i) => {
-          const buttonCases = [
-            {
-              value: 'Capitalize',
-              label: 'Aa',
-            },
-            {value: 'Lowercase', label: 'aa'},
-            {value: 'Uppercase', label: 'AA'},
-          ]
-          if (
-            dynamicElement.includes('Text') ||
-            dynamicElement.includes('Headline') ||
-            dynamicElement.includes('legal') ||
-            dynamicElement.includes('Subheadline')
-          )
-            return (
-              <Space
-                key={i}
-                direction="horizontal"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 20.4,
-                  marginLeft: 15,
-                }}
-              >
-                <Space>
-                  <Space
-                    style={{
-                      fontWeight: 400,
-                      fontSize: 14,
-                      width: 132,
-                      color: '#000',
-                      justifyContent: 'flex-end',
-                    }}
-                  >
-                    {dynamicElement}:
-                  </Space>
+          if (!possibleValues.includes(dynamicElement) || possibleValues.length === 0) {
+            if (isMediaType(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
                   <Space>
-                    <InputStyled
-                      style={{width: 356}}
-                      placeholder={`${dynamicElement}`}
-                      value={template.defaultDynamicFieldsValues[dynamicElement]}
-                    />
-                  </Space>
-                </Space>
-                <Space>
-                  <Space>
-                    {buttonCases.map((buttonCase) => (
-                      <ButtonCaseStyled
-                        style={
-                          template.hasOwnProperty('dynamicElementsStyles')
-                            ? template.dynamicElementsStyles.find((obj) => {
-                                return obj[dynamicElement]
-                              })
-                              ? template.dynamicElementsStyles.find((obj) => {
-                                  return obj[dynamicElement]
-                                })[dynamicElement].case === buttonCase.value
-                                ? {
-                                    backgroundColor: '#339af0',
-                                    color: '#fff',
-                                    outline: 'unset',
-                                    borderColor: '#339af0',
-                                  }
-                                : {}
-                              : {}
-                            : {}
-                        }
-                        size="large"
-                      >
-                        {buttonCase.label}
-                      </ButtonCaseStyled>
-                    ))}
-                  </Space>
-                  <InputNumberStyled
-                    style={{
-                      marginRight: 51.6,
-                    }}
-                    controls={{
-                      upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-                      downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-                    }}
-                    bordered={true}
-                    min={0}
-                    max={textHeadingLegalMaxValue(
-                      template.defaultDynamicFieldsValues[dynamicElement],
-                    )}
-                    value={textHeadingLegalMaxValue(
-                      template.defaultDynamicFieldsValues[dynamicElement],
-                    )}
-                  />
-                </Space>
-              </Space>
-            )
-          else if (dynamicElement.includes('font') || dynamicElement.includes('Variable'))
-            return (
-              <Space
-                key={i}
-                direction="horizontal"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 20.4,
-                  marginLeft: 15,
-                }}
-              >
-                <Space>
-                  <Space
-                    style={{
-                      fontWeight: 400,
-                      fontSize: 14,
-                      width: 132,
-                      color: '#000',
-                      justifyContent: 'flex-end',
-                    }}
-                  >
-                    {dynamicElement}:
-                  </Space>
-                </Space>
-                <Space>
-                  <InputNumberStyled
-                    style={{
-                      marginRight: 51.6,
-                    }}
-                    controls={{
-                      upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-                      downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-                    }}
-                    bordered={true}
-                    value={template.defaultDynamicFieldsValues[dynamicElement]}
-                  />
-                </Space>
-              </Space>
-            )
-          else if (dynamicElement.includes('Element') || dynamicElement.includes('Color'))
-            return (
-              <Space
-                key={i}
-                direction="horizontal"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 20.4,
-                  marginLeft: 15,
-                }}
-              >
-                <Space>
-                  <Space
-                    style={{
-                      fontWeight: 400,
-                      fontSize: 14,
-                      width: 132,
-                      color: '#000',
-                      justifyContent: 'flex-end',
-                    }}
-                  >
-                    {dynamicElement}:
+                    <Space
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        width: 132,
+                        color: '#1890ff',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
                   </Space>
                   <Space
                     style={{
-                      color:
-                        template.defaultDynamicFieldsValues[dynamicElement] === '#ffffff'
-                          ? '#000000'
-                          : template.defaultDynamicFieldsValues[dynamicElement],
+                      display: 'flex',
+                      alignItems: 'center',
+                      border: '2px solid #1890ff',
+                      borderRadius: 5,
+                      padding: 4,
                     }}
                   >
                     {template.defaultDynamicFieldsValues[dynamicElement]}
                   </Space>
                 </Space>
-              </Space>
-            )
-          else if (
-            dynamicElement.includes('logo') ||
-            dynamicElement.includes('Background') ||
-            dynamicElement.includes('Image') ||
-            dynamicElement.includes('Video') ||
-            dynamicElement.includes('Overlay') ||
-            dynamicElement.includes('packshot')
-          )
-            return (
-              <Space
-                key={i}
-                direction="horizontal"
-                style={{
-                  display: 'flex',
-                  // justifyContent: "space-between",
-                  marginTop: 20.4,
-                  marginLeft: 15,
-                }}
-              >
-                <Space>
-                  <Space
-                    style={{
-                      fontWeight: 400,
-                      fontSize: 14,
-                      width: 132,
-                      color: '#000',
-                      justifyContent: 'flex-end',
-                    }}
-                  >
-                    {dynamicElement}:
-                  </Space>
-                </Space>
+              )
+            else if (isColor(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
                 <Space
+                  key={i}
+                  direction="horizontal"
                   style={{
                     display: 'flex',
-                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
                   }}
                 >
-                  {defaultFileList(template, dynamicElement)}
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        width: 132,
+                        color: '#1890ff',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space
+                      style={{
+                        color: template.defaultDynamicFieldsValues[dynamicElement],
+                        border: '2px solid #1890ff',
+                        borderRadius: 5,
+                        padding: 4,
+                      }}
+                    >
+                      {template.defaultDynamicFieldsValues[dynamicElement]}
+                    </Space>
+                  </Space>
                 </Space>
-                {/* <Space.Compact block>
-                  <UploadStyled
-                    maxCount={1}
-                    fileList={
-                      template.hasOwnProperty("dynamicElementsStyles")
-                        ? template.dynamicElementsStyles.find((obj) => {
-                            return obj[dynamicElement];
-                          })
-                          ? template.dynamicElementsStyles.find((obj) => {
-                              return obj[dynamicElement];
-                            })[dynamicElement].files
-                          : []
-                        : []
-                    }
-                    beforeUpload={() => {
-                      return false;
+              )
+            else if (isURL(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        width: 132,
+                        color: '#1890ff',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space
+                      style={{
+                        border: '2px solid #1890ff',
+                        borderRadius: 5,
+                        padding: 4,
+                      }}
+                    >
+                      {template.defaultDynamicFieldsValues[dynamicElement]}
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (/^-?\d*\.?\d+$/.test(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        width: 132,
+                        color: '#1890ff',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space
+                      style={{
+                        border: '2px solid #1890ff',
+                        borderRadius: 5,
+                        padding: 4,
+                      }}
+                    >
+                      {template.defaultDynamicFieldsValues[dynamicElement]}
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (isNumberWithPercentage(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        width: 132,
+                        color: '#1890ff',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space
+                      style={{
+                        border: '2px solid #1890ff',
+                        borderRadius: 5,
+                        padding: 4,
+                      }}
+                    >
+                      {template.defaultDynamicFieldsValues[dynamicElement]}
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (Number(template.defaultDynamicFieldsValues[dynamicElement]) > 0)
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        width: 132,
+                        color: '#1890ff',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                  </Space>
+                  <Space
+                    style={{
+                      border: '2px solid #1890ff',
+                      borderRadius: 5,
+                      padding: 4,
                     }}
-                    {...props}
-                  ></UploadStyled>
-                </Space.Compact> */}
-              </Space>
+                  >
+                    {template.defaultDynamicFieldsValues[dynamicElement]}
+                  </Space>
+                </Space>
+              )
+            else if (Number(template.defaultDynamicFieldsValues[dynamicElement]) < 0)
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        width: 132,
+                        color: '#1890ff',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                  </Space>
+                  <Space
+                    style={{
+                      border: '2px solid #1890ff',
+                      borderRadius: 5,
+                      padding: 4,
+                    }}
+                  >
+                    {template.defaultDynamicFieldsValues[dynamicElement]}
+                  </Space>
+                </Space>
+              )
+            else if (/^\d+(,\d+)*$/.test(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        width: 132,
+                        color: '#1890ff',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space
+                      style={{
+                        border: '2px solid #1890ff',
+                        borderRadius: 5,
+                        padding: 4,
+                      }}
+                    >
+                      {template.defaultDynamicFieldsValues[dynamicElement]}
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (
+              /^\((-?\d+(\.\d+)?|-\.\d+)\)$/.test(
+                template.defaultDynamicFieldsValues[dynamicElement],
+              )
             )
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        width: 132,
+                        color: '#1890ff',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space
+                      style={{
+                        border: '2px solid #1890ff',
+                        borderRadius: 5,
+                        padding: 4,
+                      }}
+                    >
+                      {template.defaultDynamicFieldsValues[dynamicElement]}
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (dynamicElement.includes('cssAttrib') || dynamicElement.includes('Variable'))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        width: 132,
+                        color: '#1890ff',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space
+                      style={{
+                        border: '2px solid #1890ff',
+                        borderRadius: 5,
+                        padding: 4,
+                      }}
+                    >
+                      {template.defaultDynamicFieldsValues[dynamicElement]}
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                        width: 132,
+                        color: '#1890ff',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space
+                      style={{
+                        border: '2px solid #1890ff',
+                        borderRadius: 5,
+                        padding: 4,
+                      }}
+                    >
+                      {template.defaultDynamicFieldsValues[dynamicElement]}
+                    </Space>
+                  </Space>
+                  <Space
+                    style={{
+                      border: '2px solid #1890ff',
+                      borderRadius: 5,
+                      padding: 4,
+                    }}
+                  >
+                    {textHeadingLegalMaxValue(template.defaultDynamicFieldsValues[dynamicElement])}
+                  </Space>
+                </Space>
+              )
+          }
+          // if (
+          //   dynamicElement.includes('Text') ||
+          //   dynamicElement.includes('Headline') ||
+          //   dynamicElement.includes('legal') ||
+          //   dynamicElement.includes('Subheadline')
+          // )
+          //   return (
+          //     <Space
+          //       key={i}
+          //       direction="horizontal"
+          //       style={{
+          //         display: 'flex',
+          //         justifyContent: 'space-between',
+          //         marginTop: 20.4,
+          //         marginLeft: 15,
+          //       }}
+          //     >
+          //       <Space>
+          //         <Space
+          //           style={{
+          //             fontWeight: 400,
+          //             fontSize: 14,
+          //             width: 132,
+          //             color: '#000',
+          //             justifyContent: 'flex-end',
+          //           }}
+          //         >
+          //           {dynamicElement}:
+          //         </Space>
+          //         <Space>
+          //           <InputStyled
+          //             style={{width: 356}}
+          //             placeholder={`${dynamicElement}`}
+          //             value={template.defaultDynamicFieldsValues[dynamicElement]}
+          //           />
+          //         </Space>
+          //       </Space>
+          //       <Space>
+          //         <Space>
+          //           {buttonCases.map((buttonCase) => (
+          //             <ButtonCaseStyled
+          //               style={
+          //                 template.hasOwnProperty('dynamicElementsStyles')
+          //                   ? template.dynamicElementsStyles.find((obj) => {
+          //                       return obj[dynamicElement]
+          //                     })
+          //                     ? template.dynamicElementsStyles.find((obj) => {
+          //                         return obj[dynamicElement]
+          //                       })[dynamicElement].case === buttonCase.value
+          //                       ? {
+          //                           backgroundColor: '#339af0',
+          //                           color: '#fff',
+          //                           outline: 'unset',
+          //                           borderColor: '#339af0',
+          //                         }
+          //                       : {}
+          //                     : {}
+          //                   : {}
+          //               }
+          //               size="large"
+          //             >
+          //               {buttonCase.label}
+          //             </ButtonCaseStyled>
+          //           ))}
+          //         </Space>
+          //         <InputNumberStyled
+          //           style={{
+          //             marginRight: 51.6,
+          //           }}
+          //           controls={{
+          //             upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+          //             downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+          //           }}
+          //           bordered={true}
+          //           min={0}
+          //           max={textHeadingLegalMaxValue(
+          //             template.defaultDynamicFieldsValues[dynamicElement],
+          //           )}
+          //           value={textHeadingLegalMaxValue(
+          //             template.defaultDynamicFieldsValues[dynamicElement],
+          //           )}
+          //         />
+          //       </Space>
+          //     </Space>
+          //   )
+          // else if (dynamicElement.includes('font') || dynamicElement.includes('Variable'))
+          //   return (
+          //     <Space
+          //       key={i}
+          //       direction="horizontal"
+          //       style={{
+          //         display: 'flex',
+          //         justifyContent: 'space-between',
+          //         marginTop: 20.4,
+          //         marginLeft: 15,
+          //       }}
+          //     >
+          //       <Space>
+          //         <Space
+          //           style={{
+          //             fontWeight: 400,
+          //             fontSize: 14,
+          //             width: 132,
+          //             color: '#000',
+          //             justifyContent: 'flex-end',
+          //           }}
+          //         >
+          //           {dynamicElement}:
+          //         </Space>
+          //       </Space>
+          //       <Space>
+          //         <InputNumberStyled
+          //           style={{
+          //             marginRight: 51.6,
+          //           }}
+          //           controls={{
+          //             upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+          //             downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+          //           }}
+          //           bordered={true}
+          //           value={template.defaultDynamicFieldsValues[dynamicElement]}
+          //         />
+          //       </Space>
+          //     </Space>
+          //   )
+          // else if (dynamicElement.includes('Element') || dynamicElement.includes('Color'))
+          //   return (
+          //     <Space
+          //       key={i}
+          //       direction="horizontal"
+          //       style={{
+          //         display: 'flex',
+          //         justifyContent: 'space-between',
+          //         marginTop: 20.4,
+          //         marginLeft: 15,
+          //       }}
+          //     >
+          //       <Space>
+          //         <Space
+          //           style={{
+          //             fontWeight: 400,
+          //             fontSize: 14,
+          //             width: 132,
+          //             color: '#000',
+          //             justifyContent: 'flex-end',
+          //           }}
+          //         >
+          //           {dynamicElement}:
+          //         </Space>
+          //         <Space
+          //           style={{
+          //             color:
+          //               template.defaultDynamicFieldsValues[dynamicElement] === '#ffffff'
+          //                 ? '#000000'
+          //                 : template.defaultDynamicFieldsValues[dynamicElement],
+          //           }}
+          //         >
+          //           {template.defaultDynamicFieldsValues[dynamicElement]}
+          //         </Space>
+          //       </Space>
+          //     </Space>
+          //   )
+          // else if (
+          //   dynamicElement.includes('logo') ||
+          //   dynamicElement.includes('Background') ||
+          //   dynamicElement.includes('Image') ||
+          //   dynamicElement.includes('Video') ||
+          //   dynamicElement.includes('Overlay') ||
+          //   dynamicElement.includes('packshot')
+          // )
+          //   return (
+          //     <Space
+          //       key={i}
+          //       direction="horizontal"
+          //       style={{
+          //         display: 'flex',
+          //         // justifyContent: "space-between",
+          //         marginTop: 20.4,
+          //         marginLeft: 15,
+          //       }}
+          //     >
+          //       <Space>
+          //         <Space
+          //           style={{
+          //             fontWeight: 400,
+          //             fontSize: 14,
+          //             width: 132,
+          //             color: '#000',
+          //             justifyContent: 'flex-end',
+          //           }}
+          //         >
+          //           {dynamicElement}:
+          //         </Space>
+          //       </Space>
+          //       <Space
+          //         style={{
+          //           display: 'flex',
+          //           alignItems: 'center',
+          //         }}
+          //       >
+          //         {defaultFileList(template, dynamicElement)}
+          //       </Space>
+          //       {/* <Space.Compact block>
+          //         <UploadStyled
+          //           maxCount={1}
+          //           fileList={
+          //             template.hasOwnProperty("dynamicElementsStyles")
+          //               ? template.dynamicElementsStyles.find((obj) => {
+          //                   return obj[dynamicElement];
+          //                 })
+          //                 ? template.dynamicElementsStyles.find((obj) => {
+          //                     return obj[dynamicElement];
+          //                   })[dynamicElement].files
+          //                 : []
+          //               : []
+          //           }
+          //           beforeUpload={() => {
+          //             return false;
+          //           }}
+          //           {...props}
+          //         ></UploadStyled>
+          //       </Space.Compact> */}
+          //     </Space>
+          //   )
         })}
       </Space>
     )
@@ -772,12 +1061,6 @@ export default function DoneLayout() {
     div.innerHTML = html
     let textHeadingLegal = div.textContent || div.innerText || ''
     return textHeadingLegal.length
-  }
-  const props: UploadProps = {
-    showUploadList: {
-      showRemoveIcon: true,
-      removeIcon: <CloseOutlined style={{color: '#339AF0', fontSize: 10}} />,
-    },
   }
   return (
     <>
@@ -941,7 +1224,9 @@ export default function DoneLayout() {
             {templates.map((template, i) => (
               <DivMenuItemStyled
                 key={i}
-                onClick={() => setTemplateIndex(i)}
+                onClick={() => {
+                  setTemplateIndex(i)
+                }}
                 style={templateIndex === i ? activeStyle : {}}
               >
                 <ProfileFilled style={{marginRight: 4, fontSize: '18px'}} />
@@ -952,11 +1237,11 @@ export default function DoneLayout() {
           <div
             style={{
               float: 'left',
-              width: '76%',
+              width: '74%',
               borderLeft: '1px solid #F0F0F0',
             }}
           >
-            {renderTemplateConfigurations(templates[templateIndex])}
+            {renderTemplateConfigurations(templates[templateIndex], possibleValues)}
           </div>
           <Space style={{width: '100%', justifyContent: 'right'}}>
             <Space style={{margin: '10px 20px 0 0'}}>

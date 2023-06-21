@@ -327,10 +327,6 @@ const ConfigureLayout = () => {
     else setTemplates(templates.data.body.templates)
     setFetching(false)
   }
-  const handleChange = (selectedValues: string[]) => {
-    setSelectAll(false)
-    setSelectedValues(selectedValues)
-  }
   const handleSelectAll = (e: CheckboxChangeEvent) => {
     setSelectAll(e.target.checked)
     const filteredValues = treeData
@@ -342,6 +338,10 @@ const ConfigureLayout = () => {
     setSelectAll(e.target.checked)
     setSearchValue('')
     setSelectedValues([])
+  }
+  const handleChange = (selectedValues: string[]) => {
+    setSelectAll(false)
+    setSelectedValues(selectedValues)
   }
   const filterTreeNode = (inputValue: string, treeNode: TreeNodeData) => {
     setSearchValue(inputValue)
@@ -598,46 +598,70 @@ const ConfigureLayout = () => {
           </Space.Compact>
         )}
         {treeData.length > 1 && (
-          <>
-            <Space
+          // <>
+          //   <Space
+          //     style={{
+          //       marginBottom: 4.1,
+          //     }}
+          //   >
+          //     <Checkbox
+          //       checked={selectAll}
+          //       onChange={selectAll ? handleUnselectAll : handleSelectAll}
+          //     >
+          //       {selectAll ? 'Unselect All' : 'Select All'}
+          //     </Checkbox>
+          //   </Space>
+          <Space.Compact
+            block
+            style={{
+              marginBottom: 15,
+            }}
+          >
+            <TreeSelectStyled
               style={{
-                marginBottom: 4.1,
+                width: 324.6,
               }}
+              showSearch
+              placeholder="Please select template"
+              maxTagPlaceholder={(omittedValues) => `+ ${omittedValues.length} Templates ...`}
+              maxTagCount={2}
+              allowClear={true}
+              value={selectedValues}
+              onChange={handleChange}
+              // treeNodeFilterProp="title"
+              // treeDefaultExpandAll
+              treeCheckable
+              // showCheckedStrategy={TreeSelect.SHOW_ALL}
+              filterTreeNode={filterTreeNode}
+              // placement={placement}
+              dropdownRender={(menu) => (
+                <div>
+                  <Space
+                    style={{
+                      marginBottom: 4.1,
+                    }}
+                  >
+                    <Checkbox
+                      checked={selectAll}
+                      onChange={selectAll ? handleUnselectAll : handleSelectAll}
+                    >
+                      {selectAll ? 'Unselect All' : 'Select All'}
+                    </Checkbox>
+                  </Space>
+                  {menu}
+                </div>
+              )}
             >
-              <Checkbox
-                checked={selectAll}
-                onChange={selectAll ? handleUnselectAll : handleSelectAll}
-              >
-                {selectAll ? 'Unselect All' : 'Select All'}
-              </Checkbox>
-            </Space>
-            <Space.Compact
-              block
-              style={{
-                marginBottom: 15,
-              }}
-            >
-              <TreeSelectStyled
-                style={{
-                  width: 324.6,
-                }}
-                placeholder="Please select template"
-                maxTagPlaceholder={(omittedValues) => `+ ${omittedValues.length} Templates ...`}
-                maxTagCount={2}
-                allowClear={true}
-                value={selectedValues}
-                onChange={handleChange}
-                treeNodeFilterProp="title"
-                treeDefaultExpandAll
-                treeCheckable
-                showCheckedStrategy={TreeSelect.SHOW_ALL}
-                filterTreeNode={filterTreeNode}
-                placement={placement}
-              >
-                {renderTreeNodes(treeData)}
-              </TreeSelectStyled>
-            </Space.Compact>
-          </>
+              {renderTreeNodes(
+                searchValue !== ''
+                  ? treeData.filter((data) =>
+                      data.title.toLowerCase().includes(searchValue.toLowerCase()),
+                    )
+                  : treeData,
+              )}
+            </TreeSelectStyled>
+          </Space.Compact>
+          // </>
         )}
         <div>
           {templates
@@ -788,7 +812,7 @@ const ConfigureLayout = () => {
             )}
           </Space>
         )} */}
-        {templates.length > 0 && (
+        {selectedValues.length > 0 && (
           <Space.Compact block>
             <ButtonGenerateStyled
               type="primary"
