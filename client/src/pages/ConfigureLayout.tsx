@@ -191,7 +191,6 @@ const ConfigureLayout = () => {
   const [selectAll, setSelectAll] = useState<boolean>(
     location.state === null ? false : location.state.selectAll,
   )
-  const [placement, setPlacement] = useState<SelectCommonPlacement>('bottomLeft')
   const [selectedValues, setSelectedValues] = useState<string[]>(
     location.state === null ? [] : location.state.selectedValues,
   )
@@ -329,23 +328,39 @@ const ConfigureLayout = () => {
   }
   const handleSelectAll = (e: CheckboxChangeEvent) => {
     setSelectAll(e.target.checked)
-    const filteredValues = treeData
-      .filter((node) => filterTreeNode(searchValue, node))
-      .map((node) => node.value)
-    setSelectedValues(filteredValues)
+    let filteredSelectedValues = null
+    if (searchValue)
+      filteredSelectedValues = treeData
+        .filter((node) => node.title.toLowerCase().includes(searchValue.toLowerCase()))
+        .map((node) => node.value)
+    else filteredSelectedValues = treeData.map((node) => node.value)
+    if (selectedValues.length === 0) setSelectedValues(filteredSelectedValues)
+    else setSelectedValues((prevValues) => [...prevValues, ...filteredSelectedValues])
+    let treeDataOrig: TreeNodeData[] = []
+    templates.map((template) =>
+      treeDataOrig.push({
+        title: template.size + ' ' + template.name,
+        value: template.size + ' ' + template.name,
+      }),
+    )
+    setTreeData(treeDataOrig)
   }
   const handleUnselectAll = (e: CheckboxChangeEvent) => {
     setSelectAll(e.target.checked)
     setSearchValue('')
     setSelectedValues([])
+    let treeData: TreeNodeData[] = []
+    templates.map((template) =>
+      treeData.push({
+        title: template.size + ' ' + template.name,
+        value: template.size + ' ' + template.name,
+      }),
+    )
+    setTreeData(treeData)
   }
   const handleChange = (selectedValues: string[]) => {
     setSelectAll(false)
     setSelectedValues(selectedValues)
-  }
-  const filterTreeNode = (inputValue: string, treeNode: TreeNodeData) => {
-    setSearchValue(inputValue)
-    return treeNode.title.toLowerCase().includes(inputValue.toLowerCase())
   }
   const renderTreeNodes = (data: TreeNodeData[]) => {
     return data.map((node) => <TreeNode title={node.title} value={node.value} key={node.value} />)
@@ -404,105 +419,6 @@ const ConfigureLayout = () => {
   return (
     <LayoutStyled>
       {contextHolder}
-      {/* <Space
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginTop: 42.1,
-        }}
-      >
-        <Space
-          style={{
-            backgroundColor: '#1890FF',
-            height: '27.6px',
-            width: '27.6px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#FFF',
-            marginRight: 6.6,
-          }}
-        >
-          1
-        </Space>
-        <Space
-          style={{
-            color: 'rgba(0, 0, 0, 0.85)',
-            fontWeight: 400,
-            fontSize: 16,
-          }}
-        >
-          Configure
-        </Space>
-        <Divider
-          type="horizontal"
-          style={{
-            width: '118.4px',
-            margin: '0 14px 0 14px',
-            minWidth: 'unset',
-            backgroundColor: '#F0F0F0',
-          }}
-        />
-        <Space
-          style={{
-            height: '27.6px',
-            width: '27.6px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'rgba(0, 0, 0, 0.25)',
-            border: '1px solid rgba(0, 0, 0, 0.25)',
-            marginRight: 6.6,
-          }}
-        >
-          2
-        </Space>
-        <Space
-          style={{
-            color: 'rgba(0, 0, 0, 0.45)',
-            fontWeight: 400,
-            fontSize: 16,
-          }}
-        >
-          Generate
-        </Space>
-        <Divider
-          type="horizontal"
-          style={{
-            width: '118.4px',
-            margin: '0 14px 0 14px',
-            minWidth: 'unset',
-            backgroundColor: '#F0F0F0',
-          }}
-        />
-        <Space
-          style={{
-            height: '27.6px',
-            width: '27.6px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'rgba(0, 0, 0, 0.25)',
-            border: '1px solid rgba(0, 0, 0, 0.25)',
-            marginRight: 6.6,
-          }}
-        >
-          3
-        </Space>
-        <Space
-          style={{
-            color: 'rgba(0, 0, 0, 0.45)',
-            fontWeight: 400,
-            fontSize: 16,
-          }}
-        >
-          Done
-        </Space>
-      </Space> */}
       <Space
         style={{
           justifyContent: 'center',
@@ -598,19 +514,6 @@ const ConfigureLayout = () => {
           </Space.Compact>
         )}
         {treeData.length > 1 && (
-          // <>
-          //   <Space
-          //     style={{
-          //       marginBottom: 4.1,
-          //     }}
-          //   >
-          //     <Checkbox
-          //       checked={selectAll}
-          //       onChange={selectAll ? handleUnselectAll : handleSelectAll}
-          //     >
-          //       {selectAll ? 'Unselect All' : 'Select All'}
-          //     </Checkbox>
-          //   </Space>
           <Space.Compact
             block
             style={{
@@ -628,12 +531,7 @@ const ConfigureLayout = () => {
               allowClear={true}
               value={selectedValues}
               onChange={handleChange}
-              // treeNodeFilterProp="title"
-              // treeDefaultExpandAll
               treeCheckable
-              // showCheckedStrategy={TreeSelect.SHOW_ALL}
-              filterTreeNode={filterTreeNode}
-              // placement={placement}
               dropdownRender={(menu) => (
                 <div>
                   <Space
@@ -651,14 +549,33 @@ const ConfigureLayout = () => {
                   {menu}
                 </div>
               )}
+              onSearch={(value) => {
+                if (!value) return
+                setSearchValue(value)
+                setSelectAll(false)
+                let treeData: TreeNodeData[] = []
+                templates.map((template) =>
+                  treeData.push({
+                    title: template.size + ' ' + template.name,
+                    value: template.size + ' ' + template.name,
+                  }),
+                )
+                setTreeData(
+                  treeData.filter((data) => data.title.toLowerCase().includes(value.toLowerCase())),
+                )
+              }}
+              onClear={() => {
+                let treeData: TreeNodeData[] = []
+                templates.map((template) =>
+                  treeData.push({
+                    title: template.size + ' ' + template.name,
+                    value: template.size + ' ' + template.name,
+                  }),
+                )
+                setTreeData(treeData)
+              }}
             >
-              {renderTreeNodes(
-                searchValue !== ''
-                  ? treeData.filter((data) =>
-                      data.title.toLowerCase().includes(searchValue.toLowerCase()),
-                    )
-                  : treeData,
-              )}
+              {renderTreeNodes(treeData)}
             </TreeSelectStyled>
           </Space.Compact>
           // </>

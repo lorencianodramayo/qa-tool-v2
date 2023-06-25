@@ -148,12 +148,11 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             const variantSizeExist = treeDataVariantSizes.some(
               (el) => el.value === variantName.size,
             )
-            if (!variantNameExist) {
+            if (!variantNameExist)
               treeDataVariantNames.push({
                 title: variantName.variantName,
                 value: variantName.variantName,
               })
-            }
             if (!variantSizeExist)
               treeDataVariantSizes.push({
                 title: variantName.size,
@@ -421,15 +420,48 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   }, [isAddSharedVariantSuccess])
   const handleSelectAllVariantNames = (e: CheckboxChangeEvent) => {
     setSelectAllVariantNames(e.target.checked)
-    const filteredVariantNameValues = variantNameTreeData
-      .filter((node) => filterVariantTreeNode(searchVariantNameValue, node))
-      .map((node) => node.value)
-    setSelectedVariantNameValues(filteredVariantNameValues)
+    let filteredVariantNameValues = null
+    if (searchVariantNameValue)
+      filteredVariantNameValues = variantNameTreeData
+        .filter((node) => node.title.toLowerCase().includes(searchVariantNameValue.toLowerCase()))
+        .map((node) => node.value)
+    else filteredVariantNameValues = variantNameTreeData.map((node) => node.value)
+    if (selectedVariantNameValues.length === 0)
+      setSelectedVariantNameValues(filteredVariantNameValues)
+    else setSelectedVariantNameValues((prevValues) => [...prevValues, ...filteredVariantNameValues])
+    let treeDataVariantNames: TreeNodeData[] = []
+    templatesVersions.map((templateVersion) => {
+      templateVersion.variants.map((variantName) => {
+        const variantNameExist = treeDataVariantNames.some(
+          (el) => el.value === variantName.variantName,
+        )
+        if (!variantNameExist)
+          treeDataVariantNames.push({
+            title: variantName.variantName,
+            value: variantName.variantName,
+          })
+      })
+    })
+    setVariantNameTreeData(treeDataVariantNames)
   }
   const handleUnselectAllVariantNames = (e: CheckboxChangeEvent) => {
     setSelectAllVariantNames(e.target.checked)
     setSearchVariantNameValue('')
     setSelectedVariantNameValues([])
+    let treeDataVariantNames: TreeNodeData[] = []
+    templatesVersions.map((templateVersion) => {
+      templateVersion.variants.map((variantName) => {
+        const variantNameExist = treeDataVariantNames.some(
+          (el) => el.value === variantName.variantName,
+        )
+        if (!variantNameExist)
+          treeDataVariantNames.push({
+            title: variantName.variantName,
+            value: variantName.variantName,
+          })
+      })
+    })
+    setVariantNameTreeData(treeDataVariantNames)
   }
   const handleVariantNameChange = (selectedVariantNameValues: string[]) => {
     setSelectAllVariantNames(false)
@@ -437,15 +469,44 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   }
   const handleSelectAllVariantSizes = (e: CheckboxChangeEvent) => {
     setSelectAllVariantSizes(e.target.checked)
-    const filteredVariantSizeValues = variantSizeTreeData
-      .filter((node) => filterVariantTreeNode(searchVariantSizeValue, node))
-      .map((node) => node.value)
-    setSelectedVariantSizeValues(filteredVariantSizeValues)
+    let filteredVariantSizeValues = null
+    if (searchVariantSizeValue)
+      filteredVariantSizeValues = variantSizeTreeData
+        .filter((node) => node.title.toLowerCase().includes(searchVariantSizeValue.toLowerCase()))
+        .map((node) => node.value)
+    else filteredVariantSizeValues = variantSizeTreeData.map((node) => node.value)
+    if (selectedVariantSizeValues.length === 0)
+      setSelectedVariantSizeValues(filteredVariantSizeValues)
+    else setSelectedVariantSizeValues((prevValues) => [...prevValues, ...filteredVariantSizeValues])
+    let treeDataVariantSizes: TreeNodeData[] = []
+    templatesVersions.map((templateVersion) => {
+      templateVersion.variants.map((variantName) => {
+        const variantSizeExist = treeDataVariantSizes.some((el) => el.value === variantName.size)
+        if (!variantSizeExist)
+          treeDataVariantSizes.push({
+            title: variantName.size,
+            value: variantName.size,
+          })
+      })
+    })
+    setVariantSizeTreeData(treeDataVariantSizes)
   }
   const handleUnselectAllVariantSizes = (e: CheckboxChangeEvent) => {
     setSelectAllVariantSizes(e.target.checked)
     setSearchVariantSizeValue('')
     setSelectedVariantSizeValues([])
+    let treeDataVariantSizes: TreeNodeData[] = []
+    templatesVersions.map((templateVersion) => {
+      templateVersion.variants.map((variantName) => {
+        const variantSizeExist = treeDataVariantSizes.some((el) => el.value === variantName.size)
+        if (!variantSizeExist)
+          treeDataVariantSizes.push({
+            title: variantName.size,
+            value: variantName.size,
+          })
+      })
+    })
+    setVariantSizeTreeData(treeDataVariantSizes)
   }
   const handleVariantSizeChange = (selectedVariantSizeValues: string[]) => {
     setSelectAllVariantSizes(false)
@@ -453,15 +514,55 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   }
   const handleShareSelectAllVariantNames = (e: CheckboxChangeEvent) => {
     setShareSelectAllVariantNames(e.target.checked)
-    const filteredShareVariantNameValues = shareVariantNameTreeData
-      .filter((node) => filterVariantTreeNode(shareSearchVariantNameValue, node))
-      .map((node) => node.value)
+    let filteredShareVariantNameValues = null
+    if (shareSearchVariantNameValue)
+      filteredShareVariantNameValues = shareVariantNameTreeData
+        .filter((node) =>
+          node.title.toLowerCase().includes(shareSearchVariantNameValue.toLowerCase()),
+        )
+        .map((node) => node.value)
+    else filteredShareVariantNameValues = shareVariantNameTreeData.map((node) => node.value)
     setShareSelectedVariantNameValues(filteredShareVariantNameValues)
+    if (shareSelectedVariantNameValues.length === 0)
+      setShareSelectedVariantNameValues(filteredShareVariantNameValues)
+    else
+      setShareSelectedVariantNameValues((prevValues) => [
+        ...prevValues,
+        ...filteredShareVariantNameValues,
+      ])
+    let treeDataVariantNames: TreeNodeData[] = []
+    templatesVersions.map((templateVersion) => {
+      templateVersion.variants.map((variantName) => {
+        const variantNameExist = treeDataVariantNames.some(
+          (el) => el.value === variantName.variantName,
+        )
+        if (!variantNameExist)
+          treeDataVariantNames.push({
+            title: variantName.variantName,
+            value: variantName.variantName,
+          })
+      })
+    })
+    setShareVariantNameTreeData(treeDataVariantNames)
   }
   const handleShareUnselectAllVariantNames = (e: CheckboxChangeEvent) => {
     setShareSelectAllVariantNames(e.target.checked)
     setShareSearchVariantNameValue('')
     setShareSelectedVariantNameValues([])
+    let treeDataVariantNames: TreeNodeData[] = []
+    templatesVersions.map((templateVersion) => {
+      templateVersion.variants.map((variantName) => {
+        const variantNameExist = treeDataVariantNames.some(
+          (el) => el.value === variantName.variantName,
+        )
+        if (!variantNameExist)
+          treeDataVariantNames.push({
+            title: variantName.variantName,
+            value: variantName.variantName,
+          })
+      })
+    })
+    setShareVariantNameTreeData(treeDataVariantNames)
   }
   const handleShareVariantNameChange = (shareSelectedVariantNameValues: string[]) => {
     setShareSelectAllVariantNames(false)
@@ -469,15 +570,51 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   }
   const handleShareSelectAllVariantSizes = (e: CheckboxChangeEvent) => {
     setShareSelectAllVariantSizes(e.target.checked)
-    const filteredShareVariantSizeValues = shareVariantSizeTreeData
-      .filter((node) => filterVariantTreeNode(shareSearchVariantSizeValue, node))
-      .map((node) => node.value)
-    setShareSelectedVariantSizeValues(filteredShareVariantSizeValues)
+    let filteredShareVariantSizeValues = null
+    if (shareSearchVariantSizeValue)
+      filteredShareVariantSizeValues = shareVariantSizeTreeData
+        .filter((node) =>
+          node.title.toLowerCase().includes(shareSearchVariantSizeValue.toLowerCase()),
+        )
+        .map((node) => node.value)
+    else filteredShareVariantSizeValues = shareVariantSizeTreeData.map((node) => node.value)
+    setShareSelectedVariantSizeValues(filteredShareVariantSizzeValues)
+    if (shareSelectedVariantSizeValues.length === 0)
+      setShareSelectedVariantSizeValues(filteredShareVariantSizeValues)
+    else
+      setShareSelectedVariantSizeValues((prevValues) => [
+        ...prevValues,
+        ...filteredShareVariantSizeValues,
+      ])
+    let treeDataVariantSizes: TreeNodeData[] = []
+    templatesVersions.map((templateVersion) => {
+      templateVersion.variants.map((variantName) => {
+        const variantSizeExist = treeDataVariantSizes.some((el) => el.value === variantName.size)
+        if (!variantSizeExist)
+          treeDataVariantSizes.push({
+            title: variantName.size,
+            value: variantName.size,
+          })
+      })
+    })
+    setShareVariantSizeTreeData(treeDataVariantSizes)
   }
   const handleShareUnselectAllVariantSizes = (e: CheckboxChangeEvent) => {
     setShareSelectAllVariantSizes(e.target.checked)
     setShareSearchVariantSizeValue('')
     setShareSelectedVariantSizeValues([])
+    let treeDataVariantSizes: TreeNodeData[] = []
+    templatesVersions.map((templateVersion) => {
+      templateVersion.variants.map((variantName) => {
+        const variantSizeExist = treeDataVariantSizes.some((el) => el.value === variantName.size)
+        if (!variantSizeExist)
+          treeDataVariantSizes.push({
+            title: variantName.size,
+            value: variantName.size,
+          })
+      })
+    })
+    setShareVariantSizeTreeData(treeDataVariantSizes)
   }
   const handleShareVariantSizeChange = (shareSelectedVariantSizeValues: string[]) => {
     setShareSelectAllVariantSizes(false)
@@ -577,12 +714,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             allowClear={true}
             value={selectedVariantNameValues}
             onChange={handleVariantNameChange}
-            // treeNodeFilterProp="title"
-            // treeDefaultExpandAll
             treeCheckable
-            // showCheckedStrategy={TreeSelect.SHOW_ALL}
-            filterTreeNode={filterVariantTreeNode}
-            // placement={placement}
             dropdownRender={(menu) => (
               <div>
                 <Space
@@ -605,14 +737,47 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 {menu}
               </div>
             )}
-          >
-            {renderTreeNodes(
-              searchVariantNameValue !== ''
-                ? variantNameTreeData.filter((data) =>
-                    data.title.toLowerCase().includes(searchVariantNameValue.toLowerCase()),
+            onSearch={(value) => {
+              if (!value) return
+              setSearchVariantNameValue(value)
+              setSelectAllVariantNames(false)
+              let treeDataVariantNames: TreeNodeData[] = []
+              templatesVersions.map((templateVersion) => {
+                templateVersion.variants.map((variantName) => {
+                  const variantNameExist = treeDataVariantNames.some(
+                    (el) => el.value === variantName.variantName,
                   )
-                : variantNameTreeData,
-            )}
+                  if (!variantNameExist)
+                    treeDataVariantNames.push({
+                      title: variantName.variantName,
+                      value: variantName.variantName,
+                    })
+                })
+              })
+              setVariantNameTreeData(
+                treeDataVariantNames.filter((data) =>
+                  data.title.toLowerCase().includes(value.toLowerCase()),
+                ),
+              )
+            }}
+            onClear={() => {
+              let treeDataVariantNames: TreeNodeData[] = []
+              templatesVersions.map((templateVersion) => {
+                templateVersion.variants.map((variantName) => {
+                  const variantNameExist = treeDataVariantNames.some(
+                    (el) => el.value === variantName.variantName,
+                  )
+                  if (!variantNameExist)
+                    treeDataVariantNames.push({
+                      title: variantName.variantName,
+                      value: variantName.variantName,
+                    })
+                })
+              })
+              setVariantNameTreeData(treeDataVariantNames)
+            }}
+          >
+            {renderTreeNodes(variantNameTreeData)}
           </TreeSelectStyled>
         </Space.Compact>
         <Space.Compact block className="size">
@@ -640,12 +805,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             allowClear={true}
             value={selectedVariantSizeValues}
             onChange={handleVariantSizeChange}
-            // treeNodeFilterProp="title"
-            // treeDefaultExpandAll
             treeCheckable
-            // showCheckedStrategy={TreeSelect.SHOW_ALL}
-            filterTreeNode={filterVariantTreeNode}
-            // placement={placement}
             dropdownRender={(menu) => (
               <div>
                 <Space
@@ -668,12 +828,47 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 {menu}
               </div>
             )}
+            onSearch={(value) => {
+              if (!value) return
+              setSearchVariantSizeValue(value)
+              setSelectAllVariantSizes(false)
+              let treeDataVariantSizes: TreeNodeData[] = []
+              templatesVersions.map((templateVersion) => {
+                templateVersion.variants.map((variantName) => {
+                  const variantSizeExist = treeDataVariantSizes.some(
+                    (el) => el.value === variantName.size,
+                  )
+                  if (!variantSizeExist)
+                    treeDataVariantSizes.push({
+                      title: variantName.size,
+                      value: variantName.size,
+                    })
+                })
+              })
+              setVariantSizeTreeData(
+                treeDataVariantSizes.filter((data) =>
+                  data.title.toLowerCase().includes(value.toLowerCase()),
+                ),
+              )
+            }}
+            onClear={() => {
+              let treeDataVariantSizes: TreeNodeData[] = []
+              templatesVersions.map((templateVersion) => {
+                templateVersion.variants.map((variantName) => {
+                  const variantSizeExist = treeDataVariantSizes.some(
+                    (el) => el.value === variantName.size,
+                  )
+                  if (!variantSizeExist)
+                    treeDataVariantSizes.push({
+                      title: variantName.size,
+                      value: variantName.size,
+                    })
+                })
+              })
+              setVariantSizeTreeData(treeDataVariantSizes)
+            }}
           >
-            {renderTreeNodes(
-              searchVariantSizeValue !== ''
-                ? variantSizeTreeData.filter((data) => data.title.includes(searchVariantSizeValue))
-                : variantSizeTreeData,
-            )}
+            {renderTreeNodes(variantSizeTreeData)}
           </TreeSelectStyled>
         </Space.Compact>
       </DrawerStyled>
@@ -1046,12 +1241,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 allowClear={true}
                 value={shareSelectedVariantNameValues}
                 onChange={handleShareVariantNameChange}
-                // treeNodeFilterProp="title"
-                // treeDefaultExpandAll
                 treeCheckable
-                // showCheckedStrategy={TreeSelect.SHOW_ALL}
-                filterTreeNode={filterVariantTreeNode}
-                // placement={placement}
                 dropdownRender={(menu) => (
                   <div>
                     <Space
@@ -1073,16 +1263,47 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                     {menu}
                   </div>
                 )}
-              >
-                {renderTreeNodes(
-                  shareSearchVariantNameValue !== ''
-                    ? shareVariantNameTreeData.filter((data) =>
-                        data.title
-                          .toLowerCase()
-                          .includes(shareSearchVariantNameValue.toLowerCase()),
+                onSearch={(value) => {
+                  if (!value) return
+                  setShareSearchVariantNameValue(value)
+                  setShareSelectAllVariantNames(false)
+                  let treeDataVariantNames: TreeNodeData[] = []
+                  templatesVersions.map((templateVersion) => {
+                    templateVersion.variants.map((variantName) => {
+                      const variantNameExist = treeDataVariantNames.some(
+                        (el) => el.value === variantName.variantName,
                       )
-                    : shareVariantNameTreeData,
-                )}
+                      if (!variantNameExist)
+                        treeDataVariantNames.push({
+                          title: variantName.variantName,
+                          value: variantName.variantName,
+                        })
+                    })
+                  })
+                  setShareVariantNameTreeData(
+                    treeDataVariantNames.filter((data) =>
+                      data.title.toLowerCase().includes(value.toLowerCase()),
+                    ),
+                  )
+                }}
+                onClear={() => {
+                  let treeDataVariantNames: TreeNodeData[] = []
+                  templatesVersions.map((templateVersion) => {
+                    templateVersion.variants.map((variantName) => {
+                      const variantNameExist = treeDataVariantNames.some(
+                        (el) => el.value === variantName.variantName,
+                      )
+                      if (!variantNameExist)
+                        treeDataVariantNames.push({
+                          title: variantName.variantName,
+                          value: variantName.variantName,
+                        })
+                    })
+                  })
+                  setShareVariantNameTreeData(treeDataVariantNames)
+                }}
+              >
+                {renderTreeNodes(shareVariantNameTreeData)}
               </TreeSelectStyled>
             </Space.Compact>
             <Space.Compact block className="size">
@@ -1111,12 +1332,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 allowClear={true}
                 value={shareSelectedVariantSizeValues}
                 onChange={handleShareVariantSizeChange}
-                // treeNodeFilterProp="title"
-                // treeDefaultExpandAll
                 treeCheckable
-                // showCheckedStrategy={TreeSelect.SHOW_ALL}
-                filterTreeNode={filterVariantTreeNode}
-                // placement={placement}
                 dropdownRender={(menu) => (
                   <div>
                     <Space
@@ -1138,16 +1354,47 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                     {menu}
                   </div>
                 )}
-              >
-                {renderTreeNodes(
-                  shareSearchVariantSizeValue !== ''
-                    ? shareVariantSizeTreeData.filter((data) =>
-                        data.title
-                          .toLowerCase()
-                          .includes(shareSearchVariantSizeValue.toLowerCase()),
+                onSearch={(value) => {
+                  if (!value) return
+                  setShareSearchVariantSizeValue(value)
+                  setShareSelectAllVariantSizes(false)
+                  let treeDataVariantSizes: TreeNodeData[] = []
+                  templatesVersions.map((templateVersion) => {
+                    templateVersion.variants.map((variantName) => {
+                      const variantSizeExist = treeDataVariantSizes.some(
+                        (el) => el.value === variantName.size,
                       )
-                    : shareVariantSizeTreeData,
-                )}
+                      if (!variantSizeExist)
+                        treeDataVariantSizes.push({
+                          title: variantName.size,
+                          value: variantName.size,
+                        })
+                    })
+                  })
+                  setShareVariantSizeTreeData(
+                    treeDataVariantSizes.filter((data) =>
+                      data.title.toLowerCase().includes(value.toLowerCase()),
+                    ),
+                  )
+                }}
+                onClear={() => {
+                  let treeDataVariantSizes: TreeNodeData[] = []
+                  templatesVersions.map((templateVersion) => {
+                    templateVersion.variants.map((variantName) => {
+                      const variantSizeExist = treeDataVariantSizes.some(
+                        (el) => el.value === variantName.size,
+                      )
+                      if (!variantSizeExist)
+                        treeDataVariantSizes.push({
+                          title: variantName.size,
+                          value: variantName.size,
+                        })
+                    })
+                  })
+                  setShareVariantSizeTreeData(treeDataVariantSizes)
+                }}
+              >
+                {renderTreeNodes(shareVariantSizeTreeData)}
               </TreeSelectStyled>
             </Space.Compact>
           </>
