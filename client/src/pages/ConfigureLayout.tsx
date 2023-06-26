@@ -513,7 +513,7 @@ const ConfigureLayout = () => {
             Invalid Concept Link
           </Space.Compact>
         )}
-        {treeData.length > 1 && (
+        {treeData.length > 0 && (
           <Space.Compact
             block
             style={{
