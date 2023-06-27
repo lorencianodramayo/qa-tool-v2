@@ -513,73 +513,75 @@ const ConfigureLayout = () => {
             Invalid Concept Link
           </Space.Compact>
         )}
-        {treeData.length > 0 && (
-          <Space.Compact
-            block
+        {/* {treeData.length > 0 && ( */}
+        <Space.Compact
+          block
+          style={{
+            marginBottom: 15,
+          }}
+        >
+          <TreeSelectStyled
             style={{
-              marginBottom: 15,
+              width: 324.6,
             }}
-          >
-            <TreeSelectStyled
-              style={{
-                width: 324.6,
-              }}
-              showSearch
-              placeholder="Please select template"
-              maxTagPlaceholder={(omittedValues) => `+ ${omittedValues.length} Templates ...`}
-              maxTagCount={2}
-              allowClear={true}
-              value={selectedValues}
-              onChange={handleChange}
-              treeCheckable
-              dropdownRender={(menu) => (
-                <div>
-                  <Space
-                    style={{
-                      marginBottom: 4.1,
-                    }}
-                  >
+            showSearch
+            placeholder="Please select template"
+            maxTagPlaceholder={(omittedValues) => `+ ${omittedValues.length} Templates ...`}
+            maxTagCount={2}
+            allowClear={true}
+            value={selectedValues}
+            onChange={handleChange}
+            treeCheckable
+            dropdownRender={(menu) => (
+              <div>
+                <Space
+                  style={{
+                    marginBottom: 4.1,
+                  }}
+                >
+                  {treeData.length !== 0 && (
                     <Checkbox
                       checked={selectAll}
                       onChange={selectAll ? handleUnselectAll : handleSelectAll}
                     >
                       {selectAll ? 'Unselect All' : 'Select All'}
                     </Checkbox>
-                  </Space>
-                  {menu}
-                </div>
-              )}
-              onSearch={(value) => {
-                if (!value) return
-                setSearchValue(value)
-                setSelectAll(false)
-                let treeData: TreeNodeData[] = []
-                templates.map((template) =>
-                  treeData.push({
-                    title: template.size + ' ' + template.name,
-                    value: template.size + ' ' + template.name,
-                  }),
-                )
-                setTreeData(
-                  treeData.filter((data) => data.title.toLowerCase().includes(value.toLowerCase())),
-                )
-              }}
-              onClear={() => {
-                let treeData: TreeNodeData[] = []
-                templates.map((template) =>
-                  treeData.push({
-                    title: template.size + ' ' + template.name,
-                    value: template.size + ' ' + template.name,
-                  }),
-                )
-                setTreeData(treeData)
-              }}
-            >
-              {renderTreeNodes(treeData)}
-            </TreeSelectStyled>
-          </Space.Compact>
-          // </>
-        )}
+                  )}
+                </Space>
+                {menu}
+              </div>
+            )}
+            onSearch={(value) => {
+              if (!value) return
+              setSearchValue(value)
+              setSelectAll(false)
+              let treeData: TreeNodeData[] = []
+              templates.map((template) =>
+                treeData.push({
+                  title: template.size + ' ' + template.name,
+                  value: template.size + ' ' + template.name,
+                }),
+              )
+              setTreeData(
+                treeData.filter((data) => data.title.toLowerCase().includes(value.toLowerCase())),
+              )
+            }}
+            onClear={() => {
+              let treeData: TreeNodeData[] = []
+              templates.map((template) =>
+                treeData.push({
+                  title: template.size + ' ' + template.name,
+                  value: template.size + ' ' + template.name,
+                }),
+              )
+              setTreeData(treeData)
+            }}
+          >
+            {renderTreeNodes(treeData)}
+          </TreeSelectStyled>
+        </Space.Compact>
+        {/* </>
+        )} */}
         <div>
           {templates
             .filter((tmpl) => selectedValues.includes(tmpl.size + ' ' + tmpl.name))

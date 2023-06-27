@@ -1370,7 +1370,11 @@ export default function DoneLayout() {
                           let t = 0
                           while (
                             t <
-                            possibleValues[possibleValuesKeys[possibleValuesKeys.length - 1]].length
+                            possibleValues[
+                              possibleValuesKeys[
+                                possibleValuesKeys.length - possibleValuesKeys.length
+                              ]
+                            ].length
                           ) {
                             let variants_1 = ''
                             if (possibleValuesKeys.length > 1) {
