@@ -46,6 +46,7 @@ import {
 import {useSelector, useDispatch} from 'react-redux'
 import {ThunkDispatch} from 'redux-thunk'
 import IFrameCard from '../components/IFrame/IFrameCard'
+import RowComponent from '../components/Row/Row'
 const {TreeNode} = TreeSelect
 const ContentStyled = styled(Content)`
   &::-webkit-scrollbar {
@@ -996,29 +997,38 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                         {variant.templateName} {variant.size}
                       </Space.Compact>
                     </Space.Compact>
-                    <Row gutter={[15.9, 22.4]} style={{width: '100%', justifyContent: 'center'}}>
+                    <RowComponent items={variant} containerWidth={1086.27} />
+                    {/* <Row
+                      gutter={[15.9, 22.4]}
+                      style={{
+                        width: '100%',
+                        justifyContent: 'center',
+                      }}
+                    >
                       {variant.variants
                         .filter((variant) =>
                           selectedVariantNameValues.includes(variant.variantName),
                         )
-                        .map((defaultValue, i) => (
-                          <Col>
-                            <Space.Compact
-                              block
-                              style={{
-                                background:
-                                  'linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)',
-                                borderTopLeftRadius: '5px',
-                                borderTopRightRadius: '5px',
-                                height: '5px',
-                              }}
-                            >
-                              {' '}
-                            </Space.Compact>
-                            <IFrameCard variant={variant} i={i} />
-                          </Col>
+                        .map((_: any, i: number) => (
+                          <>
+                            <Col>
+                              <Space.Compact
+                                block
+                                style={{
+                                  background:
+                                    'linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)',
+                                  borderTopLeftRadius: '5px',
+                                  borderTopRightRadius: '5px',
+                                  height: '5px',
+                                }}
+                              >
+                                {' '}
+                              </Space.Compact>
+                              <IFrameCard variant={variant} i={i} />
+                            </Col>
+                          </>
                         ))}
-                    </Row>
+                    </Row> */}
                   </>
                 ))}
         </ContentStyled>
