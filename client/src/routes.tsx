@@ -1,49 +1,65 @@
-import { useRoutes, Navigate } from "react-router-dom";
+import {useRoutes, Navigate} from 'react-router-dom'
 
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
+import SignIn from './pages/SignIn'
+import SignUp from './pages/SignUp'
 
-import DashboardLayout from "./pages/DashboardLayout";
-import ConfigureLayout from "./pages/ConfigureLayout";
-import ElementsLayout from "./pages/ElementsLayout";
-import DoneLayout from "./pages/DoneLayout";
-import ConceptTemplateVersionLayout from "./pages/ConceptTemplateVersionLayout";
-import SharedVariantsLayout from "./pages/SharedVariantsLayout";
+import DashboardLayout from './pages/DashboardLayout'
+import ConfigureLayout from './pages/ConfigureLayout'
+import UploadLayout from './pages/UploadLayout'
+import ElementsLayout from './pages/ElementsLayout'
+import DoneLayout from './pages/DoneLayout'
+import ConceptTemplateVersionLayout from './pages/ConceptTemplateVersionLayout'
+import SharedVariantsLayout from './pages/SharedVariantsLayout'
 
-import GoogleSSOSuccess from "./pages/GoogleSSOSuccess";
-import GoogleSSOError from "./pages/GoogleSSOError";
+import GoogleSSOSuccess from './pages/GoogleSSOSuccess'
+import GoogleSSOError from './pages/GoogleSSOError'
 
-import NotFound from "./pages/Page404";
+import NotFound from './pages/Page404'
 
 export default function Router() {
   return useRoutes([
     {
-      path: "/",
+      path: '/',
       element: <DashboardLayout />,
       children: [
         // { element: <Navigate to="/signin" />, index: true },
-        { element: <Navigate to="/configure/generate" />, index: true },
-        { path: "configure/generate", element: <ConfigureLayout /> },
-        { path: "configure/generate/elements", element: <ElementsLayout /> },
+        // {element: <Navigate to="/qa-tool-v2/configure/generate" />, index: true},
+        {element: <Navigate to="/qa-tool-v3" />, index: true},
+        //
+        {path: 'qa-tool-v2/configure/generate', element: <ConfigureLayout />},
+        {path: 'qa-tool-v2/configure/generate/elements', element: <ElementsLayout />},
+        //
+        {path: 'qa-tool-v3', element: <UploadLayout />},
+        {path: 'qa-tool-v3/configure/generate', element: <ConfigureLayout />},
+        {path: 'qa-tool-v3/configure/generate/elements', element: <ElementsLayout />},
         {
-          path: "configure/generate/elements/done",
+          path: 'qa-tool-v2/configure/generate/elements/done',
           element: <DoneLayout />,
         },
         {
-          path: "concept_template_version",
+          path: 'qa-tool-v3/configure/generate/elements/done',
+          element: <DoneLayout />,
+        },
+        {
+          path: 'qa-tool-v2/concept_template_version',
+          element: <ConceptTemplateVersionLayout />,
+        },
+        {
+          path: 'qa-tool-v3/concept_template_version',
           element: <ConceptTemplateVersionLayout />,
         },
       ],
     },
 
-    { path: "signin", element: <SignIn /> },
-    { path: "signup", element: <SignUp /> },
-    { path: "/:sharedVariantsId", element: <SharedVariantsLayout /> },
+    {path: 'signin', element: <SignIn />},
+    {path: 'signup', element: <SignUp />},
+    {path: 'qa-tool-v2/:sharedVariantsId', element: <SharedVariantsLayout />},
+    {path: 'qa-tool-v3/:sharedVariantsId', element: <SharedVariantsLayout />},
 
-    { path: "googleSSOSuccess", element: <GoogleSSOSuccess /> },
-    { path: "googleSSOError", element: <GoogleSSOError /> },
+    {path: 'googleSSOSuccess', element: <GoogleSSOSuccess />},
+    {path: 'googleSSOError', element: <GoogleSSOError />},
 
-    { path: "404", element: <NotFound /> },
-    { path: "*", element: <Navigate to="/404" replace /> },
-  ]);
+    {path: '404', element: <NotFound />},
+    {path: '*', element: <Navigate to="/404" replace />},
+  ])
 }
