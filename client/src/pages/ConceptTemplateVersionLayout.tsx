@@ -36,7 +36,7 @@ import {
   Input,
   Checkbox,
 } from 'antd'
-import {useLocation, useNavigate} from 'react-router-dom'
+import {useLocation} from 'react-router-dom'
 import {Layout} from 'antd'
 const {Content} = Layout
 import {
@@ -1038,7 +1038,6 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         maskClosable={sharedLoading ? false : true}
         closable={sharedLoading ? false : true}
         open={isModalOpen}
-        onOk={() => setIsModalOpen(false)}
         okButtonProps={{style: {display: sharedLoading ? 'none' : 'unset'}}}
         onOk={() => {
           let filterVariants = []
@@ -1416,7 +1415,9 @@ const ConceptTemplateVersionLayout: React.FC = () => {
               <Space.Compact style={{width: '92%'}}>
                 <InputStyled
                   ref={sharedLinkRef}
-                  defaultValue={window.location.origin + '/' + addSharedVariant.sharedVariants._id}
+                  defaultValue={
+                    window.location.origin + '/qa-tool-v2/' + addSharedVariant.sharedVariants._id
+                  }
                   readOnly
                 />
                 <Button
@@ -1449,7 +1450,11 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 justifyContent: 'center',
               }}
             >
-              <QRCode value={window.location.origin + '/' + addSharedVariant.sharedVariants._id} />
+              <QRCode
+                value={
+                  window.location.origin + '/qa-tool-v2/' + addSharedVariant.sharedVariants._id
+                }
+              />
             </Space>
           </>
         )}

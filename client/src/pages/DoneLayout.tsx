@@ -257,7 +257,7 @@ export default function DoneLayout() {
         setImageVideoFiles(files)
         dispatchv2(postTemplateVersionImageVideoCloud(formData))
       } else
-        navigate('/concept_template_version', {
+        navigate('/qa-tool-v2/qa-tool-v2/concept_template_version', {
           state: {
             templateName: templateName,
             templates: templates,
@@ -313,7 +313,7 @@ export default function DoneLayout() {
   }, [addTemplateVersion, isAddTemplateVersionCloudSuccess, isAddTemplateVersionCloudError])
   useEffect(() => {
     if (isTemplateVersionImageVideoCloudSuccess)
-      navigate('/concept_template_version', {
+      navigate('/qa-tool-v2/concept_template_version', {
         state: {
           templateName: templateName,
           templates: templates,
@@ -337,7 +337,7 @@ export default function DoneLayout() {
   }
   const onChangeSteps = (value: number) => {
     if (value === 1)
-      navigate('/configure/generate/elements', {
+      navigate('/qa-tool-v2/configure/generate/elements', {
         state: {
           templateName: templateName,
           templates: location.state.templates,
