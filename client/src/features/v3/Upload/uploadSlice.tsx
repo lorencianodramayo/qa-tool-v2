@@ -5,7 +5,7 @@ const initialState = {
   isUploadError: false,
   isUploadSuccess: false,
   isUploadLoading: false,
-  uploadMessage: '',
+  uploadMessage: null,
 }
 export const uploadTemplate = createAsyncThunk(
   'upload/uploadTemplate',
