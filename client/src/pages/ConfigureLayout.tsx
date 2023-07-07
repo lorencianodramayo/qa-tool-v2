@@ -296,7 +296,7 @@ const ConfigureLayout = () => {
         description: 'Please Select or Add Template!',
       })
     else
-      navigate('/configure/generate/elements', {
+      navigate('/qa-tool-v2/configure/generate/elements', {
         state: {
           templateName: templateName,
           templates: templates.filter((tmpl) =>
@@ -743,7 +743,7 @@ const ConfigureLayout = () => {
                     description: 'Please Select or Add Template!',
                   })
                 else
-                  navigate('/configure/generate/elements', {
+                  navigate('/qa-tool-v2/configure/generate/elements', {
                     state: {
                       templateName: templateName,
                       templates: templates.filter((tmpl) =>

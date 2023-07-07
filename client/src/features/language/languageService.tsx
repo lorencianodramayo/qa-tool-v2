@@ -1,9 +1,9 @@
-import apiService from "../../api/apiService";
+import apiService from '../../api/apiService'
 
 const getLanguages = async () => {
-  const response = await apiService.get("/languages");
-  return response.data;
-};
+  const response = await apiService.get('/languages')
+  return response.data
+}
 
 // const detectLanguage = async (payload) => {
 //   const response = await apiService.post("/detectLanguage", payload);
@@ -11,14 +11,14 @@ const getLanguages = async () => {
 // };
 
 const postLanguage = async (payload) => {
-  const response = await apiService.post("/addLanguage", payload);
-  return response.data;
-};
+  const response = await apiService.post('/addLanguage', payload)
+  return response.data
+}
 
 const postTranslate = async (payload) => {
-  const response = await apiService.post("/translate", payload);
-  return response.data;
-};
+  const response = await apiService.post('/v2/translate', payload)
+  return response.data
+}
 
 // const postTranslateText = async (payload) => {
 //   const response = await apiService.post("/translateText", payload);
@@ -31,6 +31,6 @@ const languageService = {
   // postTranslateText,
   postLanguage,
   postTranslate,
-};
+}
 
-export default languageService;
+export default languageService

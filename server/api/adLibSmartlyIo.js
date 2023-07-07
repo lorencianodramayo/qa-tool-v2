@@ -21,7 +21,7 @@ router.get("/languages", async (req, res) => {
 router.post("/addLanguage", async (req, res) => {
   await adLibSmartlyIo.addLanguage(req.body, res);
 });
-router.post("/translate", async (req, res) => {
+router.post("/translate/v2", async (req, res) => {
   await adLibSmartlyIo.translate(req.body, res);
 });
 router.get("/getTemplatesVersions", async (req, res) => {
@@ -35,7 +35,7 @@ router.post("/postSharedVariants", async (req, res) => {
 });
 router.get("/getSharedVariants/:id", async (req, res) => {
   await adLibSmartlyIo.getSharedVariants(req, res);
-})
+});
 router.post("/postTemplateVersionCloud", async (req, res) => {
   await adLibSmartlyIo.postTemplateVersionCloud(req.body, res);
 });

@@ -516,7 +516,7 @@ export default function ElementsLayout() {
       }
       if (language !== '') {
         setLoading(!loading)
-        const response = await apiService.post('/translate', payload)
+        const response = await apiService.post('/translate/v2', payload)
         text = response.data.translate
       }
     })
@@ -528,7 +528,7 @@ export default function ElementsLayout() {
   }
   const onChangeSteps = (value: number) => {
     if (value === 0)
-      navigate('/configure/generate', {
+      navigate('/qa-tool-v2/configure/generate', {
         state: {
           templateName: templateName,
           templates: location.state.templates.map((originalObj) => {
@@ -542,7 +542,7 @@ export default function ElementsLayout() {
         replace: true,
       })
     else
-      navigate('/configure/generate/elements/done', {
+      navigate('/qa-tool-v2/configure/generate/elements/done', {
         state: {
           templateName: templateName,
           templates: location.state.templates.map((originalObj) => {
@@ -2708,7 +2708,7 @@ export default function ElementsLayout() {
             <ButtonStyled
               type="primary"
               onClick={() => {
-                navigate('/configure/generate/elements/done', {
+                navigate('/qa-tool-v2/configure/generate/elements/done', {
                   state: {
                     templateName: templateName,
                     templates: location.state.templates.map((originalObj) => {
