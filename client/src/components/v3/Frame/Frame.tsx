@@ -23,9 +23,14 @@ const Frame: FC<FrameProps> = ({
     let defaultValues = {}
     Object.keys(data).map((_data, index) =>
       Object.keys(data[_data]).map((child) => {
-        if (child === 'text' || child === 'url') defaultValues[_data] = data[_data][child].value
+        if (child === 'text' || child === 'url')
+          if (data[_data].hasOwnProperty('reportingDimension'))
+            defaultValues[data[_data]['reportingDimension']] = data[_data][child].value
+          else defaultValues[_data] = data[_data][child].value
         else if (child === 'image' || child === 'video')
-          defaultValues[_data] = data[_data][child].src
+          if (data[_data].hasOwnProperty('reportingDimension'))
+            defaultValues[data[_data]['reportingDimension']] = data[_data][child].src
+          else defaultValues[_data] = data[_data][child].src
       }),
     )
     window.addEventListener(
