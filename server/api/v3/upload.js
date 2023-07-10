@@ -37,6 +37,33 @@ router.post("/upload", multer.single("file"), (req, res) => {
       }
     }
   });
+  function findFunctionEndIndex(fileContent, functionStartIndex) {
+    let bracesCount = 0;
+    let i = functionStartIndex;
+    while (i < fileContent.length) {
+      if (fileContent[i] === "{") {
+        bracesCount++;
+      } else if (fileContent[i] === "}") {
+        bracesCount--;
+        if (bracesCount === 0) {
+          return i + 1;
+        }
+      }
+      i++;
+    }
+    return -1;
+  }
+  function commentFunction(functionCode) {
+    const lines = functionCode.split("\n");
+    const commentedLines = lines.map((line) => `// ${line}`);
+    const newFunction = `
+    function initDynamic() {
+      studioInvocation();
+    }
+    `;
+    const commentedFunctionCode = commentedLines.join("\n") + newFunction;
+    return commentedFunctionCode;
+  }
   if (Object.keys(template).length > 0) {
     const newTemplate = new Template({
       name: req.file.originalname.split(".zip")[0],
@@ -48,6 +75,31 @@ router.post("/upload", multer.single("file"), (req, res) => {
       .then((data) => {
         entries.forEach(function (entry) {
           if (!entry?.isDirectory) {
+            if (entry?.name === "dynamic.js") {
+              const functionName = "initDynamic";
+              const functionCodeRegex = new RegExp(
+                `function\\s+${functionName}\\s*\\(`
+              );
+              if (functionCodeRegex.test(entry?.getData()?.toString("utf8"))) {
+                let fileContent = entry?.getData()?.toString("utf8");
+                const functionStartIndex =
+                  fileContent.search(functionCodeRegex);
+                const functionEndIndex = findFunctionEndIndex(
+                  fileContent,
+                  functionStartIndex
+                );
+                const functionCode = fileContent.slice(
+                  functionStartIndex,
+                  functionEndIndex
+                );
+                const commentedFunctionCode = commentFunction(functionCode);
+                const commentedFileContent =
+                  fileContent.slice(0, functionStartIndex) +
+                  commentedFunctionCode +
+                  fileContent.slice(functionEndIndex);
+                entry.setData(Buffer.from(commentedFileContent, "utf8"));
+              }
+            }
             if (entry?.name === "index.html") {
               entry.setData(
                 Buffer.from(
