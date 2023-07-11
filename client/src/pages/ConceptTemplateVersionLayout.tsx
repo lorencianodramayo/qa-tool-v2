@@ -997,8 +997,8 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                         {variant.templateName} {variant.size}
                       </Space.Compact>
                     </Space.Compact>
-                    <RowComponent items={variant} containerWidth={1086.27} />
-                    {/* <Row
+                    {/* <RowComponent items={variant} containerWidth={1086.27} /> */}
+                    <Row
                       gutter={[15.9, 22.4]}
                       style={{
                         width: '100%',
@@ -1028,7 +1028,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                             </Col>
                           </>
                         ))}
-                    </Row> */}
+                    </Row>
                   </>
                 ))}
         </ContentStyled>
