@@ -257,7 +257,7 @@ export default function DoneLayout() {
         setImageVideoFiles(files)
         dispatchv2(postTemplateVersionImageVideoCloud(formData))
       } else
-        navigate('/qa-tool-v2/qa-tool-v2/concept_template_version', {
+        navigate('/qa-tool-v2/concept_template_version', {
           state: {
             templateName: templateName,
             templates: templates,
