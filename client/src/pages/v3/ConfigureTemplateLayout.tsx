@@ -27,7 +27,6 @@ import {
 } from 'antd'
 const {Sider, Content} = Layout
 import type {Color, ColorPickerProps} from 'antd/es/color-picker'
-import chroma from 'chroma-js'
 import Typography from 'antd/es/typography/Typography'
 import {
   MenuFoldOutlined,
@@ -1209,16 +1208,16 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
                       g === 1
                         ? 'MIN-' + triggersValues[triggersValuesKeys[0]][t]
                         : 'MAX-' + triggersValues[triggersValuesKeys[0]][t]
-                    while (n < possibleValuesKeys.length - 1) {
-                      if (possibleValues[possibleValuesKeys[n]][i] !== undefined) {
-                        variants_1 += '-' + possibleValues[possibleValuesKeys[n]][i]
+                    while (n < triggersValuesKeys.length - 1) {
+                      if (triggersValues[triggersValuesKeys[n]][i] !== undefined) {
+                        variants_1 += '-' + triggersValues[triggersValuesKeys[n]][i]
                       }
                       n++
-                      if (n === possibleValuesKeys.length - 1) {
+                      if (n === triggersValuesKeys.length - 1) {
                         let e = 0
                         while (
                           e <
-                          possibleValues[possibleValuesKeys[possibleValuesKeys.length - 1]].length
+                          triggersValues[triggersValuesKeys[triggersValuesKeys.length - 1]].length
                         ) {
                           let variants_2 = ''
                           variants_2 += variants_1 + '-' + triggersValues[triggersValuesKeys[n]][e]
