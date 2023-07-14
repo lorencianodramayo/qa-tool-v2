@@ -539,31 +539,68 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
                                   ..._template.template.elements[data],
                                   style: {
                                     ..._template.template.elements[data].style,
-                                    textTransform: _template.template.elements[
-                                      data
-                                    ].style.hasOwnProperty('textTransform')
-                                      ? _template.template.elements[data].style.textTransform
-                                      : '',
+                                    textTransform:
+                                      typeof _template.template.elements[data].style !== 'undefined'
+                                        ? _template.template.elements[data].style.textTransform
+                                        : '',
                                   },
                                   [child]: {
-                                    value: _template.template.elements[data].style.hasOwnProperty(
-                                      'textTransform',
-                                    )
-                                      ? textCase(
-                                          filteredLanguage[0].content.substring(0, value),
-                                          _template.template.elements[data].style.textTransform
-                                            .charAt(0)
-                                            .toUpperCase() +
-                                            _template.template.elements[
-                                              data
-                                            ].style.textTransform.slice(1),
-                                        )
-                                      : filteredLanguage[0].content.substring(0, value),
+                                    value:
+                                      typeof _template.template.elements[data].style !==
+                                        'undefined' &&
+                                      typeof _template.template.elements[data].style
+                                        .textTransform !== 'undefined'
+                                        ? textCase(
+                                            filteredLanguage[0].content.substring(0, value),
+                                            _template.template.elements[data].style.textTransform
+                                              .charAt(0)
+                                              .toUpperCase() +
+                                              _template.template.elements[
+                                                data
+                                              ].style.textTransform.slice(1),
+                                          )
+                                        : filteredLanguage[0].content.substring(0, value),
                                   },
                                 },
                               },
                             },
                           }
+
+                          // let updatedTemplate = {
+                          //   ..._template,
+                          //   template: {
+                          //     ..._template.template,
+                          //     elements: {
+                          //       ..._template.template.elements,
+                          //       [data]: {
+                          //         ..._template.template.elements[data],
+                          //         style: {
+                          //           ..._template.template.elements[data].style,
+                          //           textTransform: _template.template.elements[
+                          //             data
+                          //           ].style.hasOwnProperty('textTransform')
+                          //             ? _template.template.elements[data].style.textTransform
+                          //             : '',
+                          //         },
+                          //         [child]: {
+                          //           value: _template.template.elements[data].style.hasOwnProperty(
+                          //             'textTransform',
+                          //           )
+                          //             ? textCase(
+                          //                 filteredLanguage[0].content.substring(0, value),
+                          //                 _template.template.elements[data].style.textTransform
+                          //                   .charAt(0)
+                          //                   .toUpperCase() +
+                          //                   _template.template.elements[
+                          //                     data
+                          //                   ].style.textTransform.slice(1),
+                          //               )
+                          //             : filteredLanguage[0].content.substring(0, value),
+                          //         },
+                          //       },
+                          //     },
+                          //   },
+                          // }
                           setTemplate(updatedTemplate)
                           setRefresh((prevRefresh) => prevRefresh + 1)
                         }}
