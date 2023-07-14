@@ -81,7 +81,7 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
   const [formatHex] = useState<ColorPickerProps['format']>('hex')
   const [formatRgb] = useState<ColorPickerProps['format']>('rgb')
   const drawerRef = useRef<HTMLDivElement>(null)
-  const [height] = useState<number>(0)
+  const [height, setHeight] = useState<number>(0)
   const [open, setOpen] = useState<boolean>(false)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false)
@@ -1148,6 +1148,13 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
     formData.append('file', file)
     dispatch(postUpload(formData))
   }
+  const showDrawer = () => {
+    if (drawerRef.current) {
+      const height = drawerRef.current.offsetHeight
+      setHeight(height)
+    }
+    setOpen(!open)
+  }
   const onClose = () => setOpen(!open)
   const showModal = () => {
     form.resetFields()
@@ -1214,7 +1221,12 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
     <LayoutStyled>
       {contextHolder}
       {isLoading && <Loader />}
-      <FloatButton style={{right: 24}} type="primary" icon={<TranslationOutlined />} />
+      <FloatButton
+        type="primary"
+        icon={<TranslationOutlined />}
+        tooltip={<Space>Languages</Space>}
+        onClick={showDrawer}
+      />
       <FloatButton
         type="primary"
         style={{right: 94}}
