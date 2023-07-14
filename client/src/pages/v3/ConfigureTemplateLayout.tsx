@@ -489,26 +489,31 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
                                   ..._template.template.elements[data],
                                   style: {
                                     ..._template.template.elements[data].style,
-                                    textTransform: _template.template.elements[
-                                      data
-                                    ].style.hasOwnProperty('textTransform')
-                                      ? _template.template.elements[data].style.textTransform
-                                      : '',
+                                    textTransform:
+                                      _template.template.elements[data].style &&
+                                      _template.template.elements[data].style.hasOwnProperty(
+                                        'textTransform',
+                                      )
+                                        ? _template.template.elements[data].style.textTransform
+                                        : '',
                                   },
                                   [child]: {
-                                    value: _template.template.elements[data].style.hasOwnProperty(
-                                      'textTransform',
-                                    )
-                                      ? textCase(
-                                          filteredLanguage[0].content.substring(0, value),
-                                          _template.template.elements[data].style.textTransform
-                                            .charAt(0)
-                                            .toUpperCase() +
-                                            _template.template.elements[
-                                              data
-                                            ].style.textTransform.slice(1),
-                                        )
-                                      : filteredLanguage[0].content.substring(0, value),
+                                    value:
+                                      _template.template.elements[data].style &&
+                                      _template.template.elements[data].style.hasOwnProperty(
+                                        'textTransform',
+                                      ) &&
+                                      _template.template.elements[data].style.textTransform
+                                        ? textCase(
+                                            filteredLanguage[0].content.substring(0, value),
+                                            _template.template.elements[data].style.textTransform
+                                              .charAt(0)
+                                              .toUpperCase() +
+                                              _template.template.elements[
+                                                data
+                                              ].style.textTransform.slice(1),
+                                          )
+                                        : filteredLanguage[0].content.substring(0, value),
                                   },
                                 },
                               },
