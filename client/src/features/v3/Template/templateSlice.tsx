@@ -11,6 +11,16 @@ const initialState = {
   isUploadSuccess: false,
   isUploadLoading: false,
   uploadMessage: null,
+  templateVersions: null,
+  isTemplateVersionsError: false,
+  isTemplateVersionsSuccess: false,
+  isTemplateVersionsLoading: false,
+  templateVersionsMessage: null,
+  templateVersion: null,
+  isTemplateVersionError: false,
+  isTemplateVersionSuccess: false,
+  isTemplateVersionLoading: false,
+  templateVersionMessage: null,
 }
 export const getTemplate = createAsyncThunk(
   'template/getTemplate',
@@ -34,6 +44,28 @@ export const postUpload = createAsyncThunk(
     }
   },
 )
+export const getTemplateVersion = createAsyncThunk(
+  'template/getTemplateVersion',
+  async (id: string, thunkAPI) => {
+    try {
+      return await templateService.getTemplateVersion(id)
+    } catch (error) {
+      const message = error
+      return thunkAPI.rejectWithValue(message)
+    }
+  },
+)
+export const postTemplateVersions = createAsyncThunk(
+  'template/postTemplateVersions',
+  async (payload: any, thunkAPI) => {
+    try {
+      return await templateService.postTemplateVersions(payload)
+    } catch (error) {
+      const message = error
+      return thunkAPI.rejectWithValue(message)
+    }
+  },
+)
 export const Template = createSlice({
   name: 'template',
   initialState,
@@ -49,6 +81,16 @@ export const Template = createSlice({
       state.isUploadSuccess = false
       state.isUploadLoading = false
       state.uploadMessage = null
+      state.templateVersions = null
+      state.isTemplateVersionsError = false
+      state.isTemplateVersionsSuccess = false
+      state.isTemplateVersionsLoading = false
+      state.templateVersionsMessage = null
+      state.templateVersion = null
+      state.isTemplateVersionError = false
+      state.isTemplateVersionSuccess = false
+      state.isTemplateVersionLoading = false
+      state.templateVersionMessage = null
     },
   },
   extraReducers: (builder) => {
@@ -85,6 +127,40 @@ export const Template = createSlice({
       state.isUploadSuccess = false
       state.uploadMessage = action.payload
       state.upload = null
+    })
+    builder.addCase(postTemplateVersions.pending, (state) => {
+      state.isTemplateVersionsLoading = true
+    })
+    builder.addCase(postTemplateVersions.fulfilled, (state, action) => {
+      state.isTemplateVersionsLoading = false
+      state.isTemplateVersionsError = false
+      state.isTemplateVersionsSuccess = true
+      state.templateVersionsMessage = ''
+      state.templateVersions = action.payload
+    })
+    builder.addCase(postTemplateVersions.rejected, (state, action) => {
+      state.isTemplateVersionsLoading = false
+      state.isTemplateVersionsError = true
+      state.isTemplateVersionsSuccess = false
+      state.templateVersionsMessage = action.payload
+      state.templateVersions = null
+    })
+    builder.addCase(getTemplateVersion.pending, (state) => {
+      state.isTemplateVersionLoading = true
+    })
+    builder.addCase(getTemplateVersion.fulfilled, (state, action) => {
+      state.isTemplateVersionLoading = false
+      state.isTemplateVersionError = false
+      state.isTemplateVersionSuccess = true
+      state.templateVersionMessage = ''
+      state.templateVersion = action.payload
+    })
+    builder.addCase(getTemplateVersion.rejected, (state, action) => {
+      state.isTemplateVersionLoading = false
+      state.isTemplateVersionError = true
+      state.isTemplateVersionSuccess = false
+      state.templateVersionMessage = action.payload
+      state.templateVersion = null
     })
   },
 })

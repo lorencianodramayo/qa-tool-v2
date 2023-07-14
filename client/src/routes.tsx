@@ -16,6 +16,7 @@ import GoogleSSOError from './pages/GoogleSSOError'
 
 import NotFound from './pages/Page404'
 import ConfigureTemplateLayout from './pages/v3/ConfigureTemplateLayout'
+import ConceptTemplateVersionLayoutv3 from './pages/v3/ConceptTemplateVersionLayout'
 
 export default function Router() {
   return useRoutes([
@@ -39,6 +40,10 @@ export default function Router() {
         {
           path: 'qa-tool-v2/concept_template_version',
           element: <ConceptTemplateVersionLayout />,
+        },
+        {
+          path: 'qa-tool-v3/configure/template/version/:_id',
+          element: <ConceptTemplateVersionLayoutv3 />,
         },
       ],
     },
