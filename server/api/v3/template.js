@@ -4,6 +4,7 @@ const { Storage } = require("@google-cloud/storage");
 const router = express.Router();
 const { Template } = require("../../models/v3/template");
 const { Language } = require("../../models/v3/language");
+const { TemplateVersion } = require("../../models/v3/templateVersion");
 require("dotenv").config();
 const storage = new Storage({
   projectId: process.env.GCLOUD_PROJECT_ID,
@@ -56,5 +57,31 @@ router.post("/template/upload", multer.single("file"), async (req, res) => {
     res.status(200).json({ data: publicUrl });
   });
   blobStream.end(req.file.buffer);
+});
+router.post("/template/versions", async (req, res) => {
+  const templateVersion = new TemplateVersion(req.body);
+  templateVersion.save((err) => {
+    if (err) res.status(500).json({ templateVersion: err });
+    res.status(200).json({ templateVersion: templateVersion, success: true });
+  });
+});
+router.get("/template/versions/:id", async (req, res) => {
+  TemplateVersion.find({ templateId: req.params.id }, (err, response) => {
+    if (err) res.status(500).json({ data: null, success: false, message: err });
+    else {
+      if (response.length === 0)
+        res.status(200).json({
+          data: null,
+          success: true,
+          message: "Template Version not found!",
+        });
+      else
+        res.status(200).json({
+          data: response,
+          success: true,
+          message: "Template Version found!",
+        });
+    }
+  });
 });
 module.exports = router;

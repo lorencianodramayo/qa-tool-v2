@@ -1,9 +1,14 @@
 import React, {useRef, useState} from 'react'
 import styled from 'styled-components'
 import {useAppDispatch, useAppSelector} from '../../store'
-import {useParams} from 'react-router-dom'
+import {useNavigate, useParams} from 'react-router-dom'
 import {useOnMount, useOnMountv2} from '../../hooks'
-import {getTemplate, postUpload} from '../../features/v3/Template/templateSlice'
+import {
+  getTemplate,
+  getTemplateVersion,
+  postTemplateVersions,
+  postUpload,
+} from '../../features/v3/Template/templateSlice'
 import _ from 'lodash'
 import {
   Button,
@@ -22,6 +27,7 @@ import {
 } from 'antd'
 const {Sider, Content} = Layout
 import type {Color, ColorPickerProps} from 'antd/es/color-picker'
+import chroma from 'chroma-js'
 import Typography from 'antd/es/typography/Typography'
 import {
   MenuFoldOutlined,
@@ -50,6 +56,7 @@ const LayoutStyled = styled(Layout)`
 const ConfigureTemplateLayout: React.FC<any> = ({}) => {
   const params = useParams()
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const {template, upload, isUploadLoading, isUploadSuccess} = useAppSelector(
     (state) => state.template,
   )
@@ -65,6 +72,8 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
     deleteLanguage,
     isDeleteLanguageSuccess,
   } = useAppSelector((state) => state.languagev3)
+  const {templateVersions, isTemplateVersionsSuccess, templateVersion, isTemplateVersionSuccess} =
+    useAppSelector((state) => state.template)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [_template, setTemplate] = useState<any>(template)
   const [collapsed, setCollapsed] = useState<boolean>(false)
@@ -73,7 +82,7 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
   const [formatHex] = useState<ColorPickerProps['format']>('hex')
   const [formatRgb] = useState<ColorPickerProps['format']>('rgb')
   const drawerRef = useRef<HTMLDivElement>(null)
-  const [height, setHeight] = useState<number>(0)
+  const [height] = useState<number>(0)
   const [open, setOpen] = useState<boolean>(false)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false)
@@ -81,6 +90,7 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
   const [isUpdate, setIsUpdate] = useState<boolean>(false)
   const [api, contextHolder] = notification.useNotification()
   const [refresh, setRefresh] = useState<number>(0)
+  const [_templateVersion, setTemplateVersion] = useState<any>([])
   useOnMount(() => {
     dispatch(fetchLanguages())
     dispatch(getTemplate(params.uploadID))
@@ -178,6 +188,31 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
         setRefresh((prevRefresh) => prevRefresh + 1)
       }
   }, [isUploadLoading, isUploadSuccess, upload, dynamicElement])
+  useOnMountv2(() => {
+    if (isTemplateVersionsSuccess) {
+      api['success']({
+        message: 'Template Versions Generated Sucessfully',
+        description: 'Template Versions Generated Sucessfully!',
+      })
+      setTimeout(() => {
+        navigate(
+          `/qa-tool-v3/configure/template/version/${templateVersions.templateVersion.templateId}`,
+        )
+      }, 2000)
+    }
+  }, [templateVersions, isTemplateVersionsSuccess])
+  useOnMountv2(() => {
+    if (isTemplateVersionSuccess)
+      if (!_.isNil(templateVersion)) {
+        api['success']({
+          message: 'Template Version Already Exists',
+          description: 'Template Version Already Exists!',
+        })
+        setTimeout(() => {
+          navigate(`/qa-tool-v3/configure/template/version/${templateVersion[0].templateId}`)
+        }, 2000)
+      } else dispatch(postTemplateVersions(_templateVersion))
+  }, [templateVersion, isTemplateVersionSuccess])
   const buttonCases = [
     {
       value: 'Capitalize',
@@ -186,6 +221,768 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
     {value: 'Lowercase', label: 'aa'},
     {value: 'Uppercase', label: 'AA'},
   ]
+  const reportingDimensionElements = (_template: any, data: any, child: any) => {
+    const value = _template.template.elements[data][child].value
+    const s = new Option().style
+    s.color = value
+    return (
+      <>
+        {child === 'text' && (
+          <>
+            {isRGBAColor(value) ||
+              isRGBColor(value) ||
+              (isHexColor(value) && (
+                <Space.Compact block style={{marginTop: 5, color: '#000'}}>
+                  <ColorPicker
+                    format={
+                      isRGBColor(value)
+                        ? formatRgb
+                        : isHexColor(value)
+                        ? formatHex
+                        : isRGBAColor(value)
+                        ? formatRgb
+                        : formatHex
+                    }
+                    value={value}
+                    onChange={(_value: Color) => {
+                      let color: string = value
+                      if (isRGBColor(value)) color = _value.toRgbString()
+                      else if (isHexColor(value)) color = _value.toHexString()
+                      else color = _value.toRgbString()
+                      let updatedTemplate = {
+                        ..._template,
+                        ['template']: {
+                          ..._template.template,
+                          ['elements']: {
+                            ..._template.template.elements,
+                            [data]: {
+                              ..._template.template.elements[data],
+                              [child]: {
+                                ['value']: color,
+                              },
+                            },
+                          },
+                        },
+                      }
+                      setTemplate(updatedTemplate)
+                      setRefresh((prevRefresh) => prevRefresh + 1)
+                    }}
+                  />
+                </Space.Compact>
+              ))}
+            {_template.template.elements[data]['reportingDimension']
+              .toLowerCase()
+              .includes('color') &&
+              !isRGBAColor(value) &&
+              !isRGBColor(value) &&
+              !isHexColor(value) && (
+                <div style={{marginTop: 5, color: '#000'}}>
+                  <Space.Compact block>
+                    <Input
+                      value={value}
+                      onChange={(e) => {
+                        let text = e.target.value
+                        let updatedTemplate = {
+                          ..._template,
+                          ['template']: {
+                            ..._template.template,
+                            ['elements']: {
+                              ..._template.template.elements,
+                              [data]: {
+                                ..._template.template.elements[data],
+                                [child]: {
+                                  ['value']: text,
+                                },
+                              },
+                            },
+                          },
+                        }
+                        setTemplate(updatedTemplate)
+                        setRefresh((prevRefresh) => prevRefresh + 1)
+                      }}
+                    />
+                  </Space.Compact>
+                  <Space style={{color: s.color === '' ? '#FF0000' : 'unset'}}>
+                    {s.color === '' && 'Invalid Color'}
+                  </Space>
+                </div>
+              )}
+            {_template.template.elements[data]['reportingDimension']
+              .toLowerCase()
+              .includes('variable') && (
+              <Space.Compact block style={{marginTop: 5, color: '#000'}}>
+                <Input
+                  value={value}
+                  onChange={(e) => {
+                    let text = e.target.value
+                    let updatedTemplate = {
+                      ..._template,
+                      ['template']: {
+                        ..._template.template,
+                        ['elements']: {
+                          ..._template.template.elements,
+                          [data]: {
+                            ..._template.template.elements[data],
+                            [child]: {
+                              ['value']: text,
+                            },
+                          },
+                        },
+                      },
+                    }
+                    setTemplate(updatedTemplate)
+                    setRefresh((prevRefresh) => prevRefresh + 1)
+                  }}
+                />
+              </Space.Compact>
+            )}
+            {value.toLowerCase().includes('http') && (
+              <Space style={{marginTop: 5, color: '#000'}}>
+                <Input value={value} disabled />
+                <Button
+                  type="primary"
+                  icon={<LinkOutlined />}
+                  onClick={() => {
+                    let updatedTemplate = {
+                      ..._template,
+                      ['template']: {
+                        ..._template.template,
+                        ['elements']: {
+                          ..._template.template.elements,
+                          [data]: {
+                            ..._template.template.elements[data],
+                            [child]: {
+                              ['value']: 'https://www.google.com',
+                            },
+                          },
+                        },
+                      },
+                    }
+                    setTemplate(updatedTemplate)
+                    setRefresh((prevRefresh) => prevRefresh + 1)
+                  }}
+                />
+              </Space>
+            )}
+            {!_template.template.elements[data]['reportingDimension']
+              .toLowerCase()
+              .includes('color') &&
+              !_template.template.elements[data]['reportingDimension']
+                .toLowerCase()
+                .includes('variable') &&
+              !value.toLowerCase().includes('http') && (
+                <>
+                  <div style={{marginTop: 5}}>
+                    <div>
+                      <Input
+                        value={value}
+                        onChange={async (e) => {
+                          let text = e.target.value
+                          if (!_.isEmpty(language)) {
+                            const response = await apiService.post('/translate', {
+                              language: language,
+                              text: text,
+                            })
+                            text = response.data.data
+                          }
+                          let updatedTemplate = {
+                            ..._template,
+                            ['template']: {
+                              ..._template.template,
+                              ['elements']: {
+                                ..._template.template.elements,
+                                [data]: {
+                                  ..._template.template.elements[data],
+                                  [child]: {
+                                    ['value']: text,
+                                  },
+                                },
+                              },
+                            },
+                          }
+                          setTemplate(updatedTemplate)
+                          setRefresh((prevRefresh) => prevRefresh + 1)
+                        }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 5,
+                        justifyContent: 'space-evenly',
+                        alignItems: 'center',
+                        display: 'flex',
+                      }}
+                    >
+                      {buttonCases.map((buttonCase) => (
+                        <Button
+                          style={{
+                            backgroundColor:
+                              _template.template.elements[data].style?.textTransform ===
+                              buttonCase.value.toLowerCase()
+                                ? '#339af0'
+                                : 'unset',
+                          }}
+                          size="small"
+                          onClick={() => {
+                            let updatedTemplate = {
+                              ..._template,
+                              template: {
+                                ..._template.template,
+                                elements: {
+                                  ..._template.template.elements,
+                                  [data]: {
+                                    ..._template.template.elements[data],
+                                    style: {
+                                      ..._template.template.elements[data].style,
+                                      textTransform:
+                                        buttonCase.value === 'Capitalize'
+                                          ? 'capitalize'
+                                          : buttonCase.value === 'Lowercase'
+                                          ? 'lowercase'
+                                          : buttonCase.value === 'Uppercase'
+                                          ? 'uppercase'
+                                          : 'capitalize',
+                                    },
+                                    text: {
+                                      ..._template.template.elements[data].text,
+                                      value: textCase(
+                                        _template.template.elements[data].text.value,
+                                        buttonCase.value,
+                                      ),
+                                    },
+                                  },
+                                },
+                              },
+                            }
+                            setTemplate(updatedTemplate)
+                            setRefresh((prevRefresh) => prevRefresh + 1)
+                          }}
+                        >
+                          {buttonCase.label}
+                        </Button>
+                      ))}
+                      <InputNumber
+                        controls={{
+                          upIcon: <CaretUpOutlined />,
+                          downIcon: <CaretDownOutlined />,
+                        }}
+                        bordered={true}
+                        value={textMaxValue(value)}
+                        onStep={(value: number) => {
+                          if (value > 1000)
+                            api['warning']({
+                              message: `${_template.template.elements[data]['reportingDimension']}`,
+                              description: 'Character Limit Exceeds!',
+                            })
+                          const filteredLanguage = getLanguages.filter(
+                            (lang: {language: string}) => {
+                              if (_.isEmpty(language)) return lang.language === 'Latin'
+                              else return lang.language === language
+                            },
+                          )
+                          let updatedTemplate = {
+                            ..._template,
+                            template: {
+                              ..._template.template,
+                              elements: {
+                                ..._template.template.elements,
+                                [data]: {
+                                  ..._template.template.elements[data],
+                                  style: {
+                                    ..._template.template.elements[data].style,
+                                    textTransform: _template.template.elements[
+                                      data
+                                    ].style.hasOwnProperty('textTransform')
+                                      ? _template.template.elements[data].style.textTransform
+                                      : '',
+                                  },
+                                  [child]: {
+                                    value: _template.template.elements[data].style.hasOwnProperty(
+                                      'textTransform',
+                                    )
+                                      ? textCase(
+                                          filteredLanguage[0].content.substring(0, value),
+                                          _template.template.elements[data].style.textTransform
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                            _template.template.elements[
+                                              data
+                                            ].style.textTransform.slice(1),
+                                        )
+                                      : filteredLanguage[0].content.substring(0, value),
+                                  },
+                                },
+                              },
+                            },
+                          }
+                          setTemplate(updatedTemplate)
+                          setRefresh((prevRefresh) => prevRefresh + 1)
+                        }}
+                        onChange={(value: number) => {
+                          if (value > 1000)
+                            api['warning']({
+                              message: `${_template.template.elements[data]['reportingDimension']}`,
+                              description: 'Character Limit Exceeds!',
+                            })
+                          const filteredLanguage = getLanguages.filter(
+                            (lang: {language: string}) => {
+                              if (_.isEmpty(language)) return lang.language === 'Latin'
+                              else return lang.language === language
+                            },
+                          )
+                          let updatedTemplate = {
+                            ..._template,
+                            template: {
+                              ..._template.template,
+                              elements: {
+                                ..._template.template.elements,
+                                [data]: {
+                                  ..._template.template.elements[data],
+                                  style: {
+                                    ..._template.template.elements[data].style,
+                                    textTransform: _template.template.elements[
+                                      data
+                                    ].style.hasOwnProperty('textTransform')
+                                      ? _template.template.elements[data].style.textTransform
+                                      : '',
+                                  },
+                                  [child]: {
+                                    value: _template.template.elements[data].style.hasOwnProperty(
+                                      'textTransform',
+                                    )
+                                      ? textCase(
+                                          filteredLanguage[0].content.substring(0, value),
+                                          _template.template.elements[data].style.textTransform
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                            _template.template.elements[
+                                              data
+                                            ].style.textTransform.slice(1),
+                                        )
+                                      : filteredLanguage[0].content.substring(0, value),
+                                  },
+                                },
+                              },
+                            },
+                          }
+                          setTemplate(updatedTemplate)
+                          setRefresh((prevRefresh) => prevRefresh + 1)
+                        }}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+          </>
+        )}
+        {child === 'url' && (
+          <Space style={{marginTop: 5, color: '#000'}}>
+            <Input value={value} disabled />
+            <Button
+              type="primary"
+              icon={<LinkOutlined />}
+              onClick={() => {
+                let updatedTemplate = {
+                  ..._template,
+                  ['template']: {
+                    ..._template.template,
+                    ['elements']: {
+                      ..._template.template.elements,
+                      [data]: {
+                        ..._template.template.elements[data],
+                        [child]: {
+                          ['value']: 'https://www.google.com',
+                        },
+                      },
+                    },
+                  },
+                }
+                setTemplate(updatedTemplate)
+                setRefresh((prevRefresh) => prevRefresh + 1)
+              }}
+            />
+          </Space>
+        )}
+      </>
+    )
+  }
+  const noReportingDimensionElements = (_template: any, data: any, child: any) => {
+    const value = _template.template.elements[data][child].value
+    const s = new Option().style
+    s.color = value
+    return (
+      <>
+        {child === 'text' && (
+          <>
+            {isRGBAColor(value) ||
+              isRGBColor(value) ||
+              (isHexColor(value) && (
+                <Space.Compact block style={{marginTop: 5, color: '#000'}}>
+                  <ColorPicker
+                    format={
+                      isRGBColor(value)
+                        ? formatRgb
+                        : isHexColor(value)
+                        ? formatHex
+                        : isRGBAColor(value)
+                        ? formatRgb
+                        : formatHex
+                    }
+                    value={value}
+                    onChange={(_value: Color) => {
+                      let color: string = value
+                      if (isRGBColor(value)) color = _value.toRgbString()
+                      else if (isHexColor(value)) color = _value.toHexString()
+                      else color = _value.toRgbString()
+                      let updatedTemplate = {
+                        ..._template,
+                        ['template']: {
+                          ..._template.template,
+                          ['elements']: {
+                            ..._template.template.elements,
+                            [data]: {
+                              ..._template.template.elements[data],
+                              [child]: {
+                                ['value']: color,
+                              },
+                            },
+                          },
+                        },
+                      }
+                      setTemplate(updatedTemplate)
+                      setRefresh((prevRefresh) => prevRefresh + 1)
+                    }}
+                  />
+                </Space.Compact>
+              ))}
+            {data.toLowerCase().includes('color') &&
+              !isRGBAColor(value) &&
+              !isRGBColor(value) &&
+              !isHexColor(value) && (
+                <div style={{marginTop: 5, color: '#000'}}>
+                  <Space.Compact block>
+                    <Input
+                      value={value}
+                      onChange={(e) => {
+                        let text = e.target.value
+                        let updatedTemplate = {
+                          ..._template,
+                          ['template']: {
+                            ..._template.template,
+                            ['elements']: {
+                              ..._template.template.elements,
+                              [data]: {
+                                ..._template.template.elements[data],
+                                [child]: {
+                                  ['value']: text,
+                                },
+                              },
+                            },
+                          },
+                        }
+                        setTemplate(updatedTemplate)
+                        setRefresh((prevRefresh) => prevRefresh + 1)
+                      }}
+                    />
+                  </Space.Compact>
+                  <Space style={{color: s.color === '' ? '#FF0000' : 'unset'}}>
+                    {s.color === '' && 'Invalid Color'}
+                  </Space>
+                </div>
+              )}
+            {data.toLowerCase().includes('variable') && (
+              <Space.Compact block style={{marginTop: 5, color: '#000'}}>
+                <Input
+                  value={value}
+                  onChange={(e) => {
+                    let text = e.target.value
+                    let updatedTemplate = {
+                      ..._template,
+                      ['template']: {
+                        ..._template.template,
+                        ['elements']: {
+                          ..._template.template.elements,
+                          [data]: {
+                            ..._template.template.elements[data],
+                            [child]: {
+                              ['value']: text,
+                            },
+                          },
+                        },
+                      },
+                    }
+                    setTemplate(updatedTemplate)
+                    setRefresh((prevRefresh) => prevRefresh + 1)
+                  }}
+                />
+              </Space.Compact>
+            )}
+            {value.toLowerCase().includes('http') && (
+              <Space style={{marginTop: 5, color: '#000'}}>
+                <Input value={value} disabled />
+                <Button
+                  type="primary"
+                  icon={<LinkOutlined />}
+                  onClick={() => {
+                    let updatedTemplate = {
+                      ..._template,
+                      ['template']: {
+                        ..._template.template,
+                        ['elements']: {
+                          ..._template.template.elements,
+                          [data]: {
+                            ..._template.template.elements[data],
+                            [child]: {
+                              ['value']: 'https://www.google.com',
+                            },
+                          },
+                        },
+                      },
+                    }
+                    setTemplate(updatedTemplate)
+                    setRefresh((prevRefresh) => prevRefresh + 1)
+                  }}
+                />
+              </Space>
+            )}
+            {!data.toLowerCase().includes('color') &&
+              !data.toLowerCase().includes('variable') &&
+              !value.toLowerCase().includes('http') && (
+                <>
+                  <div style={{marginTop: 5}}>
+                    <div>
+                      <Input
+                        value={value}
+                        onChange={async (e) => {
+                          let text = e.target.value
+                          if (!_.isEmpty(language)) {
+                            const response = await apiService.post('/translate', {
+                              language: language,
+                              text: text,
+                            })
+                            text = response.data.data
+                          }
+                          let updatedTemplate = {
+                            ..._template,
+                            ['template']: {
+                              ..._template.template,
+                              ['elements']: {
+                                ..._template.template.elements,
+                                [data]: {
+                                  ..._template.template.elements[data],
+                                  [child]: {
+                                    ['value']: text,
+                                  },
+                                },
+                              },
+                            },
+                          }
+                          setTemplate(updatedTemplate)
+                          setRefresh((prevRefresh) => prevRefresh + 1)
+                        }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 5,
+                        justifyContent: 'space-evenly',
+                        alignItems: 'center',
+                        display: 'flex',
+                      }}
+                    >
+                      {buttonCases.map((buttonCase) => (
+                        <Button
+                          style={{
+                            backgroundColor:
+                              _template.template.elements[data].style?.textTransform ===
+                              buttonCase.value.toLowerCase()
+                                ? '#339af0'
+                                : 'unset',
+                          }}
+                          size="small"
+                          onClick={() => {
+                            let updatedTemplate = {
+                              ..._template,
+                              template: {
+                                ..._template.template,
+                                elements: {
+                                  ..._template.template.elements,
+                                  [data]: {
+                                    ..._template.template.elements[data],
+                                    style: {
+                                      ..._template.template.elements[data].style,
+                                      textTransform:
+                                        buttonCase.value === 'Capitalize'
+                                          ? 'capitalize'
+                                          : buttonCase.value === 'Lowercase'
+                                          ? 'lowercase'
+                                          : buttonCase.value === 'Uppercase'
+                                          ? 'uppercase'
+                                          : 'capitalize',
+                                    },
+                                    text: {
+                                      ..._template.template.elements[data].text,
+                                      value: textCase(
+                                        _template.template.elements[data].text.value,
+                                        buttonCase.value,
+                                      ),
+                                    },
+                                  },
+                                },
+                              },
+                            }
+                            setTemplate(updatedTemplate)
+                            setRefresh((prevRefresh) => prevRefresh + 1)
+                          }}
+                        >
+                          {buttonCase.label}
+                        </Button>
+                      ))}
+                      <InputNumber
+                        controls={{
+                          upIcon: <CaretUpOutlined />,
+                          downIcon: <CaretDownOutlined />,
+                        }}
+                        bordered={true}
+                        value={textMaxValue(value)}
+                        onStep={(value: number) => {
+                          if (value > 1000)
+                            api['warning']({
+                              message: `${_template.template.elements[data]['reportingDimension']}`,
+                              description: 'Character Limit Exceeds!',
+                            })
+                          const filteredLanguage = getLanguages.filter(
+                            (lang: {language: string}) => {
+                              if (_.isEmpty(language)) return lang.language === 'Latin'
+                              else return lang.language === language
+                            },
+                          )
+                          let updatedTemplate = {
+                            ..._template,
+                            template: {
+                              ..._template.template,
+                              elements: {
+                                ..._template.template.elements,
+                                [data]: {
+                                  ..._template.template.elements[data],
+                                  style: {
+                                    ..._template.template.elements[data].style,
+                                    textTransform: _template.template.elements[
+                                      data
+                                    ].style.hasOwnProperty('textTransform')
+                                      ? _template.template.elements[data].style.textTransform
+                                      : '',
+                                  },
+                                  [child]: {
+                                    value: _template.template.elements[data].style.hasOwnProperty(
+                                      'textTransform',
+                                    )
+                                      ? textCase(
+                                          filteredLanguage[0].content.substring(0, value),
+                                          _template.template.elements[data].style.textTransform
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                            _template.template.elements[
+                                              data
+                                            ].style.textTransform.slice(1),
+                                        )
+                                      : filteredLanguage[0].content.substring(0, value),
+                                  },
+                                },
+                              },
+                            },
+                          }
+                          setTemplate(updatedTemplate)
+                          setRefresh((prevRefresh) => prevRefresh + 1)
+                        }}
+                        onChange={(value: number) => {
+                          if (value > 1000)
+                            api['warning']({
+                              message: `${_template.template.elements[data]['reportingDimension']}`,
+                              description: 'Character Limit Exceeds!',
+                            })
+                          const filteredLanguage = getLanguages.filter(
+                            (lang: {language: string}) => {
+                              if (_.isEmpty(language)) return lang.language === 'Latin'
+                              else return lang.language === language
+                            },
+                          )
+                          let updatedTemplate = {
+                            ..._template,
+                            template: {
+                              ..._template.template,
+                              elements: {
+                                ..._template.template.elements,
+                                [data]: {
+                                  ..._template.template.elements[data],
+                                  style: {
+                                    ..._template.template.elements[data].style,
+                                    textTransform: _template.template.elements[
+                                      data
+                                    ].style.hasOwnProperty('textTransform')
+                                      ? _template.template.elements[data].style.textTransform
+                                      : '',
+                                  },
+                                  [child]: {
+                                    value: _template.template.elements[data].style.hasOwnProperty(
+                                      'textTransform',
+                                    )
+                                      ? textCase(
+                                          filteredLanguage[0].content.substring(0, value),
+                                          _template.template.elements[data].style.textTransform
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                            _template.template.elements[
+                                              data
+                                            ].style.textTransform.slice(1),
+                                        )
+                                      : filteredLanguage[0].content.substring(0, value),
+                                  },
+                                },
+                              },
+                            },
+                          }
+                          setTemplate(updatedTemplate)
+                          setRefresh((prevRefresh) => prevRefresh + 1)
+                        }}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+          </>
+        )}
+        {child === 'url' && (
+          <Space style={{marginTop: 5, color: '#000'}}>
+            <Input value={value} disabled />
+            <Button
+              type="primary"
+              icon={<LinkOutlined />}
+              onClick={() => {
+                let updatedTemplate = {
+                  ..._template,
+                  ['template']: {
+                    ..._template.template,
+                    ['elements']: {
+                      ..._template.template.elements,
+                      [data]: {
+                        ..._template.template.elements[data],
+                        [child]: {
+                          ['value']: 'https://www.google.com',
+                        },
+                      },
+                    },
+                  },
+                }
+                setTemplate(updatedTemplate)
+                setRefresh((prevRefresh) => prevRefresh + 1)
+              }}
+            />
+          </Space>
+        )}
+      </>
+    )
+  }
   const textMaxValue = (text: string) => {
     let html = text
     let div = document.createElement('div')
@@ -277,10 +1074,6 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
     }
     return caseText
   }
-  const isColor = (color: string) => {
-    const colorPattern = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|rgb\(\d{1,3},\d{1,3},\d{1,3}\)$/
-    return colorPattern.test(color)
-  }
   const isRGBColor = (color: string) => {
     if (color.startsWith('rgb(') && color.endsWith(')')) {
       const values = color.substring(4, color.length - 1).split(',')
@@ -313,13 +1106,6 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
     formData.append('id', params.uploadID)
     formData.append('file', file)
     dispatch(postUpload(formData))
-  }
-  const showDrawer = () => {
-    if (drawerRef.current) {
-      const height = drawerRef.current.offsetHeight
-      setHeight(height)
-    }
-    setOpen(!open)
   }
   const onClose = () => setOpen(!open)
   const showModal = () => {
@@ -387,11 +1173,636 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
     <LayoutStyled>
       {contextHolder}
       {isLoading && <Loader />}
+      <FloatButton style={{right: 24}} type="primary" icon={<TranslationOutlined />} />
       <FloatButton
         type="primary"
-        icon={<TranslationOutlined />}
-        tooltip={<Space>Languages</Space>}
-        onClick={showDrawer}
+        style={{right: 94}}
+        tooltip={<Space>Generate</Space>}
+        onClick={() => {
+          let templateVariants = []
+          let triggers: any = {}
+          Object.keys(_template.template.elements).map((data) => {
+            if (_template.template.elements[data].enum) {
+              triggers[_template.template.elements[data]['name']] = _template.template.elements[
+                data
+              ].enum.map((_enum: any) => _enum.label)
+            }
+          })
+          if (Object.keys(triggers).length > 0) {
+            let triggersValues = triggers
+            let triggersValuesKeys = Object.keys(triggersValues)
+            let triggersValuesRowLength = []
+            triggersValuesKeys.map((key, i) => {
+              if (i === 1)
+                if (i < triggersValuesKeys.length - 1)
+                  triggersValuesRowLength.push(triggersValuesKeys[key].length)
+            })
+            if (triggersValuesKeys.length > 2) {
+              let g = 0
+              while (g < 2) {
+                let t = 0
+                while (t < triggersValues[triggersValuesKeys[0]].length) {
+                  let i = 0
+                  while (i < Math.max(...triggersValuesRowLength)) {
+                    let n = 1
+                    let variants_1 =
+                      g === 1
+                        ? 'MIN-' + triggersValues[triggersValuesKeys[0]][t]
+                        : 'MAX-' + triggersValues[triggersValuesKeys[0]][t]
+                    while (n < possibleValuesKeys.length - 1) {
+                      if (possibleValues[possibleValuesKeys[n]][i] !== undefined) {
+                        variants_1 += '-' + possibleValues[possibleValuesKeys[n]][i]
+                      }
+                      n++
+                      if (n === possibleValuesKeys.length - 1) {
+                        let e = 0
+                        while (
+                          e <
+                          possibleValues[possibleValuesKeys[possibleValuesKeys.length - 1]].length
+                        ) {
+                          let variants_2 = ''
+                          variants_2 += variants_1 + '-' + triggersValues[triggersValuesKeys[n]][e]
+                          if (variants_2.includes('MIN')) {
+                            let defaultValues = {}
+                            for (const [key, value] of Object.entries(
+                              _template.template.elements,
+                            )) {
+                              if (!_template.template.elements[key].enum)
+                                Object.keys(_template.template.elements[key]).map((child) => {
+                                  if (child === 'text' || child === 'url') {
+                                    if (_template.template.elements[key]['reportingDimension']) {
+                                      if (child === 'text') {
+                                        if (
+                                          isRGBAColor(
+                                            _template.template.elements[key]['text'].value,
+                                          ) ||
+                                          isRGBColor(
+                                            _template.template.elements[key]['text'].value,
+                                          ) ||
+                                          isHexColor(
+                                            _template.template.elements[key]['text'].value,
+                                          ) ||
+                                          (_template.template.elements[key]['reportingDimension']
+                                            .toLowerCase()
+                                            .includes('color') &&
+                                            !isRGBAColor(
+                                              _template.template.elements[key]['text'].value,
+                                            ) &&
+                                            !isRGBColor(
+                                              _template.template.elements[key]['text'].value,
+                                            ) &&
+                                            !isHexColor(
+                                              _template.template.elements[key]['text'].value,
+                                            )) ||
+                                          _template.template.elements[key]['reportingDimension']
+                                            .toLowerCase()
+                                            .includes('variable') ||
+                                          _template.template.elements[key]['text'].value
+                                            .toLowerCase()
+                                            .includes('http')
+                                        ) {
+                                          defaultValues[key] = value
+                                        }
+                                        if (
+                                          !_template.template.elements[key]['reportingDimension']
+                                            .toLowerCase()
+                                            .includes('color') &&
+                                          !_template.template.elements[key]['reportingDimension']
+                                            .toLowerCase()
+                                            .includes('variable') &&
+                                          !_template.template.elements[key]['text'].value
+                                            .toLowerCase()
+                                            .includes('http')
+                                        ) {
+                                          defaultValues[key] = {
+                                            ..._template.template.elements[key],
+                                            ['text']: {
+                                              ['value']: _template.template.elements[key][
+                                                'text'
+                                              ].value.slice(
+                                                0,
+                                                Math.round(
+                                                  _template.template.elements[key]['text'].value
+                                                    .length / 2,
+                                                ),
+                                              ),
+                                            },
+                                          }
+                                        }
+                                      }
+                                      if (child === 'url') defaultValues[key] = value
+                                    } else {
+                                      if (child === 'text') {
+                                        if (
+                                          isRGBAColor(
+                                            _template.template.elements[key]['text'].value,
+                                          ) ||
+                                          isRGBColor(
+                                            _template.template.elements[key]['text'].value,
+                                          ) ||
+                                          isHexColor(
+                                            _template.template.elements[key]['text'].value,
+                                          ) ||
+                                          (key.toLowerCase().includes('color') &&
+                                            !isRGBAColor(
+                                              _template.template.elements[key]['text'].value,
+                                            ) &&
+                                            !isRGBColor(
+                                              _template.template.elements[key]['text'].value,
+                                            ) &&
+                                            !isHexColor(
+                                              _template.template.elements[key]['text'].value,
+                                            )) ||
+                                          key.toLowerCase().includes('variable') ||
+                                          _template.template.elements[key]['text'].value
+                                            .toLowerCase()
+                                            .includes('http')
+                                        ) {
+                                          defaultValues[key] = value
+                                        }
+                                        if (
+                                          !key.toLowerCase().includes('color') &&
+                                          !key.toLowerCase().includes('variable') &&
+                                          !_template.template.elements[key]['text'].value
+                                            .toLowerCase()
+                                            .includes('http')
+                                        ) {
+                                          defaultValues[key] = {
+                                            ..._template.template.elements[key],
+                                            ['text']: {
+                                              ['value']: _template.template.elements[key][
+                                                'text'
+                                              ].value.slice(
+                                                0,
+                                                Math.round(
+                                                  _template.template.elements[key]['text'].value
+                                                    .length / 2,
+                                                ),
+                                              ),
+                                            },
+                                          }
+                                        }
+                                      }
+                                      if (child === 'url') defaultValues[key] = value
+                                    }
+                                  } else if (child === 'image' || child === 'video')
+                                    defaultValues[key] = value
+                                })
+                              else defaultValues[key] = value
+                            }
+                            templateVariants.push({
+                              variantName: variants_2,
+                              size: _template.template.width + 'x' + _template.template.height,
+                              templateName: _template.name,
+                              defaultValues: {
+                                ...defaultValues,
+                                trigger: triggersValues[triggersValuesKeys[0]][t],
+                              },
+                            })
+                          } else
+                            templateVariants.push({
+                              variantName: variants_2,
+                              size: _template.template.width + 'x' + _template.template.height,
+                              templateName: _template.name,
+                              defaultValues: {
+                                ..._template.template.elements,
+                                trigger: triggersValues[triggersValuesKeys[0]][t],
+                              },
+                            })
+                          e++
+                        }
+                      }
+                    }
+                    i++
+                  }
+                  t++
+                }
+                g++
+              }
+            } else {
+              let g = 0
+              while (g < 2) {
+                let t = 0
+                while (
+                  t <
+                  triggersValues[
+                    triggersValuesKeys[triggersValuesKeys.length - triggersValuesKeys.length]
+                  ].length
+                ) {
+                  let variants_1 = ''
+                  if (triggersValuesKeys.length > 1) {
+                    let i = 0
+                    variants_1 +=
+                      g === 1
+                        ? 'MIN-' + triggersValues[triggersValuesKeys[0]][t]
+                        : 'MAX-' + triggersValues[triggersValuesKeys[0]][t]
+                    while (
+                      i < triggersValues[triggersValuesKeys[triggersValuesKeys.length - 1]].length
+                    ) {
+                      let variants_2 = ''
+                      variants_2 +=
+                        variants_1 +
+                        '-' +
+                        triggersValues[triggersValuesKeys[triggersValuesKeys.length - 1]][i]
+                      if (variants_2.includes('MIN')) {
+                        let defaultValues = {}
+                        for (const [key, value] of Object.entries(_template.template.elements)) {
+                          if (!_template.template.elements[key].enum)
+                            Object.keys(_template.template.elements[key]).map((child) => {
+                              if (child === 'text' || child === 'url') {
+                                if (_template.template.elements[key]['reportingDimension']) {
+                                  if (child === 'text') {
+                                    if (
+                                      isRGBAColor(_template.template.elements[key]['text'].value) ||
+                                      isRGBColor(_template.template.elements[key]['text'].value) ||
+                                      isHexColor(_template.template.elements[key]['text'].value) ||
+                                      (_template.template.elements[key]['reportingDimension']
+                                        .toLowerCase()
+                                        .includes('color') &&
+                                        !isRGBAColor(
+                                          _template.template.elements[key]['text'].value,
+                                        ) &&
+                                        !isRGBColor(
+                                          _template.template.elements[key]['text'].value,
+                                        ) &&
+                                        !isHexColor(
+                                          _template.template.elements[key]['text'].value,
+                                        )) ||
+                                      _template.template.elements[key]['reportingDimension']
+                                        .toLowerCase()
+                                        .includes('variable') ||
+                                      _template.template.elements[key]['text'].value
+                                        .toLowerCase()
+                                        .includes('http')
+                                    ) {
+                                      defaultValues[key] = value
+                                    }
+                                    if (
+                                      !_template.template.elements[key]['reportingDimension']
+                                        .toLowerCase()
+                                        .includes('color') &&
+                                      !_template.template.elements[key]['reportingDimension']
+                                        .toLowerCase()
+                                        .includes('variable') &&
+                                      !_template.template.elements[key]['text'].value
+                                        .toLowerCase()
+                                        .includes('http')
+                                    ) {
+                                      defaultValues[key] = {
+                                        ..._template.template.elements[key],
+                                        ['text']: {
+                                          ['value']: _template.template.elements[key][
+                                            'text'
+                                          ].value.slice(
+                                            0,
+                                            Math.round(
+                                              _template.template.elements[key]['text'].value
+                                                .length / 2,
+                                            ),
+                                          ),
+                                        },
+                                      }
+                                    }
+                                  }
+                                  if (child === 'url') defaultValues[key] = value
+                                } else {
+                                  if (child === 'text') {
+                                    if (
+                                      isRGBAColor(_template.template.elements[key]['text'].value) ||
+                                      isRGBColor(_template.template.elements[key]['text'].value) ||
+                                      isHexColor(_template.template.elements[key]['text'].value) ||
+                                      (key.toLowerCase().includes('color') &&
+                                        !isRGBAColor(
+                                          _template.template.elements[key]['text'].value,
+                                        ) &&
+                                        !isRGBColor(
+                                          _template.template.elements[key]['text'].value,
+                                        ) &&
+                                        !isHexColor(
+                                          _template.template.elements[key]['text'].value,
+                                        )) ||
+                                      key.toLowerCase().includes('variable') ||
+                                      _template.template.elements[key]['text'].value
+                                        .toLowerCase()
+                                        .includes('http')
+                                    ) {
+                                      defaultValues[key] = value
+                                    }
+                                    if (
+                                      !key.toLowerCase().includes('color') &&
+                                      !key.toLowerCase().includes('variable') &&
+                                      !_template.template.elements[key]['text'].value
+                                        .toLowerCase()
+                                        .includes('http')
+                                    ) {
+                                      defaultValues[key] = {
+                                        ..._template.template.elements[key],
+                                        ['text']: {
+                                          ['value']: _template.template.elements[key][
+                                            'text'
+                                          ].value.slice(
+                                            0,
+                                            Math.round(
+                                              _template.template.elements[key]['text'].value
+                                                .length / 2,
+                                            ),
+                                          ),
+                                        },
+                                      }
+                                    }
+                                  }
+                                  if (child === 'url') defaultValues[key] = value
+                                }
+                              } else if (child === 'image' || child === 'video')
+                                defaultValues[key] = value
+                            })
+                          else defaultValues[key] = value
+                        }
+                        templateVariants.push({
+                          variantName: variants_2,
+                          size: _template.template.width + 'x' + _template.template.height,
+                          templateName: _template.name,
+                          defaultValues: {
+                            ...defaultValues,
+                            trigger: triggersValues[triggersValuesKeys[0]][t],
+                          },
+                        })
+                      } else
+                        templateVariants.push({
+                          variantName: variants_2,
+                          size: _template.template.width + 'x' + _template.template.height,
+                          templateName: _template.name,
+                          defaultValues: {
+                            ..._template.template.elements,
+                            trigger: triggersValues[triggersValuesKeys[0]][t],
+                          },
+                        })
+                      i++
+                    }
+                  } else {
+                    variants_1 +=
+                      g === 1
+                        ? 'MIN-' + triggersValues[triggersValuesKeys[0]][t]
+                        : 'MAX-' + triggersValues[triggersValuesKeys[0]][t]
+                    if (variants_1.includes('MIN')) {
+                      let defaultValues = {}
+                      for (const [key, value] of Object.entries(_template.template.elements)) {
+                        if (!_template.template.elements[key].enum)
+                          Object.keys(_template.template.elements[key]).map((child) => {
+                            if (child === 'text' || child === 'url') {
+                              if (_template.template.elements[key]['reportingDimension']) {
+                                if (child === 'text') {
+                                  if (
+                                    isRGBAColor(_template.template.elements[key]['text'].value) ||
+                                    isRGBColor(_template.template.elements[key]['text'].value) ||
+                                    isHexColor(_template.template.elements[key]['text'].value) ||
+                                    (_template.template.elements[key]['reportingDimension']
+                                      .toLowerCase()
+                                      .includes('color') &&
+                                      !isRGBAColor(
+                                        _template.template.elements[key]['text'].value,
+                                      ) &&
+                                      !isRGBColor(_template.template.elements[key]['text'].value) &&
+                                      !isHexColor(
+                                        _template.template.elements[key]['text'].value,
+                                      )) ||
+                                    _template.template.elements[key]['reportingDimension']
+                                      .toLowerCase()
+                                      .includes('variable') ||
+                                    _template.template.elements[key]['text'].value
+                                      .toLowerCase()
+                                      .includes('http')
+                                  ) {
+                                    defaultValues[key] = value
+                                  }
+                                  if (
+                                    !_template.template.elements[key]['reportingDimension']
+                                      .toLowerCase()
+                                      .includes('color') &&
+                                    !_template.template.elements[key]['reportingDimension']
+                                      .toLowerCase()
+                                      .includes('variable') &&
+                                    !_template.template.elements[key]['text'].value
+                                      .toLowerCase()
+                                      .includes('http')
+                                  ) {
+                                    defaultValues[key] = {
+                                      ..._template.template.elements[key],
+                                      ['text']: {
+                                        ['value']: _template.template.elements[key][
+                                          'text'
+                                        ].value.slice(
+                                          0,
+                                          Math.round(
+                                            _template.template.elements[key]['text'].value.length /
+                                              2,
+                                          ),
+                                        ),
+                                      },
+                                    }
+                                  }
+                                }
+                                if (child === 'url') defaultValues[key] = value
+                              } else {
+                                if (child === 'text') {
+                                  if (
+                                    isRGBAColor(_template.template.elements[key]['text'].value) ||
+                                    isRGBColor(_template.template.elements[key]['text'].value) ||
+                                    isHexColor(_template.template.elements[key]['text'].value) ||
+                                    (key.toLowerCase().includes('color') &&
+                                      !isRGBAColor(
+                                        _template.template.elements[key]['text'].value,
+                                      ) &&
+                                      !isRGBColor(_template.template.elements[key]['text'].value) &&
+                                      !isHexColor(
+                                        _template.template.elements[key]['text'].value,
+                                      )) ||
+                                    key.toLowerCase().includes('variable') ||
+                                    _template.template.elements[key]['text'].value
+                                      .toLowerCase()
+                                      .includes('http')
+                                  ) {
+                                    defaultValues[key] = value
+                                  }
+                                  if (
+                                    !key.toLowerCase().includes('color') &&
+                                    !key.toLowerCase().includes('variable') &&
+                                    !_template.template.elements[key]['text'].value
+                                      .toLowerCase()
+                                      .includes('http')
+                                  ) {
+                                    defaultValues[key] = {
+                                      ..._template.template.elements[key],
+                                      ['text']: {
+                                        ['value']: _template.template.elements[key][
+                                          'text'
+                                        ].value.slice(
+                                          0,
+                                          Math.round(
+                                            _template.template.elements[key]['text'].value.length /
+                                              2,
+                                          ),
+                                        ),
+                                      },
+                                    }
+                                  }
+                                }
+                                if (child === 'url') defaultValues[key] = value
+                              }
+                            } else if (child === 'image' || child === 'video')
+                              defaultValues[key] = value
+                          })
+                        else defaultValues[key] = value
+                      }
+                      templateVariants.push({
+                        variantName: variants_1,
+                        size: _template.template.width + 'x' + _template.template.height,
+                        templateName: _template.name,
+                        defaultValues: {
+                          ...defaultValues,
+                          trigger: triggersValues[triggersValuesKeys[0]][t],
+                        },
+                      })
+                    } else
+                      templateVariants.push({
+                        variantName: variants_1,
+                        size: _template.template.width + 'x' + _template.template.height,
+                        templateName: _template.name,
+                        defaultValues: {
+                          ..._template.template.elements,
+                          trigger: triggersValues[triggersValuesKeys[0]][t],
+                        },
+                      })
+                  }
+                  t++
+                }
+                g++
+              }
+            }
+          } else {
+            let variants = ['MAX', 'MIN']
+            variants.forEach((variant) => {
+              if (variant === 'MIN') {
+                let defaultValues = {}
+                for (const [key, value] of Object.entries(_template.template.elements)) {
+                  if (!_template.template.elements[key].enum)
+                    Object.keys(_template.template.elements[key]).map((child) => {
+                      if (child === 'text' || child === 'url') {
+                        if (_template.template.elements[key]['reportingDimension']) {
+                          if (child === 'text') {
+                            if (
+                              isRGBAColor(_template.template.elements[key]['text'].value) ||
+                              isRGBColor(_template.template.elements[key]['text'].value) ||
+                              isHexColor(_template.template.elements[key]['text'].value) ||
+                              (_template.template.elements[key]['reportingDimension']
+                                .toLowerCase()
+                                .includes('color') &&
+                                !isRGBAColor(_template.template.elements[key]['text'].value) &&
+                                !isRGBColor(_template.template.elements[key]['text'].value) &&
+                                !isHexColor(_template.template.elements[key]['text'].value)) ||
+                              _template.template.elements[key]['reportingDimension']
+                                .toLowerCase()
+                                .includes('variable') ||
+                              _template.template.elements[key]['text'].value
+                                .toLowerCase()
+                                .includes('http')
+                            ) {
+                              defaultValues[key] = value
+                            }
+                            if (
+                              !_template.template.elements[key]['reportingDimension']
+                                .toLowerCase()
+                                .includes('color') &&
+                              !_template.template.elements[key]['reportingDimension']
+                                .toLowerCase()
+                                .includes('variable') &&
+                              !_template.template.elements[key]['text'].value
+                                .toLowerCase()
+                                .includes('http')
+                            ) {
+                              defaultValues[key] = {
+                                ..._template.template.elements[key],
+                                ['text']: {
+                                  ['value']: _template.template.elements[key]['text'].value.slice(
+                                    0,
+                                    Math.round(
+                                      _template.template.elements[key]['text'].value.length / 2,
+                                    ),
+                                  ),
+                                },
+                              }
+                            }
+                          }
+                          if (child === 'url') defaultValues[key] = value
+                        } else {
+                          if (child === 'text') {
+                            if (
+                              isRGBAColor(_template.template.elements[key]['text'].value) ||
+                              isRGBColor(_template.template.elements[key]['text'].value) ||
+                              isHexColor(_template.template.elements[key]['text'].value) ||
+                              (key.toLowerCase().includes('color') &&
+                                !isRGBAColor(_template.template.elements[key]['text'].value) &&
+                                !isRGBColor(_template.template.elements[key]['text'].value) &&
+                                !isHexColor(_template.template.elements[key]['text'].value)) ||
+                              key.toLowerCase().includes('variable') ||
+                              _template.template.elements[key]['text'].value
+                                .toLowerCase()
+                                .includes('http')
+                            ) {
+                              defaultValues[key] = value
+                            }
+                            if (
+                              !key.toLowerCase().includes('color') &&
+                              !key.toLowerCase().includes('variable') &&
+                              !_template.template.elements[key]['text'].value
+                                .toLowerCase()
+                                .includes('http')
+                            ) {
+                              defaultValues[key] = {
+                                ..._template.template.elements[key],
+                                ['text']: {
+                                  ['value']: _template.template.elements[key]['text'].value.slice(
+                                    0,
+                                    Math.round(
+                                      _template.template.elements[key]['text'].value.length / 2,
+                                    ),
+                                  ),
+                                },
+                              }
+                            }
+                          }
+                          if (child === 'url') defaultValues[key] = value
+                        }
+                      } else if (child === 'image' || child === 'video') defaultValues[key] = value
+                    })
+                  else defaultValues[key] = value
+                }
+                templateVariants.push({
+                  variantName: variant,
+                  size: _template.template.width + 'x' + _template.template.height,
+                  templateName: _template.name,
+                  defaultValues: {
+                    ...defaultValues,
+                  },
+                })
+              } else
+                templateVariants.push({
+                  variantName: variant,
+                  size: _template.template.width + 'x' + _template.template.height,
+                  templateName: _template.name,
+                  defaultValues: {
+                    ..._template.template.elements,
+                  },
+                })
+            })
+          }
+          let templatesVersion = {
+            templateId: _template._id,
+            variants: templateVariants,
+          }
+          dispatch(getTemplateVersion(_template._id))
+          setTemplateVersion(templatesVersion)
+        }}
       />
       <Sider
         style={{
@@ -411,358 +1822,521 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
       >
         <div style={{padding: '2em'}}>
           {!_.isNil(_template) &&
-            Object.keys(_template.template.elements).map((data, index) => (
-              <div key={index}>
-                <Typography style={{fontWeight: 800}}>{data}</Typography>
-                {Object.keys(_template.template.elements[data]).map((child, index) => (
+            Object.keys(_template.template.elements).map(
+              (data, index) =>
+                !_template.template.elements[data].enum && (
                   <div key={index}>
-                    {child === 'text' || child === 'url' ? (
-                      _.isUndefined(_template.template.elements[data].enum) ? (
-                        <>
-                          {!isColor(_template.template.elements[data][child].value) ? (
-                            <Input
-                              value={_template.template.elements[data][child].value}
-                              onChange={async (e) => {
-                                let text = e.target.value
-                                if (!_.isEmpty(language)) {
-                                  const response = await apiService.post('/translate', {
-                                    language: language,
-                                    text: text,
-                                  })
-                                  text = response.data.data
-                                }
-                                if (
-                                  !_.isUndefined(
-                                    _template.template.elements[data].style.textTransform,
-                                  )
-                                )
-                                  text = textCase(
-                                    text,
-                                    _template.template.elements[data].style.textTransform
-                                      .charAt(0)
-                                      .toUpperCase() +
-                                      _template.template.elements[data].style.textTransform.slice(
-                                        1,
-                                      ),
-                                  )
-                                let updatedTemplate = {
-                                  ..._template,
-                                  ['template']: {
-                                    ..._template.template,
-                                    ['elements']: {
-                                      ..._template.template.elements,
-                                      [data]: {
-                                        ..._template.template.elements[data],
-                                        [child]: {
-                                          ['value']: text,
-                                        },
-                                      },
-                                    },
-                                  },
-                                }
-                                setTemplate(updatedTemplate)
-                                setRefresh((prevRefresh) => prevRefresh + 1)
-                              }}
-                            />
+                    <Typography style={{fontWeight: 800}}>{data}</Typography>
+                    {Object.keys(_template.template.elements[data]).map((child, index) => (
+                      <div key={index}>
+                        {child === 'text' || child === 'url' ? (
+                          _template.template.elements[data]['reportingDimension'] ? (
+                            reportingDimensionElements(_template, data, child)
                           ) : (
-                            <Input
-                              value={_template.template.elements[data][child].value}
-                              disabled={true}
-                            />
-                          )}
-                          {child === 'text' &&
-                            !isColor(_template.template.elements[data][child].value) && (
-                              <Space style={{marginTop: 5}}>
-                                {buttonCases.map((buttonCase) => (
-                                  <Button
-                                    style={{
-                                      backgroundColor:
-                                        _template.template.elements[data].style?.textTransform ===
-                                        buttonCase.value.toLowerCase()
-                                          ? '#339af0'
-                                          : 'unset',
-                                    }}
-                                    size="small"
-                                    onClick={() => {
-                                      let updatedTemplate = {
-                                        ..._template,
-                                        ['template']: {
-                                          ..._template.template,
-                                          ['elements']: {
-                                            ..._template.template.elements,
-                                            [data]: {
-                                              ..._template.template.elements[data],
-                                              ['style']: {
-                                                ..._template.template.elements[data]['style'],
-                                                ['textTransform']:
-                                                  buttonCase.value === 'Capitalize'
-                                                    ? 'capitalize'
-                                                    : buttonCase.value === 'Lowercase'
-                                                    ? 'lowercase'
-                                                    : buttonCase.value === 'Uppercase'
-                                                    ? 'uppercase'
-                                                    : 'capitalize',
-                                              },
-                                              ..._template.template.elements[data][child],
-                                              [child]: {
-                                                ['value']: textCase(
-                                                  _template.template.elements[data][child].value,
-                                                  buttonCase.value,
-                                                ),
-                                              },
-                                            },
-                                          },
-                                        },
-                                      }
-                                      setTemplate(updatedTemplate)
-                                      setRefresh((prevRefresh) => prevRefresh + 1)
-                                    }}
-                                  >
-                                    {buttonCase.label}
-                                  </Button>
-                                ))}
-                                <InputNumber
-                                  controls={{
-                                    upIcon: <CaretUpOutlined />,
-                                    downIcon: <CaretDownOutlined />,
-                                  }}
-                                  bordered={true}
-                                  defaultValue={textMaxValue(
-                                    _template.template.elements[data][child].value,
-                                  )}
-                                  onStep={(value: number) => {
-                                    if (value > 1000)
-                                      api['warning']({
-                                        message: `${_template.template.elements[data]['reportingDimension']}`,
-                                        description: 'Character Limit Exceeds!',
-                                      })
-                                    const filteredLanguage = getLanguages.filter(
-                                      (lang: {language: string}) => {
-                                        if (_.isEmpty(language)) return lang.language === 'Latin'
-                                        else return lang.language === language
-                                      },
-                                    )
-                                    let updatedTemplate = {
-                                      ..._template,
-                                      ['template']: {
-                                        ..._template.template,
-                                        ['elements']: {
-                                          ..._template.template.elements,
-                                          [data]: {
-                                            ..._template.template.elements[data],
-                                            ['style']: {
-                                              ..._template.template.elements[data]['style'],
-                                              ['textTransform']: _template.template.elements[
-                                                data
-                                              ].style.hasOwnProperty('textTransform')
-                                                ? _template.template.elements[data].style
-                                                    .textTransform
-                                                : '',
-                                            },
-                                            ..._template.template.elements[data][child],
-                                            [child]: {
-                                              ['value']: filteredLanguage[0].content.substring(
-                                                0,
-                                                value,
-                                              ),
-                                            },
-                                          },
-                                        },
-                                      },
-                                    }
-                                    setTemplate(updatedTemplate)
-                                    setRefresh((prevRefresh) => prevRefresh + 1)
-                                  }}
-                                  onChange={(value: number) => {
-                                    if (value > 1000)
-                                      api['warning']({
-                                        message: `${_template.template.elements[data]['reportingDimension']}`,
-                                        description: 'Character Limit Exceeds!',
-                                      })
-                                    const filteredLanguage = getLanguages.filter(
-                                      (lang: {language: string}) => {
-                                        if (_.isEmpty(language)) return lang.language === 'Latin'
-                                        else return lang.language === language
-                                      },
-                                    )
-                                    let updatedTemplate = {
-                                      ..._template,
-                                      ['template']: {
-                                        ..._template.template,
-                                        ['elements']: {
-                                          ..._template.template.elements,
-                                          [data]: {
-                                            ..._template.template.elements[data],
-                                            ['style']: {
-                                              ..._template.template.elements[data]['style'],
-                                              ['textTransform']: _template.template.elements[
-                                                data
-                                              ].style.hasOwnProperty('textTransform')
-                                                ? _template.template.elements[data].style
-                                                    .textTransform
-                                                : '',
-                                            },
-                                            ..._template.template.elements[data],
-                                            [child]: {
-                                              ['value']: filteredLanguage[0].content.substring(
-                                                0,
-                                                value,
-                                              ),
-                                            },
-                                          },
-                                        },
-                                      },
-                                    }
-                                    setTemplate(updatedTemplate)
-                                    setRefresh((prevRefresh) => prevRefresh + 1)
+                            noReportingDimensionElements(_template, data, child)
+                          )
+                        ) : child === 'image' || child === 'video' ? (
+                          <>
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                border: '1px dashed #ececec',
+                                padding: '0.5em',
+                                borderRadius: '8px',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: '80px',
+                                  height: '80px',
+                                  overflow: 'hidden',
+                                  borderRadius: '8px',
+                                  marginRight: '18px',
+                                  border: '1px solid #f1f1f1cc',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <img
+                                  src={
+                                    _template.template.elements[data][child].src.includes('http')
+                                      ? _template.template.elements[data][child].src
+                                      : `https://storage.googleapis.com/${_template.path}/${_template._id}/${_template.name}/${_template.template.elements[data][child].src}`
+                                  }
+                                  alt={data}
+                                  style={{
+                                    width: '-webkit-fill-available',
+                                    height: 'auto',
                                   }}
                                 />
-                              </Space>
-                            )}
-                          {child === 'text' &&
-                            isColor(_template.template.elements[data][child].value) && (
-                              <Space.Compact block style={{marginTop: 5, color: '#000'}}>
-                                <ColorPicker
-                                  format={
-                                    isRGBColor(_template.template.elements[data][child].value)
-                                      ? formatRgb
-                                      : isHexColor(_template.template.elements[data][child].value)
-                                      ? formatHex
-                                      : isRGBAColor(_template.template.elements[data][child].value)
-                                      ? formatRgb
-                                      : formatHex
-                                  }
-                                  value={_template.template.elements[data][child].value}
-                                  onChange={(value: Color) => {
-                                    let color: string =
-                                      _template.template.elements[data][child].value
-                                    if (isRGBColor(_template.template.elements[data][child].value))
-                                      color = value.toRgbString()
-                                    else if (
-                                      isHexColor(_template.template.elements[data][child].value)
+                              </div>
+                              <Typography>
+                                {_template.template.elements[data][child].src.includes('http')
+                                  ? _template.template.elements[data][child].src.substring(
+                                      _template.template.elements[data][child].src.indexOf(
+                                        'assets',
+                                      ) + 7,
                                     )
-                                      color = value.toHexString()
-                                    else color = value.toRgbString()
-                                    let updatedTemplate = {
-                                      ..._template,
-                                      ['template']: {
-                                        ..._template.template,
-                                        ['elements']: {
-                                          ..._template.template.elements,
-                                          [data]: {
-                                            ..._template.template.elements[data],
-                                            [child]: {
-                                              ['value']: color,
-                                            },
-                                          },
-                                        },
-                                      },
-                                    }
-                                    setTemplate(updatedTemplate)
-                                    setRefresh((prevRefresh) => prevRefresh + 1)
-                                  }}
-                                />
-                              </Space.Compact>
-                            )}
-                          {child === 'url' && (
-                            <Space style={{marginTop: 5, color: '#000'}}>
-                              <Button
-                                type="primary"
-                                icon={<LinkOutlined />}
-                                onClick={() => {
-                                  let updatedTemplate = {
-                                    ..._template,
-                                    ['template']: {
-                                      ..._template.template,
-                                      ['elements']: {
-                                        ..._template.template.elements,
-                                        [data]: {
-                                          ..._template.template.elements[data],
-                                          [child]: {
-                                            ['value']: 'https://www.google.com',
-                                          },
-                                        },
-                                      },
-                                    },
-                                  }
-                                  setTemplate(updatedTemplate)
-                                  setRefresh((prevRefresh) => prevRefresh + 1)
+                                  : _template.template.elements[data][child].src}
+                              </Typography>
+                            </div>
+                            <Space
+                              style={{
+                                marginTop: 5,
+                              }}
+                            >
+                              <UploadFile
+                                onFile={(file: File) => {
+                                  setDynamicElement(data)
+                                  handleUploadFile(file)
                                 }}
                               />
                             </Space>
-                          )}
-                        </>
-                      ) : (
-                        <Select
-                          style={{width: '100%'}}
-                          defaultValue={_template.template.elements[data][child].value}
-                          options={_template.template.elements[data].enum}
-                        />
-                      )
-                    ) : child === 'image' || child === 'video' ? (
-                      <>
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            border: '1px dashed #ececec',
-                            padding: '0.5em',
-                            borderRadius: '8px',
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: '80px',
-                              height: '80px',
-                              overflow: 'hidden',
-                              borderRadius: '8px',
-                              marginRight: '18px',
-                              border: '1px solid #f1f1f1cc',
-                              display: 'flex',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <img
-                              src={
-                                _template.template.elements[data][child].src.includes('http')
-                                  ? _template.template.elements[data][child].src
-                                  : `https://storage.googleapis.com/${_template.path}/${_template._id}/${_template.name}/${_template.template.elements[data][child].src}`
-                              }
-                              alt={data}
-                              style={{
-                                width: '-webkit-fill-available',
-                                height: 'auto',
-                              }}
+                          </>
+                        ) : null}
+                      </div>
+                    ))}
+                    {/* {Object.keys(_template.template.elements[data]).map((child, index) => (
+                      <div key={index}>
+                        {child === 'text' || child === 'url' ? (
+                          _.isUndefined(_template.template.elements[data].enum) ? (
+                            <>
+                              {_template.template.elements[data]['reportingDimension'] ===
+                              'customVariable' ? (
+                                <Input
+                                  value={_template.template.elements[data][child].value}
+                                  onChange={async (e) => {
+                                    let text = e.target.value
+                                    if (!_.isEmpty(language)) {
+                                      const response = await apiService.post('/translate', {
+                                        language: language,
+                                        text: text,
+                                      })
+                                      text = response.data.data
+                                    }
+                                    let updatedTemplate = {
+                                      ..._template,
+                                      ['template']: {
+                                        ..._template.template,
+                                        ['elements']: {
+                                          ..._template.template.elements,
+                                          [data]: {
+                                            ..._template.template.elements[data],
+                                            [child]: {
+                                              ['value']: text,
+                                            },
+                                          },
+                                        },
+                                      },
+                                    }
+                                    setTemplate(updatedTemplate)
+                                    setRefresh((prevRefresh) => prevRefresh + 1)
+                                  }}
+                                />
+                              ) : (
+                                <>
+                                  {!isColor(_template.template.elements[data][child].value) ? (
+                                    <Input
+                                      value={_template.template.elements[data][child].value}
+                                      onChange={async (e) => {
+                                        let text = e.target.value
+                                        if (!_.isEmpty(language)) {
+                                          const response = await apiService.post('/translate', {
+                                            language: language,
+                                            text: text,
+                                          })
+                                          text = response.data.data
+                                        }
+                                        if (!_.isUndefined(_template.template.elements[data].style))
+                                          if (
+                                            !_.isUndefined(
+                                              _template.template.elements[data].style.textTransform,
+                                            )
+                                          )
+                                            text = textCase(
+                                              text,
+                                              _template.template.elements[data].style.textTransform
+                                                .charAt(0)
+                                                .toUpperCase() +
+                                                _template.template.elements[
+                                                  data
+                                                ].style.textTransform.slice(1),
+                                            )
+                                        let updatedTemplate = {
+                                          ..._template,
+                                          ['template']: {
+                                            ..._template.template,
+                                            ['elements']: {
+                                              ..._template.template.elements,
+                                              [data]: {
+                                                ..._template.template.elements[data],
+                                                [child]: {
+                                                  ['value']: text,
+                                                },
+                                              },
+                                            },
+                                          },
+                                        }
+                                        setTemplate(updatedTemplate)
+                                        setRefresh((prevRefresh) => prevRefresh + 1)
+                                      }}
+                                    />
+                                  ) : (
+                                    <Input
+                                      value={_template.template.elements[data][child].value}
+                                      disabled={true}
+                                    />
+                                  )}
+                                  {child === 'text' &&
+                                    !isColor(_template.template.elements[data][child].value) &&
+                                    _template.template.elements[data]['reportingDimension'] !==
+                                      'landingPage' && (
+                                      <Space style={{marginTop: 5}}>
+                                        {buttonCases.map((buttonCase) => (
+                                          <Button
+                                            style={{
+                                              backgroundColor:
+                                                _template.template.elements[data].style
+                                                  ?.textTransform === buttonCase.value.toLowerCase()
+                                                  ? '#339af0'
+                                                  : 'unset',
+                                            }}
+                                            size="small"
+                                            onClick={() => {
+                                              let updatedTemplate = {
+                                                ..._template,
+                                                ['template']: {
+                                                  ..._template.template,
+                                                  ['elements']: {
+                                                    ..._template.template.elements,
+                                                    [data]: {
+                                                      ..._template.template.elements[data],
+                                                      ['style']: {
+                                                        ..._template.template.elements[data][
+                                                          'style'
+                                                        ],
+                                                        ['textTransform']:
+                                                          buttonCase.value === 'Capitalize'
+                                                            ? 'capitalize'
+                                                            : buttonCase.value === 'Lowercase'
+                                                            ? 'lowercase'
+                                                            : buttonCase.value === 'Uppercase'
+                                                            ? 'uppercase'
+                                                            : 'capitalize',
+                                                      },
+                                                      ..._template.template.elements[data][child],
+                                                      [child]: {
+                                                        ['value']: textCase(
+                                                          _template.template.elements[data][child]
+                                                            .value,
+                                                          buttonCase.value,
+                                                        ),
+                                                      },
+                                                    },
+                                                  },
+                                                },
+                                              }
+                                              setTemplate(updatedTemplate)
+                                              setRefresh((prevRefresh) => prevRefresh + 1)
+                                            }}
+                                          >
+                                            {buttonCase.label}
+                                          </Button>
+                                        ))}
+                                        <InputNumber
+                                          controls={{
+                                            upIcon: <CaretUpOutlined />,
+                                            downIcon: <CaretDownOutlined />,
+                                          }}
+                                          bordered={true}
+                                          value={textMaxValue(
+                                            _template.template.elements[data][child].value,
+                                          )}
+                                          onStep={(value: number) => {
+                                            if (value > 1000)
+                                              api['warning']({
+                                                message: `${_template.template.elements[data]['reportingDimension']}`,
+                                                description: 'Character Limit Exceeds!',
+                                              })
+                                            const filteredLanguage = getLanguages.filter(
+                                              (lang: {language: string}) => {
+                                                if (_.isEmpty(language))
+                                                  return lang.language === 'Latin'
+                                                else return lang.language === language
+                                              },
+                                            )
+                                            let updatedTemplate = {
+                                              ..._template,
+                                              ['template']: {
+                                                ..._template.template,
+                                                ['elements']: {
+                                                  ..._template.template.elements,
+                                                  [data]: {
+                                                    ..._template.template.elements[data],
+                                                    ['style']: {
+                                                      ..._template.template.elements[data]['style'],
+                                                      ['textTransform']:
+                                                        _template.template.elements[
+                                                          data
+                                                        ].style.hasOwnProperty('textTransform')
+                                                          ? _template.template.elements[data].style
+                                                              .textTransform
+                                                          : '',
+                                                    },
+                                                    ..._template.template.elements[data][child],
+                                                    [child]: {
+                                                      ['value']:
+                                                        filteredLanguage[0].content.substring(
+                                                          0,
+                                                          value,
+                                                        ),
+                                                    },
+                                                  },
+                                                },
+                                              },
+                                            }
+                                            setTemplate(updatedTemplate)
+                                            setRefresh((prevRefresh) => prevRefresh + 1)
+                                          }}
+                                          onChange={(value: number) => {
+                                            if (value > 1000)
+                                              api['warning']({
+                                                message: `${_template.template.elements[data]['reportingDimension']}`,
+                                                description: 'Character Limit Exceeds!',
+                                              })
+                                            const filteredLanguage = getLanguages.filter(
+                                              (lang: {language: string}) => {
+                                                if (_.isEmpty(language))
+                                                  return lang.language === 'Latin'
+                                                else return lang.language === language
+                                              },
+                                            )
+                                            let updatedTemplate = {
+                                              ..._template,
+                                              ['template']: {
+                                                ..._template.template,
+                                                ['elements']: {
+                                                  ..._template.template.elements,
+                                                  [data]: {
+                                                    ..._template.template.elements[data],
+                                                    ['style']: {
+                                                      ..._template.template.elements[data]['style'],
+                                                      ['textTransform']:
+                                                        _template.template.elements[
+                                                          data
+                                                        ].style.hasOwnProperty('textTransform')
+                                                          ? _template.template.elements[data].style
+                                                              .textTransform
+                                                          : '',
+                                                    },
+                                                    ..._template.template.elements[data],
+                                                    [child]: {
+                                                      ['value']:
+                                                        filteredLanguage[0].content.substring(
+                                                          0,
+                                                          value,
+                                                        ),
+                                                    },
+                                                  },
+                                                },
+                                              },
+                                            }
+                                            setTemplate(updatedTemplate)
+                                            setRefresh((prevRefresh) => prevRefresh + 1)
+                                          }}
+                                        />
+                                      </Space>
+                                    )}
+                                  {child === 'text' &&
+                                    isColor(_template.template.elements[data][child].value) && (
+                                      <Space.Compact block style={{marginTop: 5, color: '#000'}}>
+                                        <ColorPicker
+                                          format={
+                                            isRGBColor(
+                                              _template.template.elements[data][child].value,
+                                            )
+                                              ? formatRgb
+                                              : isHexColor(
+                                                  _template.template.elements[data][child].value,
+                                                )
+                                              ? formatHex
+                                              : isRGBAColor(
+                                                  _template.template.elements[data][child].value,
+                                                )
+                                              ? formatRgb
+                                              : formatHex
+                                          }
+                                          value={_template.template.elements[data][child].value}
+                                          onChange={(value: Color) => {
+                                            let color: string =
+                                              _template.template.elements[data][child].value
+                                            if (
+                                              isRGBColor(
+                                                _template.template.elements[data][child].value,
+                                              )
+                                            )
+                                              color = value.toRgbString()
+                                            else if (
+                                              isHexColor(
+                                                _template.template.elements[data][child].value,
+                                              )
+                                            )
+                                              color = value.toHexString()
+                                            else color = value.toRgbString()
+                                            let updatedTemplate = {
+                                              ..._template,
+                                              ['template']: {
+                                                ..._template.template,
+                                                ['elements']: {
+                                                  ..._template.template.elements,
+                                                  [data]: {
+                                                    ..._template.template.elements[data],
+                                                    [child]: {
+                                                      ['value']: color,
+                                                    },
+                                                  },
+                                                },
+                                              },
+                                            }
+                                            setTemplate(updatedTemplate)
+                                            setRefresh((prevRefresh) => prevRefresh + 1)
+                                          }}
+                                        />
+                                      </Space.Compact>
+                                    )}
+                                  {child === 'url' && (
+                                    <Space style={{marginTop: 5, color: '#000'}}>
+                                      <Button
+                                        type="primary"
+                                        icon={<LinkOutlined />}
+                                        onClick={() => {
+                                          let updatedTemplate = {
+                                            ..._template,
+                                            ['template']: {
+                                              ..._template.template,
+                                              ['elements']: {
+                                                ..._template.template.elements,
+                                                [data]: {
+                                                  ..._template.template.elements[data],
+                                                  [child]: {
+                                                    ['value']: 'https://www.google.com',
+                                                  },
+                                                },
+                                              },
+                                            },
+                                          }
+                                          setTemplate(updatedTemplate)
+                                          setRefresh((prevRefresh) => prevRefresh + 1)
+                                        }}
+                                      />
+                                    </Space>
+                                  )}
+                                  {child === 'text' &&
+                                    _template.template.elements[data]['reportingDimension'] ===
+                                      'landingPage' && (
+                                      <Space style={{marginTop: 5, color: '#000'}}>
+                                        <Button
+                                          type="primary"
+                                          icon={<LinkOutlined />}
+                                          onClick={() => {
+                                            let updatedTemplate = {
+                                              ..._template,
+                                              ['template']: {
+                                                ..._template.template,
+                                                ['elements']: {
+                                                  ..._template.template.elements,
+                                                  [data]: {
+                                                    ..._template.template.elements[data],
+                                                    [child]: {
+                                                      ['value']: 'https://www.google.com',
+                                                    },
+                                                  },
+                                                },
+                                              },
+                                            }
+                                            setTemplate(updatedTemplate)
+                                            setRefresh((prevRefresh) => prevRefresh + 1)
+                                          }}
+                                        />
+                                      </Space>
+                                    )}
+                                </>
+                              )}
+                            </>
+                          ) : (
+                            <Select
+                              style={{width: '100%'}}
+                              defaultValue={_template.template.elements[data][child].value}
+                              options={_template.template.elements[data].enum}
                             />
-                          </div>
-                          <Typography>
-                            {_template.template.elements[data][child].src.includes('http')
-                              ? _template.template.elements[data][child].src.substring(
-                                  _template.template.elements[data][child].src.indexOf('assets') +
-                                    7,
-                                )
-                              : _template.template.elements[data][child].src}
-                          </Typography>
-                        </div>
-                        <Space
-                          style={{
-                            marginTop: 5,
-                          }}
-                        >
-                          <UploadFile
-                            onFile={(file: File) => {
-                              setDynamicElement(data)
-                              handleUploadFile(file)
-                            }}
-                          />
-                        </Space>
-                      </>
-                    ) : null}
+                          )
+                        ) : child === 'image' || child === 'video' ? (
+                          <>
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                border: '1px dashed #ececec',
+                                padding: '0.5em',
+                                borderRadius: '8px',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: '80px',
+                                  height: '80px',
+                                  overflow: 'hidden',
+                                  borderRadius: '8px',
+                                  marginRight: '18px',
+                                  border: '1px solid #f1f1f1cc',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <img
+                                  src={
+                                    _template.template.elements[data][child].src.includes('http')
+                                      ? _template.template.elements[data][child].src
+                                      : `https://storage.googleapis.com/${_template.path}/${_template._id}/${_template.name}/${_template.template.elements[data][child].src}`
+                                  }
+                                  alt={data}
+                                  style={{
+                                    width: '-webkit-fill-available',
+                                    height: 'auto',
+                                  }}
+                                />
+                              </div>
+                              <Typography>
+                                {_template.template.elements[data][child].src.includes('http')
+                                  ? _template.template.elements[data][child].src.substring(
+                                      _template.template.elements[data][child].src.indexOf(
+                                        'assets',
+                                      ) + 7,
+                                    )
+                                  : _template.template.elements[data][child].src}
+                              </Typography>
+                            </div>
+                            <Space
+                              style={{
+                                marginTop: 5,
+                              }}
+                            >
+                              <UploadFile
+                                onFile={(file: File) => {
+                                  setDynamicElement(data)
+                                  handleUploadFile(file)
+                                }}
+                              />
+                            </Space>
+                          </>
+                        ) : null}
+                      </div>
+                    ))} */}
+                    <Divider />
                   </div>
-                ))}
-                <Divider />
-              </div>
-            ))}
+                ),
+            )}
         </div>
       </Sider>
       <div ref={drawerRef}>
