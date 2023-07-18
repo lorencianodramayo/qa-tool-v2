@@ -8,12 +8,14 @@ interface InfiniteScrollProps {
   languages: any[]
   _getLanguage: (option: string, language: string) => void
   onChangeLanguage: (language: string) => void
+  closePopover: boolean
 }
 const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
   height,
   languages,
   _getLanguage,
   onChangeLanguage,
+  closePopover,
 }) => {
   const [data, setData] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -30,6 +32,21 @@ const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
     setIsPopover(isPopover)
     setData(languages.slice(0, page * 13))
   }, [languages, page])
+  useOnMountv2(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        let isPopover: boolean[] = []
+        languages.slice(0, page * 13).map((_) => {
+          isPopover.push(false)
+        })
+        setIsPopover(isPopover)
+      }
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [])
   const loadMoreData = useCallback(() => {
     if (!hasMoreData || isLoading) return
     setIsLoading(!isLoading)
@@ -116,7 +133,7 @@ const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
                   {item.language}
                 </div>
                 <Popover
-                  visible={isPopover[index]}
+                  open={isPopover[index]}
                   placement="left"
                   title={text}
                   content={() => content(item._id, index)}

@@ -77,6 +77,7 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
   const [_template, setTemplate] = useState<any>(template)
   const [collapsed, setCollapsed] = useState<boolean>(false)
   const [language, setLanguage] = useState<string>('')
+  const [characterCount, setCharacterCount] = useState<number>(0)
   const [dynamicElement, setDynamicElement] = useState<any>(null)
   const [formatHex] = useState<ColorPickerProps['format']>('hex')
   const [formatRgb] = useState<ColorPickerProps['format']>('rgb')
@@ -137,6 +138,7 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
           language: getLanguage[0].language,
           content: getLanguage[0].content,
         })
+        setCharacterCount(getLanguage[0].content.length)
       } else setIsDeleteModalOpen(!isDeleteModalOpen)
     }
   }, [getLanguage])
@@ -220,6 +222,85 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
     {value: 'Lowercase', label: 'aa'},
     {value: 'Uppercase', label: 'AA'},
   ]
+  const uiElementValidate = (
+    values: string,
+    value: string,
+    index: number,
+    data: any,
+    child: any,
+  ) => {
+    const s = new Option().style
+    s.color = value
+    if (s.color !== '')
+      return (
+        <>
+          <Space.Compact block>
+            <Input
+              value={value}
+              onChange={(e) => {
+                let text = e.target.value
+                let colors = values
+                let colorsArray = colors.split('|')
+                colorsArray[index] = text
+                let newColors = colorsArray.join('|')
+                let updatedTemplate = {
+                  ..._template,
+                  ['template']: {
+                    ..._template.template,
+                    ['elements']: {
+                      ..._template.template.elements,
+                      [data]: {
+                        ..._template.template.elements[data],
+                        [child]: {
+                          ['value']: newColors,
+                        },
+                      },
+                    },
+                  },
+                }
+                setTemplate(updatedTemplate)
+                setRefresh((prevRefresh) => prevRefresh + 1)
+              }}
+            />
+          </Space.Compact>
+          <Space style={{color: s.color === '' ? '#FF0000' : 'unset'}}>
+            {s.color === '' && 'Invalid Color'}
+          </Space>
+        </>
+      )
+    else
+      return (
+        <Space.Compact block style={{marginTop: 5}}>
+          <Input
+            value={value}
+            onChange={(e) => {
+              let text = e.target.value
+              let texts = values
+              let textsArray = texts.split('|')
+              textsArray[index] = text
+              let newTexts = textsArray.join('|')
+              let updatedTemplate = {
+                ..._template,
+                ['template']: {
+                  ..._template.template,
+                  ['elements']: {
+                    ..._template.template.elements,
+                    [data]: {
+                      ..._template.template.elements[data],
+                      [child]: {
+                        ['value']: newTexts,
+                      },
+                    },
+                  },
+                },
+              }
+              setTemplate(updatedTemplate)
+              setRefresh((prevRefresh) => prevRefresh + 1)
+            }}
+          />
+        </Space.Compact>
+      )
+  }
   const reportingDimensionElements = (_template: any, data: any, child: any) => {
     const value = _template.template.elements[data][child].value
     const s = new Option().style
@@ -276,34 +357,119 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
               !isRGBColor(value) &&
               !isHexColor(value) && (
                 <div style={{marginTop: 5, color: '#000'}}>
-                  <Space.Compact block>
-                    <Input
-                      value={value}
-                      onChange={(e) => {
-                        let text = e.target.value
-                        let updatedTemplate = {
-                          ..._template,
-                          ['template']: {
-                            ..._template.template,
-                            ['elements']: {
-                              ..._template.template.elements,
-                              [data]: {
-                                ..._template.template.elements[data],
-                                [child]: {
-                                  ['value']: text,
+                  {value.includes('|') ? (
+                    value.split('|').map((val: string, index: number) =>
+                      isRGBAColor(val) || isRGBColor(val) || isHexColor(val) ? (
+                        <Space.Compact block style={{marginTop: 5, color: '#000'}}>
+                          <ColorPicker
+                            format={
+                              isRGBColor(val)
+                                ? formatRgb
+                                : isHexColor(val)
+                                ? formatHex
+                                : isRGBAColor(val)
+                                ? formatRgb
+                                : formatHex
+                            }
+                            value={val}
+                            onChange={(_value: Color) => {
+                              let color: string = val
+                              if (isRGBColor(val)) color = _value.toRgbString()
+                              else if (isHexColor(val)) color = _value.toHexString()
+                              else color = _value.toRgbString()
+                              let colors = value
+                              let colorsArray = colors.split('|')
+                              colorsArray[index] = color
+                              let newColors = colorsArray.join('|')
+                              let updatedTemplate = {
+                                ..._template,
+                                ['template']: {
+                                  ..._template.template,
+                                  ['elements']: {
+                                    ..._template.template.elements,
+                                    [data]: {
+                                      ..._template.template.elements[data],
+                                      [child]: {
+                                        ['value']: newColors,
+                                      },
+                                    },
+                                  },
+                                },
+                              }
+                              setTemplate(updatedTemplate)
+                              setRefresh((prevRefresh) => prevRefresh + 1)
+                            }}
+                          />
+                        </Space.Compact>
+                      ) : (
+                        <>
+                          <Space.Compact block>
+                            <Input
+                              value={value}
+                              onChange={(e) => {
+                                let text = e.target.value
+                                let colors = value
+                                let colorsArray = colors.split('|')
+                                colorsArray[index] = text
+                                let newColors = colorsArray.join('|')
+                                let updatedTemplate = {
+                                  ..._template,
+                                  ['template']: {
+                                    ..._template.template,
+                                    ['elements']: {
+                                      ..._template.template.elements,
+                                      [data]: {
+                                        ..._template.template.elements[data],
+                                        [child]: {
+                                          ['value']: newColors,
+                                        },
+                                      },
+                                    },
+                                  },
+                                }
+                                setTemplate(updatedTemplate)
+                                setRefresh((prevRefresh) => prevRefresh + 1)
+                              }}
+                            />
+                          </Space.Compact>
+                          <Space style={{color: s.color === '' ? '#FF0000' : 'unset'}}>
+                            {s.color === '' && 'Invalid Color'}
+                          </Space>
+                        </>
+                      ),
+                    )
+                  ) : (
+                    <>
+                      <Space.Compact block>
+                        <Input
+                          value={value}
+                          onChange={(e) => {
+                            let text = e.target.value
+                            let updatedTemplate = {
+                              ..._template,
+                              ['template']: {
+                                ..._template.template,
+                                ['elements']: {
+                                  ..._template.template.elements,
+                                  [data]: {
+                                    ..._template.template.elements[data],
+                                    [child]: {
+                                      ['value']: text,
+                                    },
+                                  },
                                 },
                               },
-                            },
-                          },
-                        }
-                        setTemplate(updatedTemplate)
-                        setRefresh((prevRefresh) => prevRefresh + 1)
-                      }}
-                    />
-                  </Space.Compact>
-                  <Space style={{color: s.color === '' ? '#FF0000' : 'unset'}}>
-                    {s.color === '' && 'Invalid Color'}
-                  </Space>
+                            }
+                            setTemplate(updatedTemplate)
+                            setRefresh((prevRefresh) => prevRefresh + 1)
+                          }}
+                        />
+                      </Space.Compact>
+                      <Space style={{color: s.color === '' ? '#FF0000' : 'unset'}}>
+                        {s.color === '' && 'Invalid Color'}
+                      </Space>
+                    </>
+                  )}
                 </div>
               )}
             {_template.template.elements[data]['reportingDimension']
@@ -335,6 +501,84 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
                 />
               </Space.Compact>
             )}
+            {_template.template.elements[data]['reportingDimension']
+              .toLowerCase()
+              .includes('element') &&
+              (value.includes('|') ? (
+                value.split('|').map((val: string, index: number) =>
+                  isRGBAColor(val) || isRGBColor(val) || isHexColor(val) ? (
+                    <Space.Compact block style={{marginTop: 5, color: '#000'}}>
+                      <ColorPicker
+                        format={
+                          isRGBColor(val)
+                            ? formatRgb
+                            : isHexColor(val)
+                            ? formatHex
+                            : isRGBAColor(val)
+                            ? formatRgb
+                            : formatHex
+                        }
+                        value={val}
+                        onChange={(_value: Color) => {
+                          let color: string = val
+                          if (isRGBColor(val)) color = _value.toRgbString()
+                          else if (isHexColor(val)) color = _value.toHexString()
+                          else color = _value.toRgbString()
+                          let colors = value
+                          let colorsArray = colors.split('|')
+                          colorsArray[index] = color
+                          let newColors = colorsArray.join('|')
+                          let updatedTemplate = {
+                            ..._template,
+                            ['template']: {
+                              ..._template.template,
+                              ['elements']: {
+                                ..._template.template.elements,
+                                [data]: {
+                                  ..._template.template.elements[data],
+                                  [child]: {
+                                    ['value']: newColors,
+                                  },
+                                },
+                              },
+                            },
+                          }
+                          setTemplate(updatedTemplate)
+                          setRefresh((prevRefresh) => prevRefresh + 1)
+                        }}
+                      />
+                    </Space.Compact>
+                  ) : (
+                    uiElementValidate(value, val, index, data, child)
+                  ),
+                )
+              ) : (
+                <Space.Compact block style={{marginTop: 5, color: '#000'}}>
+                  <Input
+                    value={value}
+                    onChange={(e) => {
+                      let text = e.target.value
+                      let updatedTemplate = {
+                        ..._template,
+                        ['template']: {
+                          ..._template.template,
+                          ['elements']: {
+                            ..._template.template.elements,
+                            [data]: {
+                              ..._template.template.elements[data],
+                              [child]: {
+                                ['value']: text,
+                              },
+                            },
+                          },
+                        },
+                      }
+                      setTemplate(updatedTemplate)
+                      setRefresh((prevRefresh) => prevRefresh + 1)
+                    }}
+                  />
+                </Space.Compact>
+              ))}
             {value.toLowerCase().includes('http') && (
               <Space style={{marginTop: 5, color: '#000'}}>
                 <Input value={value} disabled />
@@ -369,6 +613,9 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
               !_template.template.elements[data]['reportingDimension']
                 .toLowerCase()
                 .includes('variable') &&
+              !_template.template.elements[data]['reportingDimension']
+                .toLowerCase()
+                .includes('element') &&
               !value.toLowerCase().includes('http') && (
                 <>
                   <div style={{marginTop: 5}}>
@@ -701,34 +948,119 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
               !isRGBColor(value) &&
               !isHexColor(value) && (
                 <div style={{marginTop: 5, color: '#000'}}>
-                  <Space.Compact block>
-                    <Input
-                      value={value}
-                      onChange={(e) => {
-                        let text = e.target.value
-                        let updatedTemplate = {
-                          ..._template,
-                          ['template']: {
-                            ..._template.template,
-                            ['elements']: {
-                              ..._template.template.elements,
-                              [data]: {
-                                ..._template.template.elements[data],
-                                [child]: {
-                                  ['value']: text,
+                  {value.includes('|') ? (
+                    value.split('|').map((val: string, index: number) =>
+                      isRGBAColor(val) || isRGBColor(val) || isHexColor(val) ? (
+                        <Space.Compact block style={{marginTop: 5, color: '#000'}}>
+                          <ColorPicker
+                            format={
+                              isRGBColor(val)
+                                ? formatRgb
+                                : isHexColor(val)
+                                ? formatHex
+                                : isRGBAColor(val)
+                                ? formatRgb
+                                : formatHex
+                            }
+                            value={val}
+                            onChange={(_value: Color) => {
+                              let color: string = val
+                              if (isRGBColor(val)) color = _value.toRgbString()
+                              else if (isHexColor(val)) color = _value.toHexString()
+                              else color = _value.toRgbString()
+                              let colors = value
+                              let colorsArray = colors.split('|')
+                              colorsArray[index] = color
+                              let newColors = colorsArray.join('|')
+                              let updatedTemplate = {
+                                ..._template,
+                                ['template']: {
+                                  ..._template.template,
+                                  ['elements']: {
+                                    ..._template.template.elements,
+                                    [data]: {
+                                      ..._template.template.elements[data],
+                                      [child]: {
+                                        ['value']: newColors,
+                                      },
+                                    },
+                                  },
+                                },
+                              }
+                              setTemplate(updatedTemplate)
+                              setRefresh((prevRefresh) => prevRefresh + 1)
+                            }}
+                          />
+                        </Space.Compact>
+                      ) : (
+                        <>
+                          <Space.Compact block>
+                            <Input
+                              value={value}
+                              onChange={(e) => {
+                                let text = e.target.value
+                                let colors = value
+                                let colorsArray = colors.split('|')
+                                colorsArray[index] = text
+                                let newColors = colorsArray.join('|')
+                                let updatedTemplate = {
+                                  ..._template,
+                                  ['template']: {
+                                    ..._template.template,
+                                    ['elements']: {
+                                      ..._template.template.elements,
+                                      [data]: {
+                                        ..._template.template.elements[data],
+                                        [child]: {
+                                          ['value']: newColors,
+                                        },
+                                      },
+                                    },
+                                  },
+                                }
+                                setTemplate(updatedTemplate)
+                                setRefresh((prevRefresh) => prevRefresh + 1)
+                              }}
+                            />
+                          </Space.Compact>
+                          <Space style={{color: s.color === '' ? '#FF0000' : 'unset'}}>
+                            {s.color === '' && 'Invalid Color'}
+                          </Space>
+                        </>
+                      ),
+                    )
+                  ) : (
+                    <>
+                      <Space.Compact block>
+                        <Input
+                          value={value}
+                          onChange={(e) => {
+                            let text = e.target.value
+                            let updatedTemplate = {
+                              ..._template,
+                              ['template']: {
+                                ..._template.template,
+                                ['elements']: {
+                                  ..._template.template.elements,
+                                  [data]: {
+                                    ..._template.template.elements[data],
+                                    [child]: {
+                                      ['value']: text,
+                                    },
+                                  },
                                 },
                               },
-                            },
-                          },
-                        }
-                        setTemplate(updatedTemplate)
-                        setRefresh((prevRefresh) => prevRefresh + 1)
-                      }}
-                    />
-                  </Space.Compact>
-                  <Space style={{color: s.color === '' ? '#FF0000' : 'unset'}}>
-                    {s.color === '' && 'Invalid Color'}
-                  </Space>
+                            }
+                            setTemplate(updatedTemplate)
+                            setRefresh((prevRefresh) => prevRefresh + 1)
+                          }}
+                        />
+                      </Space.Compact>
+                      <Space style={{color: s.color === '' ? '#FF0000' : 'unset'}}>
+                        {s.color === '' && 'Invalid Color'}
+                      </Space>
+                    </>
+                  )}
                 </div>
               )}
             {data.toLowerCase().includes('variable') && (
@@ -1160,7 +1492,10 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
     form.resetFields()
     setIsModalOpen(!isModalOpen)
   }
-  const handleCancel = () => setIsModalOpen(!isModalOpen)
+  const handleCancel = () => {
+    setCharacterCount(0)
+    setIsModalOpen(!isModalOpen)
+  }
   const handleDeleteCancel = () => setIsDeleteModalOpen(!isDeleteModalOpen)
   const layout = {
     labelCol: {span: 5},
@@ -1234,11 +1569,13 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
         onClick={() => {
           let templateVariants = []
           let triggers: any = {}
-          Object.keys(_template.template.elements).map((data) => {
+          Object.keys(_template.template.elements).map((data, index) => {
             if (_template.template.elements[data].enum) {
-              triggers[_template.template.elements[data]['name']] = _template.template.elements[
-                data
-              ].enum.map((_enum: any) => _enum.label)
+              triggers[
+                _.isUndefined(_template.template.elements[data]['name'])
+                  ? data
+                  : _template.template.elements[data]['name']
+              ] = _template.template.elements[data].enum.map((_enum: any) => _enum.label)
             }
           })
           if (Object.keys(triggers).length > 0) {
@@ -1871,7 +2208,7 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
         collapsedWidth={0}
         collapsible
         collapsed={collapsed}
-        width={300}
+        width={400}
       >
         <div style={{padding: '2em'}}>
           {!_.isNil(_template) &&
@@ -1888,64 +2225,69 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
                           ) : (
                             noReportingDimensionElements(_template, data, child)
                           )
-                        ) : child === 'image' || child === 'video' ? (
+                        ) : child === 'image' || child === 'video' || child === 'audio' ? (
                           <>
-                            <div
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                border: '1px dashed #ececec',
-                                padding: '0.5em',
-                                borderRadius: '8px',
-                              }}
+                            <Space.Compact
+                              block
+                              style={{width: '100%', justifyContent: 'space-between'}}
                             >
                               <div
                                 style={{
-                                  width: '80px',
-                                  height: '80px',
-                                  overflow: 'hidden',
-                                  borderRadius: '8px',
-                                  marginRight: '18px',
-                                  border: '1px solid #f1f1f1cc',
                                   display: 'flex',
                                   alignItems: 'center',
+                                  border: '1px dashed #ececec',
+                                  padding: '0.5em',
+                                  borderRadius: '8px',
                                 }}
                               >
-                                <img
-                                  src={
-                                    _template.template.elements[data][child].src.includes('http')
-                                      ? _template.template.elements[data][child].src
-                                      : `https://storage.googleapis.com/${_template.path}/${_template._id}/${_template.name}/${_template.template.elements[data][child].src}`
-                                  }
-                                  alt={data}
+                                <div
                                   style={{
-                                    width: '-webkit-fill-available',
-                                    height: 'auto',
+                                    width: '40px',
+                                    height: '40px',
+                                    overflow: 'hidden',
+                                    borderRadius: '8px',
+                                    marginRight: '18px',
+                                    border: '1px solid #f1f1f1cc',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                  }}
+                                >
+                                  <img
+                                    src={
+                                      _template.template.elements[data][child].src.includes('http')
+                                        ? _template.template.elements[data][child].src
+                                        : `https://storage.googleapis.com/${_template.path}/${_template._id}/${_template.name}/${_template.template.elements[data][child].src}`
+                                    }
+                                    alt={data}
+                                    style={{
+                                      width: '-webkit-fill-available',
+                                      height: 'auto',
+                                    }}
+                                  />
+                                </div>
+                                <Typography>
+                                  {_template.template.elements[data][child].src.includes('http')
+                                    ? _template.template.elements[data][child].src.substring(
+                                        _template.template.elements[data][child].src.indexOf(
+                                          'assets',
+                                        ) + 7,
+                                      )
+                                    : _template.template.elements[data][child].src}
+                                </Typography>
+                              </div>
+                              <Space
+                                style={{
+                                  marginTop: 5,
+                                }}
+                              >
+                                <UploadFile
+                                  onFile={(file: File) => {
+                                    setDynamicElement(data)
+                                    handleUploadFile(file)
                                   }}
                                 />
-                              </div>
-                              <Typography>
-                                {_template.template.elements[data][child].src.includes('http')
-                                  ? _template.template.elements[data][child].src.substring(
-                                      _template.template.elements[data][child].src.indexOf(
-                                        'assets',
-                                      ) + 7,
-                                    )
-                                  : _template.template.elements[data][child].src}
-                              </Typography>
-                            </div>
-                            <Space
-                              style={{
-                                marginTop: 5,
-                              }}
-                            >
-                              <UploadFile
-                                onFile={(file: File) => {
-                                  setDynamicElement(data)
-                                  handleUploadFile(file)
-                                }}
-                              />
-                            </Space>
+                              </Space>
+                            </Space.Compact>
                           </>
                         ) : null}
                       </div>
@@ -2399,6 +2741,7 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
             languages={getLanguages}
             _getLanguage={_getLanguage}
             onChangeLanguage={onChangeLanguage}
+            closePopover={false}
           />
           <Space.Compact block style={{marginTop: 10}}>
             <Button type="primary" onClick={showModal}>
@@ -2409,7 +2752,7 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
       </div>
       <Layout
         style={{
-          marginLeft: collapsed ? 0 : 300,
+          marginLeft: collapsed ? 0 : 400,
         }}
       >
         <Content
@@ -2468,9 +2811,26 @@ const ConfigureTemplateLayout: React.FC<any> = ({}) => {
           <Form.Item name="language" label="Language" rules={[{required: true}]}>
             <Input />
           </Form.Item>
-          <Form.Item name="content" label="Content" rules={[{required: true}]}>
-            <Input.TextArea rows={18} />
+          <Form.Item
+            name="content"
+            label="Content"
+            rules={[{required: true}]}
+            style={{marginBottom: 0}}
+          >
+            <Input.TextArea
+              rows={18}
+              onChange={(e: any) => setCharacterCount(e.target.value.length)}
+            />
           </Form.Item>
+          <Space.Compact
+            block
+            style={{display: 'block', marginTop: 5, marginBottom: 5, textAlign: 'end'}}
+          >
+            <Space>
+              <span style={{fontWeight: 'bold'}}>Character Count:</span>
+              {characterCount}
+            </Space>
+          </Space.Compact>
           <Form.Item wrapperCol={{...layout.wrapperCol, offset: 20}}>
             <SubmitButton form={form} />
           </Form.Item>
