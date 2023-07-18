@@ -22,7 +22,7 @@ const UploadFile: FC<UploadFileProps> = ({onFile}) => {
   }
   return (
     <Upload {...props} fileList={uploadedFile ? [uploadedFile] : []}>
-      <Button icon={<UploadOutlined />}>Upload</Button>
+      <Button icon={<UploadOutlined />} />
     </Upload>
   )
 }

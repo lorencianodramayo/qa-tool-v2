@@ -148,110 +148,112 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   // }, [dispatch])
   useEffect(() => {
     if (isTemplateVersionSuccess) {
-      // const interval = setInterval(() => {
-      let treeDataVariantNames: TreeNodeData[] = []
-      let treeDataVariantSizes: TreeNodeData[] = []
-      templateVersion.map((_templateVersion: any) => {
-        _templateVersion.variants.map((variantName) => {
-          const variantNameExist = treeDataVariantNames.some(
-            (el) => el.value === variantName.variantName,
-          )
-          const variantSizeExist = treeDataVariantSizes.some((el) => el.value === variantName.size)
-          if (!variantNameExist)
-            treeDataVariantNames.push({
-              title: variantName.variantName,
-              value: variantName.variantName,
-            })
-          if (!variantSizeExist)
-            treeDataVariantSizes.push({
-              title: variantName.size,
-              value: variantName.size,
-            })
+      const interval = setInterval(() => {
+        let treeDataVariantNames: TreeNodeData[] = []
+        let treeDataVariantSizes: TreeNodeData[] = []
+        templateVersion.map((_templateVersion: any) => {
+          _templateVersion.variants.map((variantName) => {
+            const variantNameExist = treeDataVariantNames.some(
+              (el) => el.value === variantName.variantName,
+            )
+            const variantSizeExist = treeDataVariantSizes.some(
+              (el) => el.value === variantName.size,
+            )
+            if (!variantNameExist)
+              treeDataVariantNames.push({
+                title: variantName.variantName,
+                value: variantName.variantName,
+              })
+            if (!variantSizeExist)
+              treeDataVariantSizes.push({
+                title: variantName.size,
+                value: variantName.size,
+              })
+          })
         })
-      })
-      setVariantNameTreeData(treeDataVariantNames)
-      if (selectAllVariantNames) {
-        const filteredVariantNameValues = treeDataVariantNames
-          .filter((node) => filterVariantTreeNode(searchVariantNameValue, node))
-          .map((node) => node.value)
-        setSelectedVariantNameValues(filteredVariantNameValues)
-      }
-      setVariantSizeTreeData(treeDataVariantSizes)
-      if (selectAllVariantSizes) {
-        const filteredVariantSizeValues = treeDataVariantSizes
-          .filter((node) => filterVariantTreeNode(searchVariantSizeValue, node))
-          .map((node) => node.value)
-        setSelectedVariantSizeValues(filteredVariantSizeValues)
-      }
-      //
-      setShareVariantNameTreeData(treeDataVariantNames)
-      if (shareSelectAllVariantNames) {
-        const filteredShareVariantNameValues = treeDataVariantNames
-          .filter((node) => filterVariantTreeNode(shareSearchVariantNameValue, node))
-          .map((node) => node.value)
-        setShareSelectedVariantNameValues(filteredShareVariantNameValues)
-      }
-      setShareVariantSizeTreeData(treeDataVariantSizes)
-      if (shareSelectAllVariantSizes) {
-        const filteredShareVariantSizeValues = treeDataVariantSizes
-          .filter((node) => filterVariantTreeNode(shareSearchVariantSizeValue, node))
-          .map((node) => node.value)
-        setShareSelectedVariantSizeValues(filteredShareVariantSizeValues)
-      }
-      let combinations = 0
-      let filterVariants = []
-      let i = 0
-      templateVersion.map((_templateVersion: any) => {
-        let updatedDefaultValues = {}
-        let defaultValues = {}
-        let variantDefaultValues = {}
-        _templateVersion.variants.map((variant) => {
-          combinations += 1
-          for (const [key, value] of Object.entries(variant.defaultValues)) {
-            imageVideoFiles?.map((imageVideoFile) => {
-              if (imageVideoFile.creativeId === templateVersion._id)
-                imageVideoFile.files.map((file) => {
-                  if (file.dynamicElementKey === key)
-                    updatedDefaultValues[
-                      key
-                    ] = `https://storage.googleapis.com/creative-templates/${imageVideoFile.creativeId}/asset/${file.dynamicElementKey}/${file.fileData.name}`
-                })
-            })
-            defaultValues[key] = value
-          }
-          variantDefaultValues = Object.assign(defaultValues, updatedDefaultValues)
-          const variantSizeExist = filterVariants.some((el) => el.size === variant.size)
-          if (!variantSizeExist) {
-            filterVariants.push({
-              _id: params._id,
-              templateName: variant.templateName,
-              size: variant.size,
-              variants: [
+        setVariantNameTreeData(treeDataVariantNames)
+        if (selectAllVariantNames) {
+          const filteredVariantNameValues = treeDataVariantNames
+            .filter((node) => filterVariantTreeNode(searchVariantNameValue, node))
+            .map((node) => node.value)
+          setSelectedVariantNameValues(filteredVariantNameValues)
+        }
+        setVariantSizeTreeData(treeDataVariantSizes)
+        if (selectAllVariantSizes) {
+          const filteredVariantSizeValues = treeDataVariantSizes
+            .filter((node) => filterVariantTreeNode(searchVariantSizeValue, node))
+            .map((node) => node.value)
+          setSelectedVariantSizeValues(filteredVariantSizeValues)
+        }
+        //
+        setShareVariantNameTreeData(treeDataVariantNames)
+        if (shareSelectAllVariantNames) {
+          const filteredShareVariantNameValues = treeDataVariantNames
+            .filter((node) => filterVariantTreeNode(shareSearchVariantNameValue, node))
+            .map((node) => node.value)
+          setShareSelectedVariantNameValues(filteredShareVariantNameValues)
+        }
+        setShareVariantSizeTreeData(treeDataVariantSizes)
+        if (shareSelectAllVariantSizes) {
+          const filteredShareVariantSizeValues = treeDataVariantSizes
+            .filter((node) => filterVariantTreeNode(shareSearchVariantSizeValue, node))
+            .map((node) => node.value)
+          setShareSelectedVariantSizeValues(filteredShareVariantSizeValues)
+        }
+        let combinations = 0
+        let filterVariants = []
+        let i = 0
+        templateVersion.map((_templateVersion: any) => {
+          let updatedDefaultValues = {}
+          let defaultValues = {}
+          let variantDefaultValues = {}
+          _templateVersion.variants.map((variant) => {
+            combinations += 1
+            for (const [key, value] of Object.entries(variant.defaultValues)) {
+              imageVideoFiles?.map((imageVideoFile) => {
+                if (imageVideoFile.creativeId === templateVersion._id)
+                  imageVideoFile.files.map((file) => {
+                    if (file.dynamicElementKey === key)
+                      updatedDefaultValues[
+                        key
+                      ] = `https://storage.googleapis.com/creative-templates/${imageVideoFile.creativeId}/asset/${file.dynamicElementKey}/${file.fileData.name}`
+                  })
+              })
+              defaultValues[key] = value
+            }
+            variantDefaultValues = Object.assign(defaultValues, updatedDefaultValues)
+            const variantSizeExist = filterVariants.some((el) => el.size === variant.size)
+            if (!variantSizeExist) {
+              filterVariants.push({
+                _id: params._id,
+                templateName: variant.templateName,
+                size: variant.size,
+                variants: [
+                  {
+                    variantName: variant.variantName,
+                    defaultValues:
+                      imageVideoFiles !== undefined ? variantDefaultValues : variant.defaultValues,
+                  },
+                ],
+              })
+              i++
+            } else {
+              filterVariants[i - 1].variants = [
+                ...filterVariants[i - 1].variants,
                 {
                   variantName: variant.variantName,
                   defaultValues:
                     imageVideoFiles !== undefined ? variantDefaultValues : variant.defaultValues,
                 },
-              ],
-            })
-            i++
-          } else {
-            filterVariants[i - 1].variants = [
-              ...filterVariants[i - 1].variants,
-              {
-                variantName: variant.variantName,
-                defaultValues:
-                  imageVideoFiles !== undefined ? variantDefaultValues : variant.defaultValues,
-              },
-            ]
-          }
+              ]
+            }
+          })
         })
-      })
-      setCombinations(combinations)
-      setVariants(filterVariants)
-      setLoading(false)
-      // }, 8000)
-      // return () => clearInterval(interval)
+        setCombinations(combinations)
+        setVariants(filterVariants)
+        setLoading(false)
+      }, 8000)
+      return () => clearInterval(interval)
     }
   }, [
     templateVersion,
