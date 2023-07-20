@@ -394,8 +394,11 @@ const ConfigureLayout = () => {
         value: templateVersion.id,
         label:
           index + 1 === template.templateVersion.length
-            ? 'Version ' + (index + 1) + ' (latest)'
-            : 'Version ' + (index + 1),
+            ? 'Version ' +
+              (templateVersion.versionName === null ? index + 1 : templateVersion.versionName) +
+              ' (latest)'
+            : 'Version ' +
+              (templateVersion.versionName === null ? index + 1 : templateVersion.versionName),
         approved: templateVersion.approvals !== undefined ? true : false,
       })
     })
@@ -404,11 +407,11 @@ const ConfigureLayout = () => {
   const getSelectOptionVersionDefaultValue = (template) => {
     let defaultVersionValue = []
     defaultVersionValue.push({
-      value: template.templateVersion[template.version]?.id,
+      value: template.templateVersion[template.templateVersion.length - 1].id,
       label:
-        template.version + 1 === template.templateVersion.length
-          ? 'Version ' + (template.version + 1) + ' (latest)'
-          : 'Version ' + (template.version + 1),
+        template.templateVersion[template.templateVersion.length - 1].versionName === null
+          ? template.templateVersion[template.templateVersion.length - 1].version + 1
+          : template.templateVersion[template.templateVersion.length - 1].versionName,
     })
     return defaultVersionValue
   }

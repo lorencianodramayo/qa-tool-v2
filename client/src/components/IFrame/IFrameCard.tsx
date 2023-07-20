@@ -215,9 +215,9 @@ IFrameCardProps) => {
             src={`https://storage.googleapis.com/creative-templates/${variant._id}/${
               variant.size + '-' + variant.templateName
             }/index.html`}
-            // onLoad={(e) => {
-            //   onLoad(e, variant.variants[i].defaultValues)
-            // }}
+            onLoad={(e) => {
+              onLoad(e, variant.variants[i].defaultValues)
+            }}
           />
         </div>
       }

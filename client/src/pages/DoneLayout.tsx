@@ -1313,7 +1313,7 @@ export default function DoneLayout() {
                                     variants_2 +=
                                       variants_1 + '-' + possibleValues[possibleValuesKeys[n]][e]
                                     if (variants_2.includes('MIN')) {
-                                      template.defaultDynamicFieldsValues
+                                      // template.defaultDynamicFieldsValues
                                       let defaultValues = {}
                                       for (const [key, value] of Object.entries(
                                         template.defaultDynamicFieldsValues,
@@ -1333,27 +1333,155 @@ export default function DoneLayout() {
                                             0,
                                             Math.round(textLegalHeading.length / 2),
                                           )
-                                        } else defaultValues[key] = value
+                                        } else if (key.toLowerCase().includes('animation'))
+                                          defaultValues[key] =
+                                            possibleValues[possibleValuesKeys[0]][t]
+                                        else defaultValues[key] = value
                                       }
+                                      defaultValues['RMK_1_grey_image_1'] = 'apparelImage1.png'
+                                      defaultValues['RMK_1_grey_image_2'] = 'blank.png'
+                                      defaultValues['RMK_1_grey_image_3'] = 'blank.png'
+                                      defaultValues['RMK_1_transparent_image_1'] =
+                                        'footwearlImage1.png'
+                                      defaultValues['RMK_1_transparent_image_2'] = 'blank.png'
+                                      defaultValues['RMK_1_transparent_image_3'] = 'blank.png'
+                                      defaultValues['RMK_2_grey_image_1'] = 'apparelImage1.png'
+                                      defaultValues['RMK_2_grey_image_2'] = 'blank.png'
+                                      defaultValues['RMK_2_grey_image_3'] = 'blank.png'
+                                      defaultValues['RMK_2_transparent_image_1'] =
+                                        'footwearlImage1.png'
+                                      defaultValues['RMK_2_transparent_image_2'] = 'blank.png'
+                                      defaultValues['RMK_2_transparent_image_3'] = 'blank.png'
+                                      defaultValues['RMK_3_grey_image_1'] = 'apparelImage1.png'
+                                      defaultValues['RMK_3_grey_image_2'] = 'blank.png'
+                                      defaultValues['RMK_3_grey_image_3'] = 'blank.png'
+                                      defaultValues['RMK_3_transparent_image_1'] =
+                                        'footwearlImage1.png'
+                                      defaultValues['RMK_3_transparent_image_2'] = 'blank.png'
+                                      defaultValues['RMK_3_transparent_image_3'] = 'blank.png'
+                                      defaultValues['RMK_4_grey_image_1'] = 'apparelImage1.png'
+                                      defaultValues['RMK_4_grey_image_2'] = 'blank.png'
+                                      defaultValues['RMK_4_grey_image_3'] = 'blank.png'
+                                      defaultValues['RMK_4_transparent_image_1'] =
+                                        'footwearlImage1.png'
+                                      defaultValues['RMK_4_transparent_image_2'] = 'blank.png'
+                                      defaultValues['RMK_4_transparent_image_3'] = 'blank.png'
+                                      defaultValues['RMK_background_gradient_a_1'] = '#E7AEF6'
+                                      defaultValues['RMK_background_gradient_a_2'] = '##FE9F84'
+                                      defaultValues['RMK_background_gradient_a_3'] = '#E7AEF6'
+                                      defaultValues['RMK_background_gradient_a_4'] = '#FE9F84'
+                                      defaultValues['RMK_background_gradient_b_1'] = '#ABB0F6'
+                                      defaultValues['RMK_background_gradient_b_2'] = '#FF7AE2'
+                                      defaultValues['RMK_background_gradient_b_3'] = '#ABB0F6'
+                                      defaultValues['RMK_background_gradient_b_4'] = '#FF7AE2'
+                                      defaultValues['RMK_condition_1'] = 'Sale'
+                                      defaultValues['RMK_condition_2'] = 'New'
+                                      defaultValues['RMK_condition_3'] = 'New'
+                                      defaultValues['RMK_condition_4'] = 'Sale'
+                                      defaultValues['RMK_currency'] = '$'
+                                      defaultValues['RMK_model_type_1'] = 'Apparel'
+                                      defaultValues['RMK_model_type_2'] = 'Footwear'
+                                      defaultValues['RMK_model_type_3'] = 'Apparel'
+                                      defaultValues['RMK_model_type_4'] = 'Footwear'
+                                      defaultValues['RMK_price_1'] = '999.91'
+                                      defaultValues['RMK_price_2'] = '999.92'
+                                      defaultValues['RMK_price_3'] = '999.93'
+                                      defaultValues['RMK_price_4'] = '999.94'
+                                      defaultValues['RMK_sale_percentage_1'] = '25%'
+                                      defaultValues['RMK_sale_percentage_2'] = '25%'
+                                      defaultValues['RMK_sale_percentage_3'] = '25%'
+                                      defaultValues['RMK_sale_percentage_4'] = '25%'
+                                      defaultValues['RMK_sale_price_1'] = '999.99'
+                                      defaultValues['RMK_sale_price_2'] = '999.99'
+                                      defaultValues['RMK_sale_price_3'] = '999.99'
+                                      defaultValues['RMK_sale_price_4'] = '999.99'
                                       templateVariants.push({
                                         variantName: variants_2,
                                         size: template.size,
                                         templateName: template.name,
                                         defaultValues: {
                                           ...defaultValues,
-                                          trigger: possibleValues[possibleValuesKeys[0]][t],
+                                          // trigger: possibleValues[possibleValuesKeys[0]][t],
                                         },
                                       })
-                                    } else
+                                    } else {
+                                      let defaultValues = {}
+                                      for (const [key, value] of Object.entries(
+                                        template.defaultDynamicFieldsValues,
+                                      )) {
+                                        if (key.toLowerCase().includes('animation'))
+                                          defaultValues[key] =
+                                            possibleValues[possibleValuesKeys[0]][t]
+                                        else defaultValues[key] = value
+                                      }
+                                      defaultValues['RMK_1_grey_image_1'] = 'apparelImage1.png'
+                                      defaultValues['RMK_1_grey_image_2'] = 'blank.png'
+                                      defaultValues['RMK_1_grey_image_3'] = 'blank.png'
+                                      defaultValues['RMK_1_transparent_image_1'] =
+                                        'footwearlImage1.png'
+                                      defaultValues['RMK_1_transparent_image_2'] = 'blank.png'
+                                      defaultValues['RMK_1_transparent_image_3'] = 'blank.png'
+                                      defaultValues['RMK_2_grey_image_1'] = 'apparelImage1.png'
+                                      defaultValues['RMK_2_grey_image_2'] = 'blank.png'
+                                      defaultValues['RMK_2_grey_image_3'] = 'blank.png'
+                                      defaultValues['RMK_2_transparent_image_1'] =
+                                        'footwearlImage1.png'
+                                      defaultValues['RMK_2_transparent_image_2'] = 'blank.png'
+                                      defaultValues['RMK_2_transparent_image_3'] = 'blank.png'
+                                      defaultValues['RMK_3_grey_image_1'] = 'apparelImage1.png'
+                                      defaultValues['RMK_3_grey_image_2'] = 'blank.png'
+                                      defaultValues['RMK_3_grey_image_3'] = 'blank.png'
+                                      defaultValues['RMK_3_transparent_image_1'] =
+                                        'footwearlImage1.png'
+                                      defaultValues['RMK_3_transparent_image_2'] = 'blank.png'
+                                      defaultValues['RMK_3_transparent_image_3'] = 'blank.png'
+                                      defaultValues['RMK_4_grey_image_1'] = 'apparelImage1.png'
+                                      defaultValues['RMK_4_grey_image_2'] = 'blank.png'
+                                      defaultValues['RMK_4_grey_image_3'] = 'blank.png'
+                                      defaultValues['RMK_4_transparent_image_1'] =
+                                        'footwearlImage1.png'
+                                      defaultValues['RMK_4_transparent_image_2'] = 'blank.png'
+                                      defaultValues['RMK_4_transparent_image_3'] = 'blank.png'
+                                      defaultValues['RMK_background_gradient_a_1'] = '#E7AEF6'
+                                      defaultValues['RMK_background_gradient_a_2'] = '##FE9F84'
+                                      defaultValues['RMK_background_gradient_a_3'] = '#E7AEF6'
+                                      defaultValues['RMK_background_gradient_a_4'] = '#FE9F84'
+                                      defaultValues['RMK_background_gradient_b_1'] = '#ABB0F6'
+                                      defaultValues['RMK_background_gradient_b_2'] = '#FF7AE2'
+                                      defaultValues['RMK_background_gradient_b_3'] = '#ABB0F6'
+                                      defaultValues['RMK_background_gradient_b_4'] = '#FF7AE2'
+                                      defaultValues['RMK_condition_1'] = 'Sale'
+                                      defaultValues['RMK_condition_2'] = 'New'
+                                      defaultValues['RMK_condition_3'] = 'New'
+                                      defaultValues['RMK_condition_4'] = 'Sale'
+                                      defaultValues['RMK_currency'] = '$'
+                                      defaultValues['RMK_model_type_1'] = 'Apparel'
+                                      defaultValues['RMK_model_type_2'] = 'Footwear'
+                                      defaultValues['RMK_model_type_3'] = 'Apparel'
+                                      defaultValues['RMK_model_type_4'] = 'Footwear'
+                                      defaultValues['RMK_price_1'] = '999.91'
+                                      defaultValues['RMK_price_2'] = '999.92'
+                                      defaultValues['RMK_price_3'] = '999.93'
+                                      defaultValues['RMK_price_4'] = '999.94'
+                                      defaultValues['RMK_sale_percentage_1'] = '25%'
+                                      defaultValues['RMK_sale_percentage_2'] = '25%'
+                                      defaultValues['RMK_sale_percentage_3'] = '25%'
+                                      defaultValues['RMK_sale_percentage_4'] = '25%'
+                                      defaultValues['RMK_sale_price_1'] = '999.99'
+                                      defaultValues['RMK_sale_price_2'] = '999.99'
+                                      defaultValues['RMK_sale_price_3'] = '999.99'
+                                      defaultValues['RMK_sale_price_4'] = '999.99'
                                       templateVariants.push({
                                         variantName: variants_2,
                                         size: template.size,
                                         templateName: template.name,
                                         defaultValues: {
-                                          ...template.defaultDynamicFieldsValues,
-                                          trigger: possibleValues[possibleValuesKeys[0]][t],
+                                          ...defaultValues,
+                                          // ...template.defaultDynamicFieldsValues,
+                                          // trigger: possibleValues[possibleValuesKeys[0]][t],
                                         },
                                       })
+                                    }
                                     e++
                                   }
                                 }
@@ -1406,7 +1534,7 @@ export default function DoneLayout() {
                                 //   },
                                 // });
                                 if (variants_2.includes('MIN')) {
-                                  template.defaultDynamicFieldsValues
+                                  // template.defaultDynamicFieldsValues
                                   let defaultValues = {}
                                   for (const [key, value] of Object.entries(
                                     template.defaultDynamicFieldsValues,
@@ -1425,27 +1553,145 @@ export default function DoneLayout() {
                                         0,
                                         Math.round(textLegalHeading.length / 2),
                                       )
-                                    } else defaultValues[key] = value
+                                    } else if (key.toLowerCase().includes('animation'))
+                                      defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
+                                    else defaultValues[key] = value
                                   }
+                                  defaultValues['RMK_1_grey_image_1'] = 'apparelImage1.png'
+                                  defaultValues['RMK_1_grey_image_2'] = 'blank.png'
+                                  defaultValues['RMK_1_grey_image_3'] = 'blank.png'
+                                  defaultValues['RMK_1_transparent_image_1'] = 'footwearlImage1.png'
+                                  defaultValues['RMK_1_transparent_image_2'] = 'blank.png'
+                                  defaultValues['RMK_1_transparent_image_3'] = 'blank.png'
+                                  defaultValues['RMK_2_grey_image_1'] = 'apparelImage1.png'
+                                  defaultValues['RMK_2_grey_image_2'] = 'blank.png'
+                                  defaultValues['RMK_2_grey_image_3'] = 'blank.png'
+                                  defaultValues['RMK_2_transparent_image_1'] = 'footwearlImage1.png'
+                                  defaultValues['RMK_2_transparent_image_2'] = 'blank.png'
+                                  defaultValues['RMK_2_transparent_image_3'] = 'blank.png'
+                                  defaultValues['RMK_3_grey_image_1'] = 'apparelImage1.png'
+                                  defaultValues['RMK_3_grey_image_2'] = 'blank.png'
+                                  defaultValues['RMK_3_grey_image_3'] = 'blank.png'
+                                  defaultValues['RMK_3_transparent_image_1'] = 'footwearlImage1.png'
+                                  defaultValues['RMK_3_transparent_image_2'] = 'blank.png'
+                                  defaultValues['RMK_3_transparent_image_3'] = 'blank.png'
+                                  defaultValues['RMK_4_grey_image_1'] = 'apparelImage1.png'
+                                  defaultValues['RMK_4_grey_image_2'] = 'blank.png'
+                                  defaultValues['RMK_4_grey_image_3'] = 'blank.png'
+                                  defaultValues['RMK_4_transparent_image_1'] = 'footwearlImage1.png'
+                                  defaultValues['RMK_4_transparent_image_2'] = 'blank.png'
+                                  defaultValues['RMK_4_transparent_image_3'] = 'blank.png'
+                                  defaultValues['RMK_background_gradient_a_1'] = '#E7AEF6'
+                                  defaultValues['RMK_background_gradient_a_2'] = '##FE9F84'
+                                  defaultValues['RMK_background_gradient_a_3'] = '#E7AEF6'
+                                  defaultValues['RMK_background_gradient_a_4'] = '#FE9F84'
+                                  defaultValues['RMK_background_gradient_b_1'] = '#ABB0F6'
+                                  defaultValues['RMK_background_gradient_b_2'] = '#FF7AE2'
+                                  defaultValues['RMK_background_gradient_b_3'] = '#ABB0F6'
+                                  defaultValues['RMK_background_gradient_b_4'] = '#FF7AE2'
+                                  defaultValues['RMK_condition_1'] = 'Sale'
+                                  defaultValues['RMK_condition_2'] = 'New'
+                                  defaultValues['RMK_condition_3'] = 'New'
+                                  defaultValues['RMK_condition_4'] = 'Sale'
+                                  defaultValues['RMK_currency'] = '$'
+                                  defaultValues['RMK_model_type_1'] = 'Apparel'
+                                  defaultValues['RMK_model_type_2'] = 'Footwear'
+                                  defaultValues['RMK_model_type_3'] = 'Apparel'
+                                  defaultValues['RMK_model_type_4'] = 'Footwear'
+                                  defaultValues['RMK_price_1'] = '999.91'
+                                  defaultValues['RMK_price_2'] = '999.92'
+                                  defaultValues['RMK_price_3'] = '999.93'
+                                  defaultValues['RMK_price_4'] = '999.94'
+                                  defaultValues['RMK_sale_percentage_1'] = '25%'
+                                  defaultValues['RMK_sale_percentage_2'] = '25%'
+                                  defaultValues['RMK_sale_percentage_3'] = '25%'
+                                  defaultValues['RMK_sale_percentage_4'] = '25%'
+                                  defaultValues['RMK_sale_price_1'] = '999.99'
+                                  defaultValues['RMK_sale_price_2'] = '999.99'
+                                  defaultValues['RMK_sale_price_3'] = '999.99'
+                                  defaultValues['RMK_sale_price_4'] = '999.99'
                                   templateVariants.push({
                                     variantName: variants_2,
                                     size: template.size,
                                     templateName: template.name,
                                     defaultValues: {
                                       ...defaultValues,
-                                      trigger: possibleValues[possibleValuesKeys[0]][t],
+                                      // trigger: possibleValues[possibleValuesKeys[0]][t],
                                     },
                                   })
-                                } else
+                                } else {
+                                  let defaultValues = {}
+                                  for (const [key, value] of Object.entries(
+                                    template.defaultDynamicFieldsValues,
+                                  )) {
+                                    if (key.toLowerCase().includes('animation'))
+                                      defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
+                                    else defaultValues[key] = value
+                                  }
+                                  defaultValues['RMK_1_grey_image_1'] = 'apparelImage1.png'
+                                  defaultValues['RMK_1_grey_image_2'] = 'blank.png'
+                                  defaultValues['RMK_1_grey_image_3'] = 'blank.png'
+                                  defaultValues['RMK_1_transparent_image_1'] = 'footwearlImage1.png'
+                                  defaultValues['RMK_1_transparent_image_2'] = 'blank.png'
+                                  defaultValues['RMK_1_transparent_image_3'] = 'blank.png'
+                                  defaultValues['RMK_2_grey_image_1'] = 'apparelImage1.png'
+                                  defaultValues['RMK_2_grey_image_2'] = 'blank.png'
+                                  defaultValues['RMK_2_grey_image_3'] = 'blank.png'
+                                  defaultValues['RMK_2_transparent_image_1'] = 'footwearlImage1.png'
+                                  defaultValues['RMK_2_transparent_image_2'] = 'blank.png'
+                                  defaultValues['RMK_2_transparent_image_3'] = 'blank.png'
+                                  defaultValues['RMK_3_grey_image_1'] = 'apparelImage1.png'
+                                  defaultValues['RMK_3_grey_image_2'] = 'blank.png'
+                                  defaultValues['RMK_3_grey_image_3'] = 'blank.png'
+                                  defaultValues['RMK_3_transparent_image_1'] = 'footwearlImage1.png'
+                                  defaultValues['RMK_3_transparent_image_2'] = 'blank.png'
+                                  defaultValues['RMK_3_transparent_image_3'] = 'blank.png'
+                                  defaultValues['RMK_4_grey_image_1'] = 'apparelImage1.png'
+                                  defaultValues['RMK_4_grey_image_2'] = 'blank.png'
+                                  defaultValues['RMK_4_grey_image_3'] = 'blank.png'
+                                  defaultValues['RMK_4_transparent_image_1'] = 'footwearlImage1.png'
+                                  defaultValues['RMK_4_transparent_image_2'] = 'blank.png'
+                                  defaultValues['RMK_4_transparent_image_3'] = 'blank.png'
+                                  defaultValues['RMK_background_gradient_a_1'] = '#E7AEF6'
+                                  defaultValues['RMK_background_gradient_a_2'] = '##FE9F84'
+                                  defaultValues['RMK_background_gradient_a_3'] = '#E7AEF6'
+                                  defaultValues['RMK_background_gradient_a_4'] = '#FE9F84'
+                                  defaultValues['RMK_background_gradient_b_1'] = '#ABB0F6'
+                                  defaultValues['RMK_background_gradient_b_2'] = '#FF7AE2'
+                                  defaultValues['RMK_background_gradient_b_3'] = '#ABB0F6'
+                                  defaultValues['RMK_background_gradient_b_4'] = '#FF7AE2'
+                                  defaultValues['RMK_condition_1'] = 'Sale'
+                                  defaultValues['RMK_condition_2'] = 'New'
+                                  defaultValues['RMK_condition_3'] = 'New'
+                                  defaultValues['RMK_condition_4'] = 'Sale'
+                                  defaultValues['RMK_currency'] = '$'
+                                  defaultValues['RMK_model_type_1'] = 'Apparel'
+                                  defaultValues['RMK_model_type_2'] = 'Footwear'
+                                  defaultValues['RMK_model_type_3'] = 'Apparel'
+                                  defaultValues['RMK_model_type_4'] = 'Footwear'
+                                  defaultValues['RMK_price_1'] = '999.91'
+                                  defaultValues['RMK_price_2'] = '999.92'
+                                  defaultValues['RMK_price_3'] = '999.93'
+                                  defaultValues['RMK_price_4'] = '999.94'
+                                  defaultValues['RMK_sale_percentage_1'] = '25%'
+                                  defaultValues['RMK_sale_percentage_2'] = '25%'
+                                  defaultValues['RMK_sale_percentage_3'] = '25%'
+                                  defaultValues['RMK_sale_percentage_4'] = '25%'
+                                  defaultValues['RMK_sale_price_1'] = '999.99'
+                                  defaultValues['RMK_sale_price_2'] = '999.99'
+                                  defaultValues['RMK_sale_price_3'] = '999.99'
+                                  defaultValues['RMK_sale_price_4'] = '999.99'
                                   templateVariants.push({
                                     variantName: variants_2,
                                     size: template.size,
                                     templateName: template.name,
                                     defaultValues: {
-                                      ...template.defaultDynamicFieldsValues,
-                                      trigger: possibleValues[possibleValuesKeys[0]][t],
+                                      ...defaultValues,
+                                      // ...template.defaultDynamicFieldsValues,
+                                      // trigger: possibleValues[possibleValuesKeys[0]][t],
                                     },
                                   })
+                                }
                                 i++
                               }
                             } else {
@@ -1483,27 +1729,145 @@ export default function DoneLayout() {
                                       0,
                                       Math.round(textLegalHeading.length / 2),
                                     )
-                                  } else defaultValues[key] = value
+                                  } else if (key.toLowerCase().includes('animation'))
+                                    defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
+                                  else defaultValues[key] = value
                                 }
+                                defaultValues['RMK_1_grey_image_1'] = 'apparelImage1.png'
+                                defaultValues['RMK_1_grey_image_2'] = 'blank.png'
+                                defaultValues['RMK_1_grey_image_3'] = 'blank.png'
+                                defaultValues['RMK_1_transparent_image_1'] = 'footwearlImage1.png'
+                                defaultValues['RMK_1_transparent_image_2'] = 'blank.png'
+                                defaultValues['RMK_1_transparent_image_3'] = 'blank.png'
+                                defaultValues['RMK_2_grey_image_1'] = 'apparelImage1.png'
+                                defaultValues['RMK_2_grey_image_2'] = 'blank.png'
+                                defaultValues['RMK_2_grey_image_3'] = 'blank.png'
+                                defaultValues['RMK_2_transparent_image_1'] = 'footwearlImage1.png'
+                                defaultValues['RMK_2_transparent_image_2'] = 'blank.png'
+                                defaultValues['RMK_2_transparent_image_3'] = 'blank.png'
+                                defaultValues['RMK_3_grey_image_1'] = 'apparelImage1.png'
+                                defaultValues['RMK_3_grey_image_2'] = 'blank.png'
+                                defaultValues['RMK_3_grey_image_3'] = 'blank.png'
+                                defaultValues['RMK_3_transparent_image_1'] = 'footwearlImage1.png'
+                                defaultValues['RMK_3_transparent_image_2'] = 'blank.png'
+                                defaultValues['RMK_3_transparent_image_3'] = 'blank.png'
+                                defaultValues['RMK_4_grey_image_1'] = 'apparelImage1.png'
+                                defaultValues['RMK_4_grey_image_2'] = 'blank.png'
+                                defaultValues['RMK_4_grey_image_3'] = 'blank.png'
+                                defaultValues['RMK_4_transparent_image_1'] = 'footwearlImage1.png'
+                                defaultValues['RMK_4_transparent_image_2'] = 'blank.png'
+                                defaultValues['RMK_4_transparent_image_3'] = 'blank.png'
+                                defaultValues['RMK_background_gradient_a_1'] = '#E7AEF6'
+                                defaultValues['RMK_background_gradient_a_2'] = '##FE9F84'
+                                defaultValues['RMK_background_gradient_a_3'] = '#E7AEF6'
+                                defaultValues['RMK_background_gradient_a_4'] = '#FE9F84'
+                                defaultValues['RMK_background_gradient_b_1'] = '#ABB0F6'
+                                defaultValues['RMK_background_gradient_b_2'] = '#FF7AE2'
+                                defaultValues['RMK_background_gradient_b_3'] = '#ABB0F6'
+                                defaultValues['RMK_background_gradient_b_4'] = '#FF7AE2'
+                                defaultValues['RMK_condition_1'] = 'Sale'
+                                defaultValues['RMK_condition_2'] = 'New'
+                                defaultValues['RMK_condition_3'] = 'New'
+                                defaultValues['RMK_condition_4'] = 'Sale'
+                                defaultValues['RMK_currency'] = '$'
+                                defaultValues['RMK_model_type_1'] = 'Apparel'
+                                defaultValues['RMK_model_type_2'] = 'Footwear'
+                                defaultValues['RMK_model_type_3'] = 'Apparel'
+                                defaultValues['RMK_model_type_4'] = 'Footwear'
+                                defaultValues['RMK_price_1'] = '999.91'
+                                defaultValues['RMK_price_2'] = '999.92'
+                                defaultValues['RMK_price_3'] = '999.93'
+                                defaultValues['RMK_price_4'] = '999.94'
+                                defaultValues['RMK_sale_percentage_1'] = '25%'
+                                defaultValues['RMK_sale_percentage_2'] = '25%'
+                                defaultValues['RMK_sale_percentage_3'] = '25%'
+                                defaultValues['RMK_sale_percentage_4'] = '25%'
+                                defaultValues['RMK_sale_price_1'] = '999.99'
+                                defaultValues['RMK_sale_price_2'] = '999.99'
+                                defaultValues['RMK_sale_price_3'] = '999.99'
+                                defaultValues['RMK_sale_price_4'] = '999.99'
                                 templateVariants.push({
                                   variantName: variants_1,
                                   size: template.size,
                                   templateName: template.name,
                                   defaultValues: {
                                     ...defaultValues,
-                                    trigger: possibleValues[possibleValuesKeys[0]][t],
+                                    // trigger: possibleValues[possibleValuesKeys[0]][t],
                                   },
                                 })
-                              } else
+                              } else {
+                                let defaultValues = {}
+                                for (const [key, value] of Object.entries(
+                                  template.defaultDynamicFieldsValues,
+                                )) {
+                                  if (key.toLowerCase().includes('animation'))
+                                    defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
+                                  else defaultValues[key] = value
+                                }
+                                defaultValues['RMK_1_grey_image_1'] = 'apparelImage1.png'
+                                defaultValues['RMK_1_grey_image_2'] = 'blank.png'
+                                defaultValues['RMK_1_grey_image_3'] = 'blank.png'
+                                defaultValues['RMK_1_transparent_image_1'] = 'footwearlImage1.png'
+                                defaultValues['RMK_1_transparent_image_2'] = 'blank.png'
+                                defaultValues['RMK_1_transparent_image_3'] = 'blank.png'
+                                defaultValues['RMK_2_grey_image_1'] = 'apparelImage1.png'
+                                defaultValues['RMK_2_grey_image_2'] = 'blank.png'
+                                defaultValues['RMK_2_grey_image_3'] = 'blank.png'
+                                defaultValues['RMK_2_transparent_image_1'] = 'footwearlImage1.png'
+                                defaultValues['RMK_2_transparent_image_2'] = 'blank.png'
+                                defaultValues['RMK_2_transparent_image_3'] = 'blank.png'
+                                defaultValues['RMK_3_grey_image_1'] = 'apparelImage1.png'
+                                defaultValues['RMK_3_grey_image_2'] = 'blank.png'
+                                defaultValues['RMK_3_grey_image_3'] = 'blank.png'
+                                defaultValues['RMK_3_transparent_image_1'] = 'footwearlImage1.png'
+                                defaultValues['RMK_3_transparent_image_2'] = 'blank.png'
+                                defaultValues['RMK_3_transparent_image_3'] = 'blank.png'
+                                defaultValues['RMK_4_grey_image_1'] = 'apparelImage1.png'
+                                defaultValues['RMK_4_grey_image_2'] = 'blank.png'
+                                defaultValues['RMK_4_grey_image_3'] = 'blank.png'
+                                defaultValues['RMK_4_transparent_image_1'] = 'footwearlImage1.png'
+                                defaultValues['RMK_4_transparent_image_2'] = 'blank.png'
+                                defaultValues['RMK_4_transparent_image_3'] = 'blank.png'
+                                defaultValues['RMK_background_gradient_a_1'] = '#E7AEF6'
+                                defaultValues['RMK_background_gradient_a_2'] = '##FE9F84'
+                                defaultValues['RMK_background_gradient_a_3'] = '#E7AEF6'
+                                defaultValues['RMK_background_gradient_a_4'] = '#FE9F84'
+                                defaultValues['RMK_background_gradient_b_1'] = '#ABB0F6'
+                                defaultValues['RMK_background_gradient_b_2'] = '#FF7AE2'
+                                defaultValues['RMK_background_gradient_b_3'] = '#ABB0F6'
+                                defaultValues['RMK_background_gradient_b_4'] = '#FF7AE2'
+                                defaultValues['RMK_condition_1'] = 'Sale'
+                                defaultValues['RMK_condition_2'] = 'New'
+                                defaultValues['RMK_condition_3'] = 'New'
+                                defaultValues['RMK_condition_4'] = 'Sale'
+                                defaultValues['RMK_currency'] = '$'
+                                defaultValues['RMK_model_type_1'] = 'Apparel'
+                                defaultValues['RMK_model_type_2'] = 'Footwear'
+                                defaultValues['RMK_model_type_3'] = 'Apparel'
+                                defaultValues['RMK_model_type_4'] = 'Footwear'
+                                defaultValues['RMK_price_1'] = '999.91'
+                                defaultValues['RMK_price_2'] = '999.92'
+                                defaultValues['RMK_price_3'] = '999.93'
+                                defaultValues['RMK_price_4'] = '999.94'
+                                defaultValues['RMK_sale_percentage_1'] = '25%'
+                                defaultValues['RMK_sale_percentage_2'] = '25%'
+                                defaultValues['RMK_sale_percentage_3'] = '25%'
+                                defaultValues['RMK_sale_percentage_4'] = '25%'
+                                defaultValues['RMK_sale_price_1'] = '999.99'
+                                defaultValues['RMK_sale_price_2'] = '999.99'
+                                defaultValues['RMK_sale_price_3'] = '999.99'
+                                defaultValues['RMK_sale_price_4'] = '999.99'
                                 templateVariants.push({
-                                  variantName: variants_1,
+                                  variantName: variants_2,
                                   size: template.size,
                                   templateName: template.name,
                                   defaultValues: {
-                                    ...template.defaultDynamicFieldsValues,
-                                    trigger: possibleValues[possibleValuesKeys[0]][t],
+                                    ...defaultValues,
+                                    // ...template.defaultDynamicFieldsValues,
+                                    // trigger: possibleValues[possibleValuesKeys[0]][t],
                                   },
                                 })
+                              }
                             }
                             t++
                           }
