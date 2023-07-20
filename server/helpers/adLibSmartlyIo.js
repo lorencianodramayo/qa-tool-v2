@@ -402,6 +402,14 @@ const postTemplateVersionCloud = async (req, res) => {
       for (let entry of zip.getEntries()) {
         pendingPromises.push(
           new Promise((resolve, reject) => {
+            if (entry.name === "adlibUtils-v3.js") {
+              let fileContent = entry.getData().toString("utf8");
+              fileContent = fileContent.replace(
+                /if \(defaultValues\[elems\[i\]\.getAttribute\('adlib-image'\)\]\.length != undefined\)/g,
+                "if (defaultValues[elems[i].getAttribute('adlib-image')] != undefined)"
+              );
+              entry.setData(Buffer.from(fileContent, "utf8"));
+            }
             if (entry.name === "index.html") {
               entry.setData(
                 Buffer.from(
