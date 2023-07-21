@@ -1858,7 +1858,7 @@ export default function DoneLayout() {
                                 defaultValues['RMK_sale_price_3'] = '999.99'
                                 defaultValues['RMK_sale_price_4'] = '999.99'
                                 templateVariants.push({
-                                  variantName: variants_2,
+                                  variantName: variants_1,
                                   size: template.size,
                                   templateName: template.name,
                                   defaultValues: {
