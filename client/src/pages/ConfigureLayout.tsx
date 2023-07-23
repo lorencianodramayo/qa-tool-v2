@@ -17,7 +17,10 @@ import type {CheckboxChangeEvent} from 'antd/es/checkbox'
 import FloatLabel from '../components/FloatLabel/FloatLabel'
 import {DeleteFilled} from '@ant-design/icons'
 import apiService from '../api/apiService'
-import {getTemplateSelectedVersion} from '../features/Configure/configureSlice'
+import {
+  getTemplateSelectedVersion,
+  postTemplateDefaultValues,
+} from '../features/Configure/configureSlice'
 import {useLocation, useNavigate} from 'react-router-dom'
 import {useAppDispatch, useAppSelector} from '../store'
 import Cookies from 'js-cookie'
@@ -179,6 +182,10 @@ const ConfigureLayout = () => {
   const [singleVersionSelection, setSingleVersionSelection] = useState<boolean>(false)
   const [multipleTemplateSelection, setMultipleTemplateSelection] = useState<string>('')
   const [multipleVersionSelection, setMultipleVersionSelection] = useState<boolean>(false)
+  const [_templateDefaultValues, setTemplateDefaultValues] = useState<any>(
+    // location.state.templateDefaultValues,
+    [],
+  )
   // const [treeValues, setTreeValues] = useState<string[]>([])
   // const [newTemplates, setNewTemplates] = useState<any>([])
   interface TreeNodeData {
@@ -194,9 +201,13 @@ const ConfigureLayout = () => {
   const [selectedValues, setSelectedValues] = useState<string[]>(
     location.state === null ? [] : location.state.selectedValues,
   )
-  const {templateSelectedVersion, isTemplateSelectedVersionsSuccess} = useAppSelector(
-    (state: any) => state.configure,
-  )
+  const {
+    templateDefaultValues,
+    isTemplateDefaultValuesLoading,
+    isTemplateDefaultValuesSuccess,
+    templateSelectedVersion,
+    isTemplateSelectedVersionsSuccess,
+  } = useAppSelector((state: any) => state.configure)
   // useEffect(() => {
   //   const handleCookieChange = () => {
   //     const authToken = Cookies.get('session')
@@ -211,6 +222,7 @@ const ConfigureLayout = () => {
   // }, [])
   useEffect(() => {
     if (location.state !== null) {
+      // setTemplateDefaultValues(location.state.templateDefaultValues)
       let conceptLink = location.state.conceptLinkValue.split('/')
       let platform = conceptLink[2].split('.')
       setPlatform(platform[0])
@@ -284,6 +296,29 @@ const ConfigureLayout = () => {
       setTreeData(treeData)
     }
   }, [templates])
+  useEffect(() => {
+    if (isTemplateDefaultValuesSuccess) {
+      if (selectedValues.length === 0)
+        api.info({
+          message: 'Configure',
+          description: 'Please Select or Add Template!',
+        })
+      else if (_templateDefaultValues.length === 0)
+        navigate('/qa-tool-v2/configure/generate/elements', {
+          state: {
+            templateName: templateName,
+            templates: templates.filter((tmpl) =>
+              selectedValues.includes(tmpl.size + ' ' + tmpl.name),
+            ),
+            templateDefaultValues: templateDefaultValues.data,
+            conceptLinkValue: conceptLinkValue,
+            selectAll: selectAll,
+            selectedValues: selectedValues.length > 0 ? selectedValues : [],
+          },
+          replace: true,
+        })
+    }
+  }, [templateDefaultValues, isTemplateDefaultValuesLoading, isTemplateDefaultValuesSuccess])
   const onChangeSteps = (value: number) => {
     if (conceptLinkError || conceptLinkValue === '')
       api.error({
@@ -295,6 +330,11 @@ const ConfigureLayout = () => {
         message: 'Configure',
         description: 'Please Select or Add Template!',
       })
+    else if (_templateDefaultValues.length === 0)
+      api.info({
+        message: 'Configure',
+        description: 'Please Generate!',
+      })
     else
       navigate('/qa-tool-v2/configure/generate/elements', {
         state: {
@@ -302,6 +342,7 @@ const ConfigureLayout = () => {
           templates: templates.filter((tmpl) =>
             selectedValues.includes(tmpl.size + ' ' + tmpl.name),
           ),
+          templateDefaultValues: _templateDefaultValues,
           conceptLinkValue: conceptLinkValue,
           selectAll: selectAll,
           selectedValues: selectedValues.length > 0 ? selectedValues : [],
@@ -422,10 +463,33 @@ const ConfigureLayout = () => {
   return (
     <LayoutStyled>
       {contextHolder}
+      {isTemplateDefaultValuesLoading && (
+        <Space
+          style={{
+            zIndex: 10,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+          }}
+        >
+          <Spin
+            size="large"
+            style={{
+              top: '50%',
+              left: '50%',
+              position: 'absolute',
+              transform: 'translate(-50%, -50%)',
+            }}
+          />
+        </Space>
+      )}
       <Space
         style={{
           justifyContent: 'center',
           marginTop: 42.1,
+          pointerEvents: isTemplateDefaultValuesLoading ? 'none' : 'unset',
         }}
       >
         <StepsStyled
@@ -447,6 +511,7 @@ const ConfigureLayout = () => {
       <div
         style={{
           margin: '35.8px auto 36px auto',
+          pointerEvents: isTemplateDefaultValuesLoading ? 'none' : 'unset',
         }}
       >
         {fetching && (
@@ -740,11 +805,14 @@ const ConfigureLayout = () => {
               type="primary"
               htmlType="submit"
               onClick={() => {
-                if (selectedValues.length === 0)
-                  api.info({
-                    message: 'Configure',
-                    description: 'Please Select or Add Template!',
-                  })
+                if (_templateDefaultValues.length === 0)
+                  dispatch(
+                    postTemplateDefaultValues(
+                      templates.filter((tmpl) =>
+                        selectedValues.includes(tmpl.size + ' ' + tmpl.name),
+                      ),
+                    ),
+                  )
                 else
                   navigate('/qa-tool-v2/configure/generate/elements', {
                     state: {
@@ -752,6 +820,7 @@ const ConfigureLayout = () => {
                       templates: templates.filter((tmpl) =>
                         selectedValues.includes(tmpl.size + ' ' + tmpl.name),
                       ),
+                      templateDefaultValues: _templateDefaultValues,
                       conceptLinkValue: conceptLinkValue,
                       selectAll: selectAll,
                       selectedValues: selectedValues.length > 0 ? selectedValues : [],

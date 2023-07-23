@@ -427,6 +427,7 @@ export default function ElementsLayout() {
   const [languagesList, setLanguagesList] = useState<any>([])
   const templateName: string = location.state.templateName
   const [templates, setTemplates] = useState<any>(location.state.templates)
+  const templateDefaultValues: any = location.state.templateDefaultValues
   const [possibleValues, setPossibleValues] = useState<any>([])
   const [templateIndex, setTemplateIndex] = useState<number>(0)
   const [showLanguageModal, setShowLanguageModal] = useState<boolean>(false)
@@ -535,6 +536,7 @@ export default function ElementsLayout() {
             const newObj = templates.find((newObj) => newObj._id === originalObj._id)
             return newObj ? {...originalObj, ...newObj} : originalObj
           }),
+          templateDefaultValues: templateDefaultValues,
           conceptLinkValue: location.state.conceptLinkValue,
           selectAll: location.state.selectAll,
           selectedValues: location.state.selectedValues,
@@ -549,6 +551,7 @@ export default function ElementsLayout() {
             const newObj = templates.find((newObj) => newObj._id === originalObj._id)
             return newObj ? {...originalObj, ...newObj} : originalObj
           }),
+          templateDefaultValues: templateDefaultValues,
           conceptLinkValue: location.state.conceptLinkValue,
           selectAll: location.state.selectAll,
           selectedValues: location.state.selectedValues,
@@ -2715,6 +2718,7 @@ export default function ElementsLayout() {
                       const newObj = templates.find((newObj) => newObj._id === originalObj._id)
                       return newObj ? {...originalObj, ...newObj} : originalObj
                     }),
+                    templateDefaultValues: templateDefaultValues,
                     conceptLinkValue: location.state.conceptLinkValue,
                     selectAll: location.state.selectAll,
                     selectedValues: location.state.selectedValues,
