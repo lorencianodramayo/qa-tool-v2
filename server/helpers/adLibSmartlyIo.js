@@ -323,11 +323,11 @@ const getTemplatesVersions = async (req, res) => {
 };
 const postTemplateVersion = async (req, res) => {
   try {
-    TemplateVersion.deleteMany({}, (err) => {
-      if (err) {
-        res.status(500).json(error);
-      }
-    });
+    // TemplateVersion.deleteMany({}, (err) => {
+    //   if (err) {
+    //     res.status(500).json(error);
+    //   }
+    // });
     const request = req;
     const templatesVersions = request;
     delete templatesVersions.template;
