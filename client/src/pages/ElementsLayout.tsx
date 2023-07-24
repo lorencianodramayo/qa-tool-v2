@@ -2418,7 +2418,7 @@ export default function ElementsLayout() {
       language: language,
       textHeadlineLegal: _textHeadlineLegal,
     }
-    const response = await apiService.post('/translate', payload)
+    const response = await apiService.post('/translate/v2', payload)
     return response.data
   }
   const textHeadingLegalCase = (text, textCase) => {
