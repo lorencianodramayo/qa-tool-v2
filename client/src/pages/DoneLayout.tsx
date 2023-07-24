@@ -1343,8 +1343,9 @@ export default function DoneLayout() {
                                             Math.round(textLegalHeading.length / 2),
                                           )
                                         } else if (
-                                          key.toLowerCase().includes('animation') ||
-                                          key.toLowerCase().includes('trigger')
+                                          // key.toLowerCase().includes('animation') ||
+                                          // key.toLowerCase().includes('trigger')
+                                          template.possibleValues.hasOwnProperty(key)
                                         )
                                           defaultValues[key] =
                                             possibleValues[possibleValuesKeys[0]][t]
@@ -1428,8 +1429,9 @@ export default function DoneLayout() {
                                       )) {
                                         delete defaultValuesTemplate.defaultValues[key]
                                         if (
-                                          key.toLowerCase().includes('animation') ||
-                                          key.toLowerCase().includes('trigger')
+                                          // key.toLowerCase().includes('animation') ||
+                                          // key.toLowerCase().includes('trigger')
+                                          template.possibleValues.hasOwnProperty(key)
                                         )
                                           defaultValues[key] =
                                             possibleValues[possibleValuesKeys[0]][t]
@@ -1580,8 +1582,9 @@ export default function DoneLayout() {
                                         Math.round(textLegalHeading.length / 2),
                                       )
                                     } else if (
-                                      key.toLowerCase().includes('animation') ||
-                                      key.toLowerCase().includes('trigger')
+                                      // key.toLowerCase().includes('animation') ||
+                                      // key.toLowerCase().includes('trigger')
+                                      template.possibleValues.hasOwnProperty(key)
                                     )
                                       defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
                                     else defaultValues[key] = value
@@ -1659,8 +1662,9 @@ export default function DoneLayout() {
                                   )) {
                                     delete defaultValuesTemplate.defaultValues[key]
                                     if (
-                                      key.toLowerCase().includes('animation') ||
-                                      key.toLowerCase().includes('trigger')
+                                      // key.toLowerCase().includes('animation') ||
+                                      // key.toLowerCase().includes('trigger')
+                                      template.possibleValues.hasOwnProperty(key)
                                     )
                                       defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
                                     else defaultValues[key] = value
@@ -1771,8 +1775,9 @@ export default function DoneLayout() {
                                       Math.round(textLegalHeading.length / 2),
                                     )
                                   } else if (
-                                    key.toLowerCase().includes('animation') ||
-                                    key.toLowerCase().includes('trigger')
+                                    // key.toLowerCase().includes('animation') ||
+                                    // key.toLowerCase().includes('trigger')
+                                    template.possibleValues.hasOwnProperty(key)
                                   )
                                     defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
                                   else defaultValues[key] = value
@@ -1850,8 +1855,9 @@ export default function DoneLayout() {
                                 )) {
                                   delete defaultValuesTemplate.defaultValues[key]
                                   if (
-                                    key.toLowerCase().includes('animation') ||
-                                    key.toLowerCase().includes('trigger')
+                                    // key.toLowerCase().includes('animation') ||
+                                    // key.toLowerCase().includes('trigger')
+                                    template.possibleValues.hasOwnProperty(key)
                                   )
                                     defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
                                   else defaultValues[key] = value
