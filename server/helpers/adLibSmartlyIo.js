@@ -323,11 +323,11 @@ const getTemplatesVersions = async (req, res) => {
 };
 const postTemplateVersion = async (req, res) => {
   try {
-    TemplateVersion.deleteMany({}, (err) => {
-      if (err) {
-        res.status(500).json(error);
-      }
-    });
+    // TemplateVersion.deleteMany({}, (err) => {
+    //   if (err) {
+    //     res.status(500).json(error);
+    //   }
+    // });
     const request = req;
     const templatesVersions = request;
     delete templatesVersions.template;
@@ -358,11 +358,11 @@ const postTemplateVersion = async (req, res) => {
 };
 const postSharedVariants = async (req, res) => {
   try {
-    SharedVariant.deleteMany({}, (err) => {
-      if (err) {
-        res.status(500).json(error);
-      }
-    });
+    // SharedVariant.deleteMany({}, (err) => {
+    //   if (err) {
+    //     res.status(500).json(error);
+    //   }
+    // });
     const sharedVariant = new SharedVariant({
       variantsName: req.templateName,
       sharedVariants: req.templatesVersions,
@@ -402,23 +402,23 @@ const postTemplateVersionCloud = async (req, res) => {
       for (let entry of zip.getEntries()) {
         pendingPromises.push(
           new Promise((resolve, reject) => {
-            if (entry.name === "adlib.css") {
-              let fileContent = entry.getData().toString("utf8");
-              fileContent = fileContent.replace(
-                /\.mainContent\s*{/g,
-                "/* .mainContent {"
-              );
-              fileContent += `
-                .mainContent {
-                  position: absolute;
-                  overflow:visible;
-                  transform: perspective(1920px) matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-                  opacity:0;
-                  background-color: white;
-                }
-              `;
-              entry.setData(Buffer.from(fileContent, "utf8"));
-            }
+            // if (entry.name === "adlib.css") {
+            //   let fileContent = entry.getData().toString("utf8");
+            //   fileContent = fileContent.replace(
+            //     /\.mainContent\s*{([\s\S]*?)}/g,
+            //     "/* .mainContent {$1/*/"
+            //   );
+            //   fileContent += `
+            //     .mainContent {
+            //       position: absolute;
+            //       overflow:visible;
+            //       transform: perspective(1920px) matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+            //       opacity:0;
+            //       background-color: white;
+            //     }
+            //   `;
+            //   entry.setData(Buffer.from(fileContent, "utf8"));
+            // }
             if (entry.name === "adlibUtils-v3.js") {
               let fileContent = entry.getData().toString("utf8");
               fileContent = fileContent.replace(

@@ -206,7 +206,7 @@ IFrameCardProps) => {
           }}
         >
           <iframe
-            style={{border: 'unset'}}
+            style={{border: 'unset', overflow: 'visible'}}
             id="my-iframe"
             ref={(ref) => (iframeRefs.current[i] = ref)}
             key={refreshes[i]?.refresh}
