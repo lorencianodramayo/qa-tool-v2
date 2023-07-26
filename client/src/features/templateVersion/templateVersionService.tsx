@@ -1,7 +1,7 @@
 import apiService from '../../api/apiService'
 import axios from 'axios'
-const getTemplatesVersions = async (id) => {
-  const response = await apiService.get(`/getTemplatesVersions/${id}`)
+const getTemplatesVersions = async () => {
+  const response = await apiService.get('/getTemplatesVersions')
   return response.data
 }
 const postTemplateVersion = async (payload) => {
