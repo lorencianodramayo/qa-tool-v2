@@ -48,9 +48,12 @@ router.post("/template/defaultValues", async (req, res) => {
             removeUnwantedContent(extractedObject)
               .split(",")
               .map((object) => {
-                if (object.includes(":")) {
+                if (object.replace(/\s/g, "").includes(":")) {
                   defaultValues[object.replace(/\s/g, "").split(":")[0]] =
-                    object.split(":")[1].replace(/['"]/g, "");
+                    object
+                      .replace(/\s/g, "")
+                      .split(":")[1]
+                      .replace(/['"]/g, "");
                 }
               });
             templateDefaultValues.push({
