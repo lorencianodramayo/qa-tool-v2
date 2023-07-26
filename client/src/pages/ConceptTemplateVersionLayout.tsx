@@ -134,7 +134,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const [shareSelectedVariantSizeValues, setShareSelectedVariantSizeValues] = useState<string[]>([])
   useEffect(() => {
     setLoading(!loading)
-    dispatch(getTemplatesVersions())
+    dispatch(getTemplatesVersions(location.state.templateDefaultValues[0].templateId))
   }, [dispatch])
   useEffect(() => {
     if (isTemplatesVersionsSuccess) {
