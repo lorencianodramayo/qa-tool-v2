@@ -314,9 +314,7 @@ const translate = async (req, res) => {
 };
 const getTemplatesVersions = async (req, res) => {
   try {
-    const tempalateVersion = await TemplateVersion.find({
-      templateId: req.params.id,
-    });
+    const tempalateVersion = await TemplateVersion.find();
     return res.status(200).json(tempalateVersion);
   } catch (error) {
     console.log(error);
@@ -325,11 +323,11 @@ const getTemplatesVersions = async (req, res) => {
 };
 const postTemplateVersion = async (req, res) => {
   try {
-    // TemplateVersion.deleteMany({}, (err) => {
-    //   if (err) {
-    //     res.status(500).json(error);
-    //   }
-    // });
+    TemplateVersion.deleteMany({}, (err) => {
+      if (err) {
+        res.status(500).json(error);
+      }
+    });
     const request = req;
     const templatesVersions = request;
     delete templatesVersions.template;

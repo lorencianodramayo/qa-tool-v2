@@ -27,7 +27,7 @@ export const getTemplatesVersions = createAsyncThunk(
   'templateVersion/getTemplatesVersions',
   async (id, thunkAPI) => {
     try {
-      return await templateVersionService.getTemplatesVersions(id)
+      return await templateVersionService.getTemplatesVersions()
     } catch (error) {
       const message = error
       return thunkAPI.rejectWithValue(message)
