@@ -24,8 +24,8 @@ router.post("/addLanguage", async (req, res) => {
 router.post("/translate/v2", async (req, res) => {
   await adLibSmartlyIo.translate(req.body, res);
 });
-router.get("/getTemplatesVersions", async (req, res) => {
-  await adLibSmartlyIo.getTemplatesVersions(req.body, res);
+router.get("/getTemplatesVersions/:id", async (req, res) => {
+  await adLibSmartlyIo.getTemplatesVersions(req, res);
 });
 router.post("/postTemplateVersion", async (req, res) => {
   await adLibSmartlyIo.postTemplateVersion(req.body, res);

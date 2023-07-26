@@ -314,7 +314,9 @@ const translate = async (req, res) => {
 };
 const getTemplatesVersions = async (req, res) => {
   try {
-    const tempalateVersion = await TemplateVersion.find();
+    const tempalateVersion = await TemplateVersion.find({
+      templateId: req.params.id,
+    });
     return res.status(200).json(tempalateVersion);
   } catch (error) {
     console.log(error);
