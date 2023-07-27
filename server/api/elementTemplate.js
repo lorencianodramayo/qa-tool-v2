@@ -10,6 +10,15 @@ const multer = Multer({
     fileSize: 10000 * 1024 * 1024,
   },
 });
+router.get("/element/languages", async (req, res) => {
+  try {
+    const languages = await Language.find();
+    return res.status(200).json(languages);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(error);
+  }
+});
 router.post("/element/upload/xlsx", multer.single("file"), async (req, res) => {
   try {
     const fileContent = req.file.buffer;
