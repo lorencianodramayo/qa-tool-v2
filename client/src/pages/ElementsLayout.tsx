@@ -35,6 +35,7 @@ import {Upload} from 'antd'
 import {useLocation, useNavigate} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
 import {getLanguages, postLanguage} from '../features/language/languageSlice'
+import {postUploadXlsx} from '../features/Element/elementSlice'
 import apiService from '../api/apiService'
 import {postTemplateVersionImageVideoCloud} from '../features/Done/doneSlice'
 import {useAppDispatch, useAppSelector} from '../store'
@@ -419,10 +420,12 @@ export default function ElementsLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useDispatch()
+  const dispatchv2 = useAppDispatch()
   const [currentStep, _] = useState<number>(1)
   const {languages, isLanguagesSuccess, addLanguage, isAddLanguageSuccess} = useSelector(
     (state: any) => state.language,
   )
+  const {} = useSelector((state: any) => state.element)
   const [loading, setLoading] = useState<boolean>(false)
   const [languagesList, setLanguagesList] = useState<any>([])
   const templateName: string = location.state.templateName
@@ -2503,6 +2506,16 @@ export default function ElementsLayout() {
     form.resetFields()
     setShowLanguageModal(!showLanguageModal)
   }
+  const checkFileType = (file: File) => {
+    const isXlsx = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    if (!isXlsx) {
+      api['error']({
+        message: `${file.name} is not .xlsx file You can only upload .xlsx files!`,
+        description: `${file.name} is not .xlsx file You can only upload .xlsx files!`,
+      })
+    }
+    return false
+  }
   return (
     <LayoutStyled>
       {contextHolder}
@@ -2528,13 +2541,32 @@ export default function ElementsLayout() {
           />
         </Space>
       )}
-      <FloatButtonStyled
-        style={{pointerEvents: loading ? 'none' : 'unset'}}
-        type="primary"
-        icon={<TranslationOutlined />}
-        tooltip={<Space>Languages</Space>}
-        onClick={() => setShowLanguageModal(!showLanguageModal)}
-      />
+      <FloatButton.Group shape="square">
+        <FloatButtonStyled
+          style={{pointerEvents: loading ? 'none' : 'unset'}}
+          type="primary"
+          icon={<TranslationOutlined />}
+          tooltip={<Space>Languages</Space>}
+          onClick={() => setShowLanguageModal(!showLanguageModal)}
+        />
+        <Upload
+          beforeUpload={checkFileType}
+          showUploadList={false}
+          accept=".xlsx"
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            console.log('asdf', e.file)
+            const formData = new FormData()
+            formData.append('file', e.file)
+            dispatch(postUploadXlsx(formData))
+          }}
+        >
+          <FloatButtonStyled
+            type="primary"
+            icon={<UploadOutlined />}
+            tooltip={<Space>Upload Languages</Space>}
+          />
+        </Upload>
+      </FloatButton.Group>
       <Space
         style={{
           justifyContent: 'center',

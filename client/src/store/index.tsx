@@ -4,7 +4,7 @@ import languageReducer from '../features/language/languageSlice'
 import templateVersionReducer from '../features/templateVersion/templateVersionSlice'
 import sharedVariantReducer from '../features/SharedVariant/sharedVariantSlice'
 import configureReducer from '../features/Configure/configureSlice'
-import elementReducer from '../features/Configure/configureSlice'
+import elementReducer from '../features/Element/elementSlice'
 import doneReducer from '../features/Done/doneSlice'
 // v3
 import uploadReducer from '../features/v3/Upload/uploadSlice'

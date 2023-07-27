@@ -1,11 +1,16 @@
-import apiService from "../../api/apiService";
+import apiService from '../../api/apiService'
 const getLanguages = async (payload) => {
   const response = await apiService.get('/languages', {
-    params: payload
-  });
-  return response.data;
-};
+    params: payload,
+  })
+  return response.data
+}
+const postUploadXlsx = async (payload) => {
+  const response = await apiService.post('/element/upload/xlsx', payload)
+  return response.data
+}
 const elementService = {
   getLanguages,
-};
-export default elementService;
+  postUploadXlsx,
+}
+export default elementService
