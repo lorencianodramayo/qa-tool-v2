@@ -34,11 +34,14 @@ import type {UploadProps} from 'antd'
 import {Upload} from 'antd'
 import {useLocation, useNavigate} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
-import {getLanguages, postLanguage} from '../features/language/languageSlice'
-import {postUploadXlsx} from '../features/Element/elementSlice'
+import {postLanguage} from '../features/language/languageSlice'
+import {getLanguages, postUploadXlsx} from '../features/Element/elementSlice'
 import apiService from '../api/apiService'
-import {postTemplateVersionImageVideoCloud} from '../features/Done/doneSlice'
-import {useAppDispatch, useAppSelector} from '../store'
+// import {postTemplateVersionImageVideoCloud} from '../features/Done/doneSlice'
+import {
+  useAppDispatch,
+  // useAppSelector
+} from '../store'
 const {Panel} = Collapse
 type LayoutType = Parameters<typeof Form>[0]['layout']
 const LayoutStyled = styled(Layout)`
@@ -289,78 +292,78 @@ const UploadStyledv2 = styled(Upload)`
     color: #339af0;
   }
 `
-const UploadStyled = styled(Upload)`
-  margin-right: 51.6px;
-  &.ant-upload-wrapper {
-    position: relative;
-  }
-  &.ant-upload-wrapper .ant-upload-list {
-    position: absolute;
-    left: -470px;
-    top: 0;
-    overflow-x: auto;
-    display: flex;
-    width: 482px;
-    ::-webkit-scrollbar {
-      display: none;
-    }
-  }
-  &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item-container {
-    width: 96px;
-    margin-right: 4px;
-    transition: unset;
-  }
-  &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item .ant-upload-list-item-name {
-    font-size: 12px;
-    font-weight: 400;
-    color: #339af0;
-    padding-left: 4px;
-  }
-  &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item .ant-upload-icon {
-    display: none;
-  }
-  &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item {
-    background: #fff;
-    margin-top: 0;
-    border: 1px solid #339af0;
-    border-radius: 5px;
-    height: 24px;
-  }
-  &.ant-upload-wrapper
-    .ant-upload-list
-    .ant-upload-list-item
-    .ant-upload-list-item-actions
-    .ant-upload-list-item-action {
-    opacity: unset;
-    background: #fff;
-    border-width: 0;
-    height: 0;
-    width: 100%;
-    border-radius: 5px;
-    padding-right: 4.6px !important;
-    padding-top: 0 !important;
-    padding-bottom: 0px !important;
-  }
-  Button {
-    font-size: 12px;
-    font-weight: 400;
-    border-color: #d9d9d9;
-    width: 84.8px;
-    height: 24px;
-    padding: 2.2px 13.5px !important;
-    :hover,
-    :active {
-      border-color: #d9d9d9 !important;
-      color: #000 !important;
-    }
-    :focus-visible,
-    :focus {
-      outline: unset !important;
-      outline-offset: unset !important;
-      transition: unset !important;
-    }
-  }
-`
+// const UploadStyled = styled(Upload)`
+//   margin-right: 51.6px;
+//   &.ant-upload-wrapper {
+//     position: relative;
+//   }
+//   &.ant-upload-wrapper .ant-upload-list {
+//     position: absolute;
+//     left: -470px;
+//     top: 0;
+//     overflow-x: auto;
+//     display: flex;
+//     width: 482px;
+//     ::-webkit-scrollbar {
+//       display: none;
+//     }
+//   }
+//   &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item-container {
+//     width: 96px;
+//     margin-right: 4px;
+//     transition: unset;
+//   }
+//   &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item .ant-upload-list-item-name {
+//     font-size: 12px;
+//     font-weight: 400;
+//     color: #339af0;
+//     padding-left: 4px;
+//   }
+//   &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item .ant-upload-icon {
+//     display: none;
+//   }
+//   &.ant-upload-wrapper .ant-upload-list .ant-upload-list-item {
+//     background: #fff;
+//     margin-top: 0;
+//     border: 1px solid #339af0;
+//     border-radius: 5px;
+//     height: 24px;
+//   }
+//   &.ant-upload-wrapper
+//     .ant-upload-list
+//     .ant-upload-list-item
+//     .ant-upload-list-item-actions
+//     .ant-upload-list-item-action {
+//     opacity: unset;
+//     background: #fff;
+//     border-width: 0;
+//     height: 0;
+//     width: 100%;
+//     border-radius: 5px;
+//     padding-right: 4.6px !important;
+//     padding-top: 0 !important;
+//     padding-bottom: 0px !important;
+//   }
+//   Button {
+//     font-size: 12px;
+//     font-weight: 400;
+//     border-color: #d9d9d9;
+//     width: 84.8px;
+//     height: 24px;
+//     padding: 2.2px 13.5px !important;
+//     :hover,
+//     :active {
+//       border-color: #d9d9d9 !important;
+//       color: #000 !important;
+//     }
+//     :focus-visible,
+//     :focus {
+//       outline: unset !important;
+//       outline-offset: unset !important;
+//       transition: unset !important;
+//     }
+//   }
+// `
 const FormItemStyled = styled(Form.Item)`
   .ant-input:hover,
   .ant-input:focus,
@@ -422,10 +425,10 @@ export default function ElementsLayout() {
   const dispatch = useDispatch()
   const dispatchv2 = useAppDispatch()
   const [currentStep, _] = useState<number>(1)
-  const {languages, isLanguagesSuccess, addLanguage, isAddLanguageSuccess} = useSelector(
-    (state: any) => state.language,
+  // const {addLanguage, isAddLanguageSuccess} = useSelector((state: any) => state.language)
+  const {languages, isLanguagesSuccess, isUploadXlsxSuccess} = useSelector(
+    (state: any) => state.element,
   )
-  const {} = useSelector((state: any) => state.element)
   const [loading, setLoading] = useState<boolean>(false)
   const [languagesList, setLanguagesList] = useState<any>([])
   const templateName: string = location.state.templateName
@@ -445,31 +448,34 @@ export default function ElementsLayout() {
   useEffect(() => {
     if (!isLanguagesSuccess) dispatch(getLanguages())
     let lang = []
-    languages?.map((language) => {
+    languages?.map((language: {language: string; content: string}) => {
       lang.push({
         value: language.language,
         label: `${titleCase(language.language)}`,
       })
     })
     setLanguagesList(lang)
-  }, [dispatch, languages, isLanguagesSuccess])
+  }, [languages, isLanguagesSuccess])
+  // useEffect(() => {
+  //   if (isAddLanguageSuccess) {
+  //     dispatch(getLanguages())
+  //     api['success']({
+  //       message: `${addLanguage.language.language
+  //         .charAt(0)
+  //         .toUpperCase()}${addLanguage.language.language
+  //         ?.slice(1)
+  //         .toLowerCase()} Language Added Sucessfully`,
+  //       description: `${addLanguage.language.language
+  //         .charAt(0)
+  //         .toUpperCase()}${addLanguage.language.language
+  //         ?.slice(1)
+  //         .toLowerCase()} Language Added Sucessfully!`,
+  //     })
+  //   }
+  // }, [addLanguage, isAddLanguageSuccess])
   useEffect(() => {
-    if (isAddLanguageSuccess) {
-      dispatch(getLanguages())
-      api['success']({
-        message: `${addLanguage.language.language
-          .charAt(0)
-          .toUpperCase()}${addLanguage.language.language
-          ?.slice(1)
-          .toLowerCase()} Language Added Sucessfully`,
-        description: `${addLanguage.language.language
-          .charAt(0)
-          .toUpperCase()}${addLanguage.language.language
-          ?.slice(1)
-          .toLowerCase()} Language Added Sucessfully!`,
-      })
-    }
-  }, [dispatch, addLanguage, isAddLanguageSuccess])
+    if (!isLanguagesSuccess) dispatch(getLanguages())
+  }, [isUploadXlsxSuccess])
   useEffect(() => {
     let replicate = []
     replicate.push({
@@ -2541,20 +2547,19 @@ export default function ElementsLayout() {
           />
         </Space>
       )}
-      <FloatButton.Group shape="square">
-        <FloatButtonStyled
+      <FloatButton.Group shape="circle">
+        {/* <FloatButtonStyled
           style={{pointerEvents: loading ? 'none' : 'unset'}}
           type="primary"
           icon={<TranslationOutlined />}
           tooltip={<Space>Languages</Space>}
           onClick={() => setShowLanguageModal(!showLanguageModal)}
-        />
+        /> */}
         <Upload
           beforeUpload={checkFileType}
           showUploadList={false}
           accept=".xlsx"
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            console.log('asdf', e.file)
             const formData = new FormData()
             formData.append('file', e.file)
             dispatch(postUploadXlsx(formData))
