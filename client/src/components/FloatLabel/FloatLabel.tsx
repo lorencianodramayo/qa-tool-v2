@@ -1,9 +1,9 @@
-import styled from "styled-components";
-import { useEffect, useState } from "react";
-import { Input, Select, Space } from "antd";
-import { CheckCircleFilled } from "@ant-design/icons";
+import styled from 'styled-components'
+import {useEffect, useState} from 'react'
+import {Input, Select, Space} from 'antd'
+import {CheckCircleFilled} from '@ant-design/icons'
 
-import "./FloatLabel.css";
+import './FloatLabel.css'
 
 const InputComponent = styled(Input)`
   &.ant-input-compact-item {
@@ -18,7 +18,7 @@ const InputComponent = styled(Input)`
     box-shadow: unset;
     border-color: #d9d9d9;
   }
-`;
+`
 
 const InputTextAreaComponent = styled(Input.TextArea)`
   &.ant-input-compact-item {
@@ -33,7 +33,7 @@ const InputTextAreaComponent = styled(Input.TextArea)`
     box-shadow: unset;
     border-color: #d9d9d9;
   }
-`;
+`
 
 const SelectComponent = styled(Select)`
   &.ant-select-single:not(.ant-select-customize-input) .ant-select-selector {
@@ -51,14 +51,14 @@ const SelectComponent = styled(Select)`
     border-color: #d9d9d9;
     box-shadow: unset;
   }
-  &.ant-select-disabled:where(
-      .css-dev-only-do-not-override-ixblex
-    ).ant-select:not(.ant-select-customize-input)
+  &.ant-select-disabled:where(.css-dev-only-do-not-override-ixblex).ant-select:not(
+      .ant-select-customize-input
+    )
     .ant-select-selector {
     color: unset;
     background: unset;
   }
-`;
+`
 
 // const SelectOptionComponent = styled(Select.Option)`
 //   &.ant-select-item
@@ -74,7 +74,7 @@ const SelectComponent = styled(Select)`
 // `;
 
 const FloatLabel = (props) => {
-  const [focus, setFocus] = useState(false);
+  const [focus, setFocus] = useState(false)
   let {
     style,
     label,
@@ -89,20 +89,16 @@ const FloatLabel = (props) => {
     showArrow,
     textArea,
     rows,
-  } = props;
-  if (!placeholder) placeholder = label;
-  const isOccupied = focus || (value && value.length !== 0);
-  const labelClass = isOccupied ? "label as-label" : "label as-placeholder";
-  const requiredMark = required ? <span className="text-danger">*</span> : null;
+  } = props
+  if (!placeholder) placeholder = label
+  const isOccupied = focus || (value && value.length !== 0)
+  const labelClass = isOccupied ? 'label as-label' : 'label as-placeholder'
+  const requiredMark = required ? <span className="text-danger">*</span> : null
   return (
-    <div
-      className="float-label"
-      onBlur={() => setFocus(false)}
-      onFocus={() => setFocus(true)}
-    >
+    <div className="float-label" onBlur={() => setFocus(false)} onFocus={() => setFocus(true)}>
       {input && (
         <InputComponent
-          style={{ width: style.width }}
+          style={{width: style.width}}
           onChange={props.onChange}
           type={type}
           defaultValue={value}
@@ -110,7 +106,7 @@ const FloatLabel = (props) => {
       )}
       {textArea && (
         <InputTextAreaComponent
-          style={{ width: style.width }}
+          style={{width: style.width}}
           onChange={props.onChange}
           defaultValue={value}
           rows={rows}
@@ -119,14 +115,13 @@ const FloatLabel = (props) => {
       {select && (
         <SelectComponent
           showSearch
-          style={{ width: style.width, marginRight: style.marginRight }}
+          style={{width: style.width, marginRight: style.marginRight}}
           value={value}
-          // defaultValue={value}
           onChange={props.onChange}
           showArrow={showArrow ? true : false}
           disabled={!showArrow ? true : false}
           filterOption={(input, option) =>
-            (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
           }
         >
           {selectOptions.map((item, key) => (
@@ -142,21 +137,18 @@ const FloatLabel = (props) => {
                 <Space
                   wrap
                   style={{
-                    width: "100%",
-                    justifyContent: "space-between",
+                    width: '100%',
+                    justifyContent: 'space-between',
                   }}
                 >
                   <Space.Compact block>{item.label}</Space.Compact>
-                  {
-                    item.approved 
-                      ?
-                        <Space.Compact block>
-                          <CheckCircleFilled
-                            style={{ fontSize: "18px", color: "#66bb6a" }}
-                          />
-                        </Space.Compact> 
-                      : <></>
-                  }
+                  {item.approved ? (
+                    <Space.Compact block>
+                      <CheckCircleFilled style={{fontSize: '18px', color: '#66bb6a'}} />
+                    </Space.Compact>
+                  ) : (
+                    <></>
+                  )}
                 </Space>
               )}
             </Select.Option>
@@ -167,7 +159,7 @@ const FloatLabel = (props) => {
         {isOccupied ? label : placeholder} {requiredMark}
       </label>
     </div>
-  );
-};
+  )
+}
 
-export default FloatLabel;
+export default FloatLabel

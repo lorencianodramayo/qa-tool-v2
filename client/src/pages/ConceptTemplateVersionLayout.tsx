@@ -139,6 +139,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   useEffect(() => {
     if (isTemplatesVersionsSuccess) {
       const interval = setInterval(() => {
+        console.log('asdf', templatesVersions)
         let treeDataVariantNames: TreeNodeData[] = []
         let treeDataVariantSizes: TreeNodeData[] = []
         templatesVersions.map((templateVersion) => {

@@ -445,14 +445,24 @@ const ConfigureLayout = () => {
     })
     return getSelectOptionVersions
   }
-  const getSelectOptionVersionDefaultValue = (template) => {
-    let defaultVersionValue = []
+  const getSelectOptionVersionDefaultValue = (template: any) => {
+    let defaultVersion: any = template.templateVersion.filter(
+      (tmplVersion: any) => tmplVersion.id === template._id,
+    )[0]
+    let lastItem: boolean =
+      template.templateVersion.indexOf(defaultVersion) === template.templateVersion.length - 1
+    let defaultVersionValue: any = []
     defaultVersionValue.push({
-      value: template.templateVersion[template.templateVersion.length - 1].id,
+      value:
+        template.templateVersion.filter((tmplVersion: any) => tmplVersion.id === template._id)[0]
+          .versionName === null
+          ? defaultVersion.version + 1 + `${lastItem ? ' (latest)' : ''}`
+          : defaultVersion.versionName + `${lastItem ? ' (latest)' : ''}`,
       label:
-        template.templateVersion[template.templateVersion.length - 1].versionName === null
-          ? template.templateVersion[template.templateVersion.length - 1].version + 1
-          : template.templateVersion[template.templateVersion.length - 1].versionName,
+        template.templateVersion.filter((tmplVersion: any) => tmplVersion.id === template._id)[0]
+          .versionName === null
+          ? defaultVersion.version + 1 + `${lastItem ? ' (latest)' : ''}`
+          : defaultVersion.versionName + `${lastItem ? ' (latest)' : ''}`,
     })
     return defaultVersionValue
   }
@@ -651,8 +661,8 @@ const ConfigureLayout = () => {
         )}
         <div>
           {templates
-            .filter((tmpl) => selectedValues.includes(tmpl.size + ' ' + tmpl.name))
-            .map((template, index) => {
+            .filter((tmpl: any) => selectedValues.includes(tmpl.size + ' ' + tmpl.name))
+            .map((template: any, index: number) => {
               return (
                 <div key={index} style={{marginBottom: 16.1}}>
                   <Space>
@@ -679,7 +689,7 @@ const ConfigureLayout = () => {
                         label="Version"
                         placeholder="Version"
                         name="version"
-                        onChange={(value) => {
+                        onChange={(value: string) => {
                           setMultipleVersionSelection(!multipleVersionSelection)
                           setFetching(!fetching)
                           setMultipleTemplateSelection(template._id)
@@ -715,89 +725,6 @@ const ConfigureLayout = () => {
               )
             })}
         </div>
-        {/* {treeData.length > 1 && (
-          <Space wrap style={{marginBottom: 25.6}}>
-            <Space.Compact block>
-              <FloatLabel
-                style={{
-                  width: 250,
-                }}
-                label="Template"
-                placeholder="Template"
-                name="template"
-                onChange={(value) => {
-                  setSingleTemplateSelection(value)
-                  let selectOptionVersions = []
-                  let defaultVersionValue: any = []
-                  templates
-                    .filter((template) => template._id === value)
-                    .map((template) => {
-                      template.templateVersion.map((templateVersion, index) => {
-                        selectOptionVersions.push({
-                          value: templateVersion.id,
-                          label:
-                            index + 1 === template.templateVersion.length
-                              ? 'Version ' + (index + 1) + ' (latest)'
-                              : 'Version ' + (index + 1),
-                          approved: templateVersion.approvals !== undefined ? true : false,
-                        })
-                        if (template.version === index)
-                          defaultVersionValue.push({
-                            value: templateVersion.id,
-                            label:
-                              index + 1 === template.templateVersion.length
-                                ? 'Version ' + (index + 1) + ' (latest)'
-                                : 'Version ' + (index + 1),
-                          })
-                      })
-                      setSelectOptionVersions(selectOptionVersions)
-                      setDefaultVersionValue(defaultVersionValue)
-                    })
-                }}
-                value={singleTemplateSelection}
-                select={true}
-                selectOptions={getSelectOptionTemplates()}
-                showArrow={true}
-                templateItem={true}
-              />
-            </Space.Compact>
-            <Space.Compact block>
-              <FloatLabel
-                style={{
-                  width: 158.3,
-                }}
-                label="Version"
-                placeholder="Version"
-                name="version"
-                onChange={(value) => {
-                  setSingleVersionSelection(!singleVersionSelection)
-                  setFetching(!fetching)
-                  let payload = {
-                    platform: platform,
-                    templateId: value,
-                    partnerId: partnerId,
-                  }
-                  dispatch(getTemplateSelectedVersion(payload))
-                }}
-                value={defaultVersionValue}
-                select={true}
-                selectOptions={selectOptionVersions}
-                showArrow={true}
-              />
-            </Space.Compact>
-            {singleTemplateSelection !== '' && (
-              <Space wrap>
-                <ButtonAddDeleteStyled
-                  type="primary"
-                  shape="circle"
-                  onClick={addSelectTemplatesVersions}
-                >
-                  +
-                </ButtonAddDeleteStyled>
-              </Space>
-            )}
-          </Space>
-        )} */}
         {selectedValues.length > 0 && (
           <Space.Compact block>
             <ButtonGenerateStyled
