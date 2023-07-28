@@ -96,25 +96,11 @@ const SpanStyled = styled.span`
   transition: left 0.25s ease-out;
 `
 interface IFrameCardProps {
+  isMobile: boolean
   variant: any
   i: number
-  //
-  //   variant: any;
-  //   i: number;
-  //   templates: any;
-  //   templateId: string;
-  //   variants: any;
 }
-const IFrameCard = ({
-  variant,
-  i,
-}: //
-// variant,
-// i,
-// templates,
-// templateId,
-// variants,
-IFrameCardProps) => {
+const IFrameCard = ({isMobile, variant, i}: IFrameCardProps) => {
   const iframeRefs = useRef<HTMLIFrameElement[]>([])
   const [refreshes, setRefreshes] = useState<{refresh: number}[]>([])
   const [switches, setSwitches] = useState<{option: string}[]>([])
@@ -170,15 +156,10 @@ IFrameCardProps) => {
     <CardStyled
       extra={
         <div>
-          <div
-            style={{
-              display: 'inline-block',
-              float: 'left',
-            }}
-          >
-            <SpaceCompactCardHeaderTitleStyled
-              block
+          {isMobile ? (
+            <div
               style={{
+                textAlign: 'center',
                 fontWeight: '500',
                 fontSize: 13,
                 height: '20.42px',
@@ -187,8 +168,28 @@ IFrameCardProps) => {
               }}
             >
               {variant.variants[i].variantName}
-            </SpaceCompactCardHeaderTitleStyled>
-          </div>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'inline-block',
+                float: 'left',
+              }}
+            >
+              <SpaceCompactCardHeaderTitleStyled
+                block
+                style={{
+                  fontWeight: '500',
+                  fontSize: 13,
+                  height: '20.42px',
+                  overflow: 'auto',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {variant.variants[i].variantName}
+              </SpaceCompactCardHeaderTitleStyled>
+            </div>
+          )}
           <div
             style={{
               display: 'inline-block',
