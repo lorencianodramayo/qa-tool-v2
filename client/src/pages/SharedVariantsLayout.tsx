@@ -261,20 +261,27 @@ const SharedVariantsLayout: React.FC = () => {
                 </div>
                 <Col>
                   {variant.variants.map((_: any, i: any) => (
-                    <Col style={{marginBottom: 8}}>
-                      <Space.Compact
-                        block
-                        style={{
-                          background: 'linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)',
-                          borderTopLeftRadius: '5px',
-                          borderTopRightRadius: '5px',
-                          height: '5px',
-                        }}
-                      >
-                        {' '}
-                      </Space.Compact>
-                      <IFrameCard isMobile={isMobile} variant={variant} i={i} />
-                    </Col>
+                    <Row
+                      justify="center"
+                      style={{
+                        marginBottom: 10,
+                      }}
+                    >
+                      <Col>
+                        <Space.Compact
+                          block
+                          style={{
+                            background: 'linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)',
+                            borderTopLeftRadius: '5px',
+                            borderTopRightRadius: '5px',
+                            height: '5px',
+                          }}
+                        >
+                          {' '}
+                        </Space.Compact>
+                        <IFrameCard variant={variant} i={i} />
+                      </Col>
+                    </Row>
                   ))}
                 </Col>
               </>
@@ -328,7 +335,7 @@ const SharedVariantsLayout: React.FC = () => {
                       >
                         {' '}
                       </Space.Compact>
-                      <IFrameCard isMobile={isMobile} variant={variant} i={i} />
+                      <IFrameCard variant={variant} i={i} />
                     </Col>
                   ))}
                 </RowStyled>

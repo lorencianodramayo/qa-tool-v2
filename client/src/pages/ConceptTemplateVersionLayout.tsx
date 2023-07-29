@@ -2,21 +2,9 @@
 import React, {useEffect, useRef, useState} from 'react'
 import styled from 'styled-components'
 import {
-  PlaySquareOutlined,
-  PlusOutlined,
-  EditOutlined,
-  MessageOutlined,
   DesktopOutlined,
-  ExpandOutlined,
   MobileOutlined,
   ShareAltOutlined,
-  BarsOutlined,
-  DeleteOutlined,
-  CheckOutlined,
-  CloseOutlined,
-  PlayCircleTwoTone,
-  PauseCircleTwoTone,
-  RedoOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from '@ant-design/icons'
@@ -27,7 +15,6 @@ import {
   Space,
   Spin,
   FloatButton,
-  Select,
   Button,
   Modal,
   TreeSelect,
@@ -46,7 +33,6 @@ import {
 import {useSelector, useDispatch} from 'react-redux'
 import {ThunkDispatch} from 'redux-thunk'
 import IFrameCard from '../components/IFrame/IFrameCard'
-import RowComponent from '../components/Row/Row'
 const {TreeNode} = TreeSelect
 const ContentStyled = styled(Content)`
   &::-webkit-scrollbar {
@@ -107,6 +93,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     addSharedVariant,
   } = useSelector((state: any) => state.templateVersion)
   const [drawerVisible, setDrawerVisible] = useState<boolean>(false)
+  const [mobile, setMobile] = useState<boolean>(false)
   const [isMobile, setIsMobile] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
   const [variants, setVariants] = useState<any>([])
@@ -114,7 +101,6 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [sharedLoading, setSharedLoading] = useState<boolean>(false)
   const sharedLinkRef = useRef<Input>(null)
-  const placement: SelectCommonPlacement = 'bottomLeft'
   const [variantNameTreeData, setVariantNameTreeData] = useState<TreeNodeData[]>([])
   const [searchVariantNameValue, setSearchVariantNameValue] = useState<string>('')
   const [selectAllVariantNames, setSelectAllVariantNames] = useState<boolean>(true)
@@ -123,7 +109,6 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const [searchVariantSizeValue, setSearchVariantSizeValue] = useState<string>('')
   const [selectAllVariantSizes, setSelectAllVariantSizes] = useState<boolean>(true)
   const [selectedVariantSizeValues, setSelectedVariantSizeValues] = useState<string[]>([])
-  //
   const [shareVariantNameTreeData, setShareVariantNameTreeData] = useState<TreeNodeData[]>([])
   const [shareSearchVariantNameValue, setShareSearchVariantNameValue] = useState<string>('')
   const [shareSelectAllVariantNames, setShareSelectAllVariantNames] = useState<boolean>(true)
@@ -132,6 +117,17 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const [shareSearchVariantSizeValue, setShareSearchVariantSizeValue] = useState<string>('')
   const [shareSelectAllVariantSizes, setShareSelectAllVariantSizes] = useState<boolean>(true)
   const [shareSelectedVariantSizeValues, setShareSelectedVariantSizeValues] = useState<string[]>([])
+  useEffect(() => {
+    const checkIfMobile = () => {
+      const isMobileDevice = window.innerWidth <= 768
+      setMobile(isMobileDevice)
+    }
+    checkIfMobile()
+    window.addEventListener('resize', checkIfMobile)
+    return () => {
+      window.removeEventListener('resize', checkIfMobile)
+    }
+  }, [])
   useEffect(() => {
     setLoading(!loading)
     dispatch(getTemplatesVersions())
@@ -253,170 +249,6 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     shareSelectAllVariantNames,
     shareSelectAllVariantSizes,
   ])
-  // useEffect(() => {
-  //   if (templatesVersions !== null) {
-  //     let filterVariants = []
-  //     let i = 0
-  //     templatesVersions.map((templateVersion) => {
-  //       let updatedDefaultValues = {}
-  //       let defaultValues = {}
-  //       let variantDefaultValues = {}
-  //       templateVersion.variants.map((variant) => {
-  //         for (const [key, value] of Object.entries(variant.defaultValues)) {
-  //           imageVideoFiles?.map((imageVideoFile) => {
-  //             if (imageVideoFile.creativeId === templateVersion._id)
-  //               imageVideoFile.files.map((file) => {
-  //                 if (file.dynamicElementKey === key)
-  //                   updatedDefaultValues[
-  //                     key
-  //                   ] = `https://storage.googleapis.com/creative-templates/${imageVideoFile.creativeId}/asset/${file.dynamicElementKey}/${file.fileData.name}`
-  //               })
-  //           })
-  //           defaultValues[key] = value
-  //         }
-  //         variantDefaultValues = Object.assign(defaultValues, updatedDefaultValues)
-  //         if (selectedVariantNameValues.length === 0 && selectedVariantSizeValues.length === 0) {
-  //           const variantSizeExist = filterVariants.some((el) => el.size === variant.size)
-  //           if (!variantSizeExist) {
-  //             filterVariants.push({
-  //               _id: templateVersion._id,
-  //               templateName: variant.templateName,
-  //               size: variant.size,
-  //               variants: [
-  //                 {
-  //                   variantName: variant.variantName,
-  //                   defaultValues:
-  //                     imageVideoFiles !== undefined ? variantDefaultValues : variant.defaultValues,
-  //                 },
-  //               ],
-  //             })
-  //             i++
-  //           } else {
-  //             filterVariants[i - 1].variants = [
-  //               ...filterVariants[i - 1].variants,
-  //               {
-  //                 variantName: variant.variantName,
-  //                 defaultValues:
-  //                   imageVideoFiles !== undefined ? variantDefaultValues : variant.defaultValues,
-  //               },
-  //             ]
-  //           }
-  //         }
-  //         if (selectedVariantNameValues.length > 0 && selectedVariantSizeValues.length > 0) {
-  //           selectedVariantNameValues.map((selectedVariantName) =>
-  //             selectedVariantSizeValues.map((selectedVariantSize) => {
-  //               if (
-  //                 variant.variantName === selectedVariantName &&
-  //                 variant.size === selectedVariantSize
-  //               ) {
-  //                 const variantExist = filterVariants.some((el) => el.size === variant.size)
-  //                 if (!variantExist) {
-  //                   filterVariants.push({
-  //                     _id: templateVersion._id,
-  //                     templateName: variant.templateName,
-  //                     size: variant.size,
-  //                     variants: [
-  //                       {
-  //                         variantName: variant.variantName,
-  //                         defaultValues:
-  //                           imageVideoFiles !== undefined
-  //                             ? variantDefaultValues
-  //                             : variant.defaultValues,
-  //                       },
-  //                     ],
-  //                   })
-  //                   i++
-  //                 } else {
-  //                   filterVariants[i - 1].variants = [
-  //                     ...filterVariants[i - 1].variants,
-  //                     {
-  //                       variantName: variant.variantName,
-  //                       defaultValues:
-  //                         imageVideoFiles !== undefined
-  //                           ? variantDefaultValues
-  //                           : variant.defaultValues,
-  //                     },
-  //                   ]
-  //                 }
-  //               }
-  //             }),
-  //           )
-  //         }
-  //         if (selectedVariantSizeValues.length === 0) {
-  //           selectedVariantNameValues.map((selectedVariantName) => {
-  //             if (variant.variantName === selectedVariantName) {
-  //               const variantSizeExist = filterVariants.some((el) => el.size === variant.size)
-  //               if (!variantSizeExist) {
-  //                 filterVariants.push({
-  //                   _id: templateVersion._id,
-  //                   templateName: variant.templateName,
-  //                   size: variant.size,
-  //                   variants: [
-  //                     {
-  //                       variantName: variant.variantName,
-  //                       defaultValues:
-  //                         imageVideoFiles !== undefined
-  //                           ? variantDefaultValues
-  //                           : variant.defaultValues,
-  //                     },
-  //                   ],
-  //                 })
-  //                 i++
-  //               } else {
-  //                 filterVariants[i - 1].variants = [
-  //                   ...filterVariants[i - 1].variants,
-  //                   {
-  //                     variantName: variant.variantName,
-  //                     defaultValues:
-  //                       imageVideoFiles !== undefined
-  //                         ? variantDefaultValues
-  //                         : variant.defaultValues,
-  //                   },
-  //                 ]
-  //               }
-  //             }
-  //           })
-  //         }
-  //         if (selectedVariantNameValues.length === 0) {
-  //           selectedVariantSizeValues.map((selectedVariantSize) => {
-  //             if (variant.size === selectedVariantSize) {
-  //               const variantSizeExist = filterVariants.some((el) => el.size === variant.size)
-  //               if (!variantSizeExist) {
-  //                 filterVariants.push({
-  //                   _id: templateVersion._id,
-  //                   templateName: variant.templateName,
-  //                   size: variant.size,
-  //                   variants: [
-  //                     {
-  //                       variantName: variant.variantName,
-  //                       defaultValues:
-  //                         imageVideoFiles !== undefined
-  //                           ? variantDefaultValues
-  //                           : variant.defaultValues,
-  //                     },
-  //                   ],
-  //                 })
-  //                 i++
-  //               } else {
-  //                 filterVariants[i - 1].variants = [
-  //                   ...filterVariants[i - 1].variants,
-  //                   {
-  //                     variantName: variant.variantName,
-  //                     defaultValues:
-  //                       imageVideoFiles !== undefined
-  //                         ? variantDefaultValues
-  //                         : variant.defaultValues,
-  //                   },
-  //                 ]
-  //               }
-  //             }
-  //           })
-  //         }
-  //       })
-  //     })
-  //     setVariants(filterVariants)
-  //   }
-  // }, [selectedVariantNameValues, selectedVariantSizeValues])
   useEffect(() => {
     if (isAddSharedVariantSuccess) setSharedLoading(false)
   }, [isAddSharedVariantSuccess])
@@ -633,12 +465,14 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   return (
     <Layout style={{height: 'calc(100vh - 64px)'}}>
       <FloatButton.Group shape="square">
-        <FloatButtonMobileShareStyled
-          type="primary"
-          icon={!isMobile ? <MobileOutlined /> : <DesktopOutlined />}
-          tooltip={<Space>{!isMobile ? 'Mobile' : 'Desktop'} View</Space>}
-          onClick={() => setIsMobile(!isMobile)}
-        />
+        {!mobile && (
+          <FloatButtonMobileShareStyled
+            type="primary"
+            icon={!isMobile ? <MobileOutlined /> : <DesktopOutlined />}
+            tooltip={<Space>{!isMobile ? 'Mobile' : 'Desktop'} View</Space>}
+            onClick={() => setIsMobile(!isMobile)}
+          />
+        )}
         <FloatButtonMobileShareStyled
           type="primary"
           icon={<ShareAltOutlined />}
@@ -694,17 +528,6 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         <Space.Compact block className="variant">
           Variants
         </Space.Compact>
-        {/* <Space>
-          <Checkbox
-            style={{color: '#fff'}}
-            checked={selectAllVariantNames}
-            onChange={
-              selectAllVariantNames ? handleUnselectAllVariantNames : handleSelectAllVariantNames
-            }
-          >
-            {selectAllVariantNames ? 'Unselect All' : 'Select All'}
-          </Checkbox>
-        </Space> */}
         <Space.Compact block>
           <TreeSelectStyled
             style={{
@@ -785,17 +608,6 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         <Space.Compact block className="size">
           Sizes
         </Space.Compact>
-        {/* <Space>
-          <Checkbox
-            style={{color: '#fff'}}
-            checked={selectAllVariantSizes}
-            onChange={
-              selectAllVariantSizes ? handleUnselectAllVariantSizes : handleSelectAllVariantSizes
-            }
-          >
-            {selectAllVariantSizes ? 'Unselect All' : 'Select All'}
-          </Checkbox>
-        </Space> */}
         <Space.Compact block>
           <TreeSelectStyled
             style={{
@@ -953,8 +765,10 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                       </Space.Compact>
                     </Space.Compact>
                     {variant.variants
-                      .filter((variant) => selectedVariantNameValues.includes(variant.variantName))
-                      .map((defaultValue, i) => (
+                      .filter((variant: any) =>
+                        selectedVariantNameValues.includes(variant.variantName),
+                      )
+                      .map((_: any, i: number) => (
                         <Row
                           justify="center"
                           style={{
@@ -998,7 +812,6 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                         {variant.templateName} {variant.size}
                       </Space.Compact>
                     </Space.Compact>
-                    {/* <RowComponent items={variant} containerWidth={1086.27} /> */}
                     <Row
                       gutter={[15.9, 22.4]}
                       style={{

@@ -2,18 +2,7 @@
 import React, {useEffect, useRef, useState} from 'react'
 import styled from 'styled-components'
 import {Card, Space} from 'antd'
-import {
-  EditOutlined,
-  MessageOutlined,
-  DeleteOutlined,
-  CheckOutlined,
-  CloseOutlined,
-  PlayCircleTwoTone,
-  PauseCircleTwoTone,
-  RedoOutlined,
-} from '@ant-design/icons'
-import Timer from '../Timer'
-import {useSelector} from 'react-redux'
+import {PlayCircleTwoTone, PauseCircleTwoTone, RedoOutlined} from '@ant-design/icons'
 const CardStyled = styled(Card)`
   border-radius: unset;
   border: 0;
@@ -58,58 +47,15 @@ const SpaceCompactCardHeaderTitleStyled = styled(Space.Compact)`
     display: none;
   }
 `
-const DivStyled = styled.div`
-  font-family: 'Lucida Grande', Tahoma, Verdana, sans-serif;
-  position: relative;
-  height: 11.1px;
-  width: 26px;
-  background-color: red;
-  border-radius: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-`
-const InputStyled = styled.input`
-  display: none;
-`
-const LabelStyled = styled.label`
-  position: relative;
-  z-index: 2;
-  float: left;
-  line-height: 11.1px;
-  color: transparent;
-  cursor: pointer;
-  width: 8px;
-  ${InputStyled}:checked + & {
-    transition: 0.15s ease-out;
-    color: #fff;
-  }
-`
-const SpanStyled = styled.span`
-  display: block;
-  position: absolute;
-  z-index: 1;
-  left: 0px;
-  width: 8.4px;
-  height: 8.4px;
-  background: #fff;
-  border-radius: 16px;
-  transition: left 0.25s ease-out;
-`
 interface IFrameCardProps {
-  isMobile: boolean
   variant: any
   i: number
 }
-const IFrameCard = ({isMobile, variant, i}: IFrameCardProps) => {
+const IFrameCard = ({variant, i}: IFrameCardProps) => {
   const iframeRefs = useRef<HTMLIFrameElement[]>([])
   const [refreshes, setRefreshes] = useState<{refresh: number}[]>([])
-  const [switches, setSwitches] = useState<{option: string}[]>([])
   const [isPause, setPause] = useState<{isPause: boolean}[]>([])
   const [isDone, setDone] = useState<{isDone: boolean}[]>([])
-  const [timers, setTimers] = useState<{startTime: number; isPlaying: boolean}[]>([])
-  const {isTemplatesVersionsSuccess, templatesVersions} = useSelector(
-    (state: any) => state.templateVersion,
-  )
   useEffect(() => {
     let refreshes = []
     let isPause = []
@@ -156,10 +102,15 @@ const IFrameCard = ({isMobile, variant, i}: IFrameCardProps) => {
     <CardStyled
       extra={
         <div>
-          {isMobile ? (
-            <div
+          <div
+            style={{
+              display: 'inline-block',
+              float: 'left',
+            }}
+          >
+            <SpaceCompactCardHeaderTitleStyled
+              block
               style={{
-                textAlign: 'center',
                 fontWeight: '500',
                 fontSize: 13,
                 height: '20.42px',
@@ -168,28 +119,8 @@ const IFrameCard = ({isMobile, variant, i}: IFrameCardProps) => {
               }}
             >
               {variant.variants[i].variantName}
-            </div>
-          ) : (
-            <div
-              style={{
-                display: 'inline-block',
-                float: 'left',
-              }}
-            >
-              <SpaceCompactCardHeaderTitleStyled
-                block
-                style={{
-                  fontWeight: '500',
-                  fontSize: 13,
-                  height: '20.42px',
-                  overflow: 'auto',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {variant.variants[i].variantName}
-              </SpaceCompactCardHeaderTitleStyled>
-            </div>
-          )}
+            </SpaceCompactCardHeaderTitleStyled>
+          </div>
           <div
             style={{
               display: 'inline-block',
