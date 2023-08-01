@@ -7,7 +7,7 @@ function removeUnwantedContent(inputString) {
   const urlPattern = /https?:\/\/[^\s/$.?#].[^\s]*/g;
   const preservedUrls = inputString.match(urlPattern) || [];
   inputString = inputString.replace(urlPattern, "<URL_PLACEHOLDER>");
-  const commentPattern = /\/\/.*$/gm;
+  const commentPattern = /\/\/.*$|\/\*[\s\S]*?\*\//gm;
   const curlyBracePattern = /[{}]/g;
   const whitespacePattern = /\s{2,}/g;
   const newlinePattern = /\n{2,}/g;
