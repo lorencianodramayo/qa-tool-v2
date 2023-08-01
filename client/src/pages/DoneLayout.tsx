@@ -257,16 +257,20 @@ export default function DoneLayout() {
         })
         setImageVideoFiles(files)
         dispatchv2(postTemplateVersionImageVideoCloud(formData))
-      } else
-        navigate('/qa-tool-v2/concept_template_version', {
-          state: {
-            templateName: templateName,
-            templates: templates,
-            templateDefaultValues: templateDefaultValues,
-            sharedVariants: addSharedVariant,
-          },
-          replace: true,
-        })
+      } else {
+        const interval = setInterval(() => {
+          navigate('/qa-tool-v2/concept_template_version', {
+            state: {
+              templateName: templateName,
+              templates: templates,
+              templateDefaultValues: templateDefaultValues,
+              sharedVariants: addSharedVariant,
+            },
+            replace: true,
+          })
+        }, 1000)
+        return () => clearInterval(interval)
+      }
       // let files = [{
       //   id: '1',
       //   files: [{
@@ -314,17 +318,21 @@ export default function DoneLayout() {
     }
   }, [addTemplateVersion, isAddTemplateVersionCloudSuccess, isAddTemplateVersionCloudError])
   useEffect(() => {
-    if (isTemplateVersionImageVideoCloudSuccess)
-      navigate('/qa-tool-v2/concept_template_version', {
-        state: {
-          templateName: templateName,
-          templates: templates,
-          templateDefaultValues: templateDefaultValues,
-          sharedVariants: addSharedVariant,
-          imageVideoFiles: imageVideoFiles,
-        },
-        replace: true,
-      })
+    if (isTemplateVersionImageVideoCloudSuccess) {
+      const interval = setInterval(() => {
+        navigate('/qa-tool-v2/concept_template_version', {
+          state: {
+            templateName: templateName,
+            templates: templates,
+            templateDefaultValues: templateDefaultValues,
+            sharedVariants: addSharedVariant,
+            imageVideoFiles: imageVideoFiles,
+          },
+          replace: true,
+        })
+      }, 1000)
+      return () => clearInterval(interval)
+    }
     if (isTemplateVersionImageVideoCloudError) {
       api['error']({
         message: 'Done',
@@ -831,230 +839,6 @@ export default function DoneLayout() {
                 </Space>
               )
           }
-          // if (
-          //   dynamicElement.includes('Text') ||
-          //   dynamicElement.includes('Headline') ||
-          //   dynamicElement.includes('legal') ||
-          //   dynamicElement.includes('Subheadline')
-          // )
-          //   return (
-          //     <Space
-          //       key={i}
-          //       direction="horizontal"
-          //       style={{
-          //         display: 'flex',
-          //         justifyContent: 'space-between',
-          //         marginTop: 20.4,
-          //         marginLeft: 15,
-          //       }}
-          //     >
-          //       <Space>
-          //         <Space
-          //           style={{
-          //             fontWeight: 400,
-          //             fontSize: 14,
-          //             width: 132,
-          //             color: '#000',
-          //             justifyContent: 'flex-end',
-          //           }}
-          //         >
-          //           {dynamicElement}:
-          //         </Space>
-          //         <Space>
-          //           <InputStyled
-          //             style={{width: 356}}
-          //             placeholder={`${dynamicElement}`}
-          //             value={template.defaultDynamicFieldsValues[dynamicElement]}
-          //           />
-          //         </Space>
-          //       </Space>
-          //       <Space>
-          //         <Space>
-          //           {buttonCases.map((buttonCase) => (
-          //             <ButtonCaseStyled
-          //               style={
-          //                 template.hasOwnProperty('dynamicElementsStyles')
-          //                   ? template.dynamicElementsStyles.find((obj) => {
-          //                       return obj[dynamicElement]
-          //                     })
-          //                     ? template.dynamicElementsStyles.find((obj) => {
-          //                         return obj[dynamicElement]
-          //                       })[dynamicElement].case === buttonCase.value
-          //                       ? {
-          //                           backgroundColor: '#339af0',
-          //                           color: '#fff',
-          //                           outline: 'unset',
-          //                           borderColor: '#339af0',
-          //                         }
-          //                       : {}
-          //                     : {}
-          //                   : {}
-          //               }
-          //               size="large"
-          //             >
-          //               {buttonCase.label}
-          //             </ButtonCaseStyled>
-          //           ))}
-          //         </Space>
-          //         <InputNumberStyled
-          //           style={{
-          //             marginRight: 51.6,
-          //           }}
-          //           controls={{
-          //             upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-          //             downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-          //           }}
-          //           bordered={true}
-          //           min={0}
-          //           max={textHeadingLegalMaxValue(
-          //             template.defaultDynamicFieldsValues[dynamicElement],
-          //           )}
-          //           value={textHeadingLegalMaxValue(
-          //             template.defaultDynamicFieldsValues[dynamicElement],
-          //           )}
-          //         />
-          //       </Space>
-          //     </Space>
-          //   )
-          // else if (dynamicElement.includes('font') || dynamicElement.includes('Variable'))
-          //   return (
-          //     <Space
-          //       key={i}
-          //       direction="horizontal"
-          //       style={{
-          //         display: 'flex',
-          //         justifyContent: 'space-between',
-          //         marginTop: 20.4,
-          //         marginLeft: 15,
-          //       }}
-          //     >
-          //       <Space>
-          //         <Space
-          //           style={{
-          //             fontWeight: 400,
-          //             fontSize: 14,
-          //             width: 132,
-          //             color: '#000',
-          //             justifyContent: 'flex-end',
-          //           }}
-          //         >
-          //           {dynamicElement}:
-          //         </Space>
-          //       </Space>
-          //       <Space>
-          //         <InputNumberStyled
-          //           style={{
-          //             marginRight: 51.6,
-          //           }}
-          //           controls={{
-          //             upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-          //             downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-          //           }}
-          //           bordered={true}
-          //           value={template.defaultDynamicFieldsValues[dynamicElement]}
-          //         />
-          //       </Space>
-          //     </Space>
-          //   )
-          // else if (dynamicElement.includes('Element') || dynamicElement.includes('Color'))
-          //   return (
-          //     <Space
-          //       key={i}
-          //       direction="horizontal"
-          //       style={{
-          //         display: 'flex',
-          //         justifyContent: 'space-between',
-          //         marginTop: 20.4,
-          //         marginLeft: 15,
-          //       }}
-          //     >
-          //       <Space>
-          //         <Space
-          //           style={{
-          //             fontWeight: 400,
-          //             fontSize: 14,
-          //             width: 132,
-          //             color: '#000',
-          //             justifyContent: 'flex-end',
-          //           }}
-          //         >
-          //           {dynamicElement}:
-          //         </Space>
-          //         <Space
-          //           style={{
-          //             color:
-          //               template.defaultDynamicFieldsValues[dynamicElement] === '#ffffff'
-          //                 ? '#000000'
-          //                 : template.defaultDynamicFieldsValues[dynamicElement],
-          //           }}
-          //         >
-          //           {template.defaultDynamicFieldsValues[dynamicElement]}
-          //         </Space>
-          //       </Space>
-          //     </Space>
-          //   )
-          // else if (
-          //   dynamicElement.includes('logo') ||
-          //   dynamicElement.includes('Background') ||
-          //   dynamicElement.includes('Image') ||
-          //   dynamicElement.includes('Video') ||
-          //   dynamicElement.includes('Overlay') ||
-          //   dynamicElement.includes('packshot')
-          // )
-          //   return (
-          //     <Space
-          //       key={i}
-          //       direction="horizontal"
-          //       style={{
-          //         display: 'flex',
-          //         // justifyContent: "space-between",
-          //         marginTop: 20.4,
-          //         marginLeft: 15,
-          //       }}
-          //     >
-          //       <Space>
-          //         <Space
-          //           style={{
-          //             fontWeight: 400,
-          //             fontSize: 14,
-          //             width: 132,
-          //             color: '#000',
-          //             justifyContent: 'flex-end',
-          //           }}
-          //         >
-          //           {dynamicElement}:
-          //         </Space>
-          //       </Space>
-          //       <Space
-          //         style={{
-          //           display: 'flex',
-          //           alignItems: 'center',
-          //         }}
-          //       >
-          //         {defaultFileList(template, dynamicElement)}
-          //       </Space>
-          //       {/* <Space.Compact block>
-          //         <UploadStyled
-          //           maxCount={1}
-          //           fileList={
-          //             template.hasOwnProperty("dynamicElementsStyles")
-          //               ? template.dynamicElementsStyles.find((obj) => {
-          //                   return obj[dynamicElement];
-          //                 })
-          //                 ? template.dynamicElementsStyles.find((obj) => {
-          //                     return obj[dynamicElement];
-          //                   })[dynamicElement].files
-          //                 : []
-          //               : []
-          //           }
-          //           beforeUpload={() => {
-          //             return false;
-          //           }}
-          //           {...props}
-          //         ></UploadStyled>
-          //       </Space.Compact> */}
-          //     </Space>
-          //   )
         })}
       </Space>
     )
@@ -1067,691 +851,232 @@ export default function DoneLayout() {
     return textHeadingLegal.length
   }
   return (
-    <>
-      <LayoutStyled>
-        {contextHolder}
-        {loading && (
-          <Space
-            style={{
-              zIndex: 10,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-            }}
-          >
-            <Spin
-              size="large"
-              style={{
-                top: '50%',
-                left: '50%',
-                position: 'absolute',
-                transform: 'translate(-50%, -50%)',
-              }}
-            />
-          </Space>
-        )}
-        {/* <Space
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: 42.1,
-            pointerEvents: loading ? 'none' : 'unset',
-          }}
-        >
-          <Space
-            style={{
-              border: '1px solid #1890FF',
-              backgroundColor: '#FFF',
-              height: '27.6px',
-              width: '27.6px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: 6.6,
-              color: '#1890FF',
-            }}
-          >
-            <CheckOutlined />
-          </Space>
-          <Space
-            style={{
-              color: 'rgba(0, 0, 0, 0.85)',
-              fontWeight: 400,
-              fontSize: 16,
-            }}
-          >
-            Configure
-          </Space>
-          <Divider
-            type="horizontal"
-            style={{
-              width: '118.4px',
-              margin: '0 14px 0 14px',
-              minWidth: 'unset',
-              backgroundColor: '#F0F0F0',
-            }}
-          />
-          <Space
-            style={{
-              border: '1px solid #1890FF',
-              backgroundColor: '#FFF',
-              height: '27.6px',
-              width: '27.6px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: 6.6,
-              color: '#1890FF',
-            }}
-          >
-            <CheckOutlined />
-          </Space>
-          <Space
-            style={{
-              color: 'rgba(0, 0, 0, 0.45)',
-              fontWeight: 400,
-              fontSize: 16,
-            }}
-          >
-            Generate
-          </Space>
-          <Divider
-            type="horizontal"
-            style={{
-              width: '118.4px',
-              margin: '0 14px 0 14px',
-              minWidth: 'unset',
-              backgroundColor: '#F0F0F0',
-            }}
-          />
-          <Space
-            style={{
-              backgroundColor: '#1890FF',
-              height: '27.6px',
-              width: '27.6px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FFF',
-              marginRight: 6.6,
-            }}
-          >
-            3
-          </Space>
-          <Space
-            style={{
-              color: 'rgba(0, 0, 0, 0.45)',
-              fontWeight: 400,
-              fontSize: 16,
-            }}
-          >
-            Done
-          </Space>
-        </Space> */}
+    <LayoutStyled>
+      {contextHolder}
+      {loading && (
         <Space
           style={{
-            justifyContent: 'center',
-            marginTop: 42.1,
+            zIndex: 10,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
           }}
         >
-          <StepsStyled
-            current={currentStep}
-            onChange={onChangeSteps}
-            items={[
-              {
-                title: 'Configure',
-              },
-              {
-                title: 'Generate',
-              },
-              {
-                title: 'Done',
-              },
-            ]}
+          <Spin
+            size="large"
+            style={{
+              top: '50%',
+              left: '50%',
+              position: 'absolute',
+              transform: 'translate(-50%, -50%)',
+            }}
           />
         </Space>
+      )}
+      <Space
+        style={{
+          justifyContent: 'center',
+          marginTop: 42.1,
+        }}
+      >
+        <StepsStyled
+          current={currentStep}
+          onChange={onChangeSteps}
+          items={[
+            {
+              title: 'Configure',
+            },
+            {
+              title: 'Generate',
+            },
+            {
+              title: 'Done',
+            },
+          ]}
+        />
+      </Space>
+      <div
+        style={{
+          marginTop: 42.4,
+          color: '#000',
+          marginBottom: 42.4,
+          pointerEvents: loading ? 'none' : 'unset',
+        }}
+      >
+        <DivMenuStyled style={{width: '20%'}}>
+          {templates.map((template, i) => (
+            <DivMenuItemStyled
+              key={i}
+              onClick={() => {
+                setTemplateIndex(i)
+              }}
+              style={templateIndex === i ? activeStyle : {}}
+            >
+              <ProfileFilled style={{marginRight: 4, fontSize: '18px'}} />
+              {template.size} - {template.name}
+            </DivMenuItemStyled>
+          ))}
+        </DivMenuStyled>
         <div
           style={{
-            marginTop: 42.4,
-            color: '#000',
-            marginBottom: 42.4,
-            pointerEvents: loading ? 'none' : 'unset',
+            float: 'left',
+            width: '74%',
+            borderLeft: '1px solid #F0F0F0',
           }}
         >
-          <DivMenuStyled style={{width: '20%'}}>
-            {templates.map((template, i) => (
-              <DivMenuItemStyled
-                key={i}
-                onClick={() => {
-                  setTemplateIndex(i)
-                }}
-                style={templateIndex === i ? activeStyle : {}}
-              >
-                <ProfileFilled style={{marginRight: 4, fontSize: '18px'}} />
-                {template.size} - {template.name}
-              </DivMenuItemStyled>
-            ))}
-          </DivMenuStyled>
-          <div
-            style={{
-              float: 'left',
-              width: '74%',
-              borderLeft: '1px solid #F0F0F0',
-            }}
-          >
-            {renderTemplateConfigurations(templates[templateIndex], possibleValues)}
-          </div>
-          <Space style={{width: '100%', justifyContent: 'right'}}>
-            <Space style={{margin: '10px 20px 0 0'}}>
-              <ButtonDoneStyled
-                type="primary"
-                onClick={() => {
-                  let _templatesVersions = []
-                  let __templates = []
-                  templates.map((template) => {
-                    let templateVariants = []
-                    if (template.hasOwnProperty('possibleValues')) {
-                      // let possibleValues = {
-                      //   trigger: ["4 Frames", "3 Frames", "2 Frames"],
-                      //   trigger2: [
-                      //     "logo",
-                      //     "sublogo",
-                      //     // , "logo logo"
-                      //   ],
-                      //   customValue: [
-                      //     "with logo1",
-                      //     "without logo1",
-                      //     // "with logo1 logo1",
-                      //   ],
-                      //   customValue1: [
-                      //     "with logo2",
-                      //     "without logo2",
-                      //     // "with logo2 logo2",
-                      //   ],
-                      //   customValue2: [
-                      //     "with logo3",
-                      //     "without logo3",
-                      //     // "with logo3 logo3",
-                      //   ],
-                      // };
-                      let possibleValues = template.possibleValues
-                      let possibleValuesKeys = Object.keys(possibleValues)
-                      let possibleValuesRowLength = []
-                      possibleValuesKeys.map((key, i) => {
-                        if (i === 1)
-                          if (i < possibleValuesKeys.length - 1)
-                            possibleValuesRowLength.push(possibleValues[key].length)
-                      })
-                      if (possibleValuesKeys.length > 2) {
-                        let g = 0
-                        while (g < 2) {
-                          let t = 0
-                          while (t < possibleValues[possibleValuesKeys[0]].length) {
-                            let i = 0
-                            while (i < Math.max(...possibleValuesRowLength)) {
-                              let n = 1
-                              let variants_1 =
-                                g === 1
-                                  ? 'MIN-' + possibleValues[possibleValuesKeys[0]][t]
-                                  : 'MAX-' + possibleValues[possibleValuesKeys[0]][t]
-                              while (n < possibleValuesKeys.length - 1) {
-                                if (possibleValues[possibleValuesKeys[n]][i] !== undefined) {
-                                  variants_1 += '-' + possibleValues[possibleValuesKeys[n]][i]
-                                }
-                                n++
-                                if (n === possibleValuesKeys.length - 1) {
-                                  let e = 0
-                                  while (
-                                    e <
-                                    possibleValues[
-                                      possibleValuesKeys[possibleValuesKeys.length - 1]
-                                    ].length
-                                  ) {
-                                    let variants_2 = ''
-                                    variants_2 +=
-                                      variants_1 + '-' + possibleValues[possibleValuesKeys[n]][e]
-                                    if (variants_2.includes('MIN')) {
-                                      // template.defaultDynamicFieldsValues
-                                      let defaultValues = {}
-                                      const defaultValuesTemplate = templateDefaultValues.find(
-                                        (defaultValue: any) =>
-                                          defaultValue.templateId === template._id,
-                                      )
-                                      for (const [key, value] of Object.entries(
-                                        template.defaultDynamicFieldsValues,
-                                      )) {
-                                        delete defaultValuesTemplate.defaultValues[key]
-                                        if (
-                                          key.toLowerCase().includes('text') ||
-                                          key.toLowerCase().includes('headline') ||
-                                          key.toLowerCase().includes('legal') ||
-                                          key.toLowerCase().includes('subheadline')
-                                        ) {
-                                          let html = `${value}`
-                                          let div = document.createElement('div')
-                                          div.innerHTML = html
-                                          let textLegalHeading =
-                                            div.textContent || div.innerText || ''
-                                          defaultValues[key] = textLegalHeading.slice(
-                                            0,
-                                            Math.round(textLegalHeading.length / 2),
-                                          )
-                                        } else if (
-                                          // key.toLowerCase().includes('animation') ||
-                                          // key.toLowerCase().includes('trigger')
-                                          template.possibleValues.hasOwnProperty(key)
+          {renderTemplateConfigurations(templates[templateIndex], possibleValues)}
+        </div>
+        <Space style={{width: '100%', justifyContent: 'right'}}>
+          <Space style={{margin: '10px 20px 0 0'}}>
+            <ButtonDoneStyled
+              type="primary"
+              onClick={() => {
+                let _templatesVersions = []
+                let __templates = []
+                templates.map((template) => {
+                  let templateVariants = []
+                  if (template.hasOwnProperty('possibleValues')) {
+                    let possibleValues = template.possibleValues
+                    let possibleValuesKeys = Object.keys(possibleValues)
+                    let possibleValuesRowLength = []
+                    possibleValuesKeys.map((key, i) => {
+                      if (i === 1)
+                        if (i < possibleValuesKeys.length - 1)
+                          possibleValuesRowLength.push(possibleValues[key].length)
+                    })
+                    if (possibleValuesKeys.length > 2) {
+                      let g = 0
+                      while (g < 2) {
+                        let t = 0
+                        while (t < possibleValues[possibleValuesKeys[0]].length) {
+                          let i = 0
+                          while (i < Math.max(...possibleValuesRowLength)) {
+                            let n = 1
+                            let variants_1 =
+                              g === 1
+                                ? 'MIN-' + possibleValues[possibleValuesKeys[0]][t]
+                                : 'MAX-' + possibleValues[possibleValuesKeys[0]][t]
+                            while (n < possibleValuesKeys.length - 1) {
+                              if (possibleValues[possibleValuesKeys[n]][i] !== undefined) {
+                                variants_1 += '-' + possibleValues[possibleValuesKeys[n]][i]
+                              }
+                              n++
+                              if (n === possibleValuesKeys.length - 1) {
+                                let e = 0
+                                while (
+                                  e <
+                                  possibleValues[possibleValuesKeys[possibleValuesKeys.length - 1]]
+                                    .length
+                                ) {
+                                  let variants_2 = ''
+                                  variants_2 +=
+                                    variants_1 + '-' + possibleValues[possibleValuesKeys[n]][e]
+                                  if (variants_2.includes('MIN')) {
+                                    let defaultValues = {}
+                                    const defaultValuesTemplate = templateDefaultValues.find(
+                                      (defaultValue: any) =>
+                                        defaultValue.templateId === template._id,
+                                    )
+                                    for (const [key, value] of Object.entries(
+                                      template.defaultDynamicFieldsValues,
+                                    )) {
+                                      delete defaultValuesTemplate.defaultValues[key]
+                                      if (
+                                        key.toLowerCase().includes('text') ||
+                                        key.toLowerCase().includes('headline') ||
+                                        key.toLowerCase().includes('legal') ||
+                                        key.toLowerCase().includes('subheadline')
+                                      ) {
+                                        let html = `${value}`
+                                        let div = document.createElement('div')
+                                        div.innerHTML = html
+                                        let textLegalHeading =
+                                          div.textContent || div.innerText || ''
+                                        defaultValues[key] = textLegalHeading.slice(
+                                          0,
+                                          Math.round(textLegalHeading.length / 2),
                                         )
-                                          defaultValues[key] =
-                                            possibleValues[possibleValuesKeys[0]][t]
-                                        else defaultValues[key] = value
-                                      }
-                                      // defaultValues['RMK_1_grey_image_1'] = 'apparelImage1.png'
-                                      // defaultValues['RMK_1_grey_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_1_grey_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_1_transparent_image_1'] =
-                                      //   'footwearlImage1.png'
-                                      // defaultValues['RMK_1_transparent_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_1_transparent_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_2_grey_image_1'] = 'apparelImage1.png'
-                                      // defaultValues['RMK_2_grey_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_2_grey_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_2_transparent_image_1'] =
-                                      //   'footwearlImage1.png'
-                                      // defaultValues['RMK_2_transparent_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_2_transparent_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_3_grey_image_1'] = 'apparelImage1.png'
-                                      // defaultValues['RMK_3_grey_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_3_grey_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_3_transparent_image_1'] =
-                                      //   'footwearlImage1.png'
-                                      // defaultValues['RMK_3_transparent_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_3_transparent_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_4_grey_image_1'] = 'apparelImage1.png'
-                                      // defaultValues['RMK_4_grey_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_4_grey_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_4_transparent_image_1'] =
-                                      //   'footwearlImage1.png'
-                                      // defaultValues['RMK_4_transparent_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_4_transparent_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_background_gradient_a_1'] = '#E7AEF6'
-                                      // defaultValues['RMK_background_gradient_a_2'] = '##FE9F84'
-                                      // defaultValues['RMK_background_gradient_a_3'] = '#E7AEF6'
-                                      // defaultValues['RMK_background_gradient_a_4'] = '#FE9F84'
-                                      // defaultValues['RMK_background_gradient_b_1'] = '#ABB0F6'
-                                      // defaultValues['RMK_background_gradient_b_2'] = '#FF7AE2'
-                                      // defaultValues['RMK_background_gradient_b_3'] = '#ABB0F6'
-                                      // defaultValues['RMK_background_gradient_b_4'] = '#FF7AE2'
-                                      // defaultValues['RMK_condition_1'] = 'Sale'
-                                      // defaultValues['RMK_condition_2'] = 'New'
-                                      // defaultValues['RMK_condition_3'] = 'New'
-                                      // defaultValues['RMK_condition_4'] = 'Sale'
-                                      // defaultValues['RMK_currency'] = '$'
-                                      // defaultValues['RMK_model_type_1'] = 'Apparel'
-                                      // defaultValues['RMK_model_type_2'] = 'Footwear'
-                                      // defaultValues['RMK_model_type_3'] = 'Apparel'
-                                      // defaultValues['RMK_model_type_4'] = 'Footwear'
-                                      // defaultValues['RMK_price_1'] = '999.91'
-                                      // defaultValues['RMK_price_2'] = '999.92'
-                                      // defaultValues['RMK_price_3'] = '999.93'
-                                      // defaultValues['RMK_price_4'] = '999.94'
-                                      // defaultValues['RMK_sale_percentage_1'] = '25%'
-                                      // defaultValues['RMK_sale_percentage_2'] = '25%'
-                                      // defaultValues['RMK_sale_percentage_3'] = '25%'
-                                      // defaultValues['RMK_sale_percentage_4'] = '25%'
-                                      // defaultValues['RMK_sale_price_1'] = '999.99'
-                                      // defaultValues['RMK_sale_price_2'] = '999.99'
-                                      // defaultValues['RMK_sale_price_3'] = '999.99'
-                                      // defaultValues['RMK_sale_price_4'] = '999.99'
-                                      templateVariants.push({
-                                        variantName: variants_2,
-                                        size: template.size,
-                                        templateName: template.name,
-                                        defaultValues: {
-                                          ...defaultValues,
-                                          ...defaultValuesTemplate.defaultValues,
-                                          // trigger: possibleValues[possibleValuesKeys[0]][t],
-                                        },
-                                      })
-                                    } else {
-                                      let defaultValues = {}
-                                      const defaultValuesTemplate = templateDefaultValues.find(
-                                        (defaultValue: any) =>
-                                          defaultValue.templateId === template._id,
-                                      )
-                                      for (const [key, value] of Object.entries(
-                                        template.defaultDynamicFieldsValues,
-                                      )) {
-                                        delete defaultValuesTemplate.defaultValues[key]
-                                        if (
-                                          // key.toLowerCase().includes('animation') ||
-                                          // key.toLowerCase().includes('trigger')
-                                          template.possibleValues.hasOwnProperty(key)
-                                        )
-                                          defaultValues[key] =
-                                            possibleValues[possibleValuesKeys[0]][t]
-                                        else defaultValues[key] = value
-                                      }
-                                      // defaultValues['RMK_1_grey_image_1'] = 'apparelImage1.png'
-                                      // defaultValues['RMK_1_grey_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_1_grey_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_1_transparent_image_1'] =
-                                      //   'footwearlImage1.png'
-                                      // defaultValues['RMK_1_transparent_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_1_transparent_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_2_grey_image_1'] = 'apparelImage1.png'
-                                      // defaultValues['RMK_2_grey_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_2_grey_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_2_transparent_image_1'] =
-                                      //   'footwearlImage1.png'
-                                      // defaultValues['RMK_2_transparent_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_2_transparent_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_3_grey_image_1'] = 'apparelImage1.png'
-                                      // defaultValues['RMK_3_grey_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_3_grey_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_3_transparent_image_1'] =
-                                      //   'footwearlImage1.png'
-                                      // defaultValues['RMK_3_transparent_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_3_transparent_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_4_grey_image_1'] = 'apparelImage1.png'
-                                      // defaultValues['RMK_4_grey_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_4_grey_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_4_transparent_image_1'] =
-                                      //   'footwearlImage1.png'
-                                      // defaultValues['RMK_4_transparent_image_2'] = 'blank.png'
-                                      // defaultValues['RMK_4_transparent_image_3'] = 'blank.png'
-                                      // defaultValues['RMK_background_gradient_a_1'] = '#E7AEF6'
-                                      // defaultValues['RMK_background_gradient_a_2'] = '##FE9F84'
-                                      // defaultValues['RMK_background_gradient_a_3'] = '#E7AEF6'
-                                      // defaultValues['RMK_background_gradient_a_4'] = '#FE9F84'
-                                      // defaultValues['RMK_background_gradient_b_1'] = '#ABB0F6'
-                                      // defaultValues['RMK_background_gradient_b_2'] = '#FF7AE2'
-                                      // defaultValues['RMK_background_gradient_b_3'] = '#ABB0F6'
-                                      // defaultValues['RMK_background_gradient_b_4'] = '#FF7AE2'
-                                      // defaultValues['RMK_condition_1'] = 'Sale'
-                                      // defaultValues['RMK_condition_2'] = 'New'
-                                      // defaultValues['RMK_condition_3'] = 'New'
-                                      // defaultValues['RMK_condition_4'] = 'Sale'
-                                      // defaultValues['RMK_currency'] = '$'
-                                      // defaultValues['RMK_model_type_1'] = 'Apparel'
-                                      // defaultValues['RMK_model_type_2'] = 'Footwear'
-                                      // defaultValues['RMK_model_type_3'] = 'Apparel'
-                                      // defaultValues['RMK_model_type_4'] = 'Footwear'
-                                      // defaultValues['RMK_price_1'] = '999.91'
-                                      // defaultValues['RMK_price_2'] = '999.92'
-                                      // defaultValues['RMK_price_3'] = '999.93'
-                                      // defaultValues['RMK_price_4'] = '999.94'
-                                      // defaultValues['RMK_sale_percentage_1'] = '25%'
-                                      // defaultValues['RMK_sale_percentage_2'] = '25%'
-                                      // defaultValues['RMK_sale_percentage_3'] = '25%'
-                                      // defaultValues['RMK_sale_percentage_4'] = '25%'
-                                      // defaultValues['RMK_sale_price_1'] = '999.99'
-                                      // defaultValues['RMK_sale_price_2'] = '999.99'
-                                      // defaultValues['RMK_sale_price_3'] = '999.99'
-                                      // defaultValues['RMK_sale_price_4'] = '999.99'
-                                      templateVariants.push({
-                                        variantName: variants_2,
-                                        size: template.size,
-                                        templateName: template.name,
-                                        defaultValues: {
-                                          ...defaultValues,
-                                          ...defaultValuesTemplate.defaultValues,
-                                          // ...template.defaultDynamicFieldsValues,
-                                          // trigger: possibleValues[possibleValuesKeys[0]][t],
-                                        },
-                                      })
+                                      } else if (template.possibleValues.hasOwnProperty(key))
+                                        defaultValues[key] =
+                                          possibleValues[possibleValuesKeys[0]][t]
+                                      else defaultValues[key] = value
                                     }
-                                    e++
+                                    templateVariants.push({
+                                      variantName: variants_2,
+                                      size: template.size,
+                                      templateName: template.name,
+                                      defaultValues: {
+                                        ...defaultValues,
+                                        ...defaultValuesTemplate.defaultValues,
+                                      },
+                                    })
+                                  } else {
+                                    let defaultValues = {}
+                                    const defaultValuesTemplate = templateDefaultValues.find(
+                                      (defaultValue: any) =>
+                                        defaultValue.templateId === template._id,
+                                    )
+                                    for (const [key, value] of Object.entries(
+                                      template.defaultDynamicFieldsValues,
+                                    )) {
+                                      delete defaultValuesTemplate.defaultValues[key]
+                                      if (template.possibleValues.hasOwnProperty(key))
+                                        defaultValues[key] =
+                                          possibleValues[possibleValuesKeys[0]][t]
+                                      else defaultValues[key] = value
+                                    }
+                                    templateVariants.push({
+                                      variantName: variants_2,
+                                      size: template.size,
+                                      templateName: template.name,
+                                      defaultValues: {
+                                        ...defaultValues,
+                                        ...defaultValuesTemplate.defaultValues,
+                                      },
+                                    })
                                   }
+                                  e++
                                 }
                               }
-                              i++
                             }
-                            t++
+                            i++
                           }
-                          g++
+                          t++
                         }
-                      } else {
-                        let g = 0
-                        while (g < 2) {
-                          let t = 0
-                          while (
-                            t <
-                            possibleValues[
-                              possibleValuesKeys[
-                                possibleValuesKeys.length - possibleValuesKeys.length
-                              ]
-                            ].length
-                          ) {
-                            let variants_1 = ''
-                            if (possibleValuesKeys.length > 1) {
-                              let i = 0
-                              variants_1 +=
-                                g === 1
-                                  ? 'MIN-' + possibleValues[possibleValuesKeys[0]][t]
-                                  : 'MAX-' + possibleValues[possibleValuesKeys[0]][t]
-                              while (
-                                i <
-                                possibleValues[possibleValuesKeys[possibleValuesKeys.length - 1]]
-                                  .length
-                              ) {
-                                let variants_2 = ''
-                                variants_2 +=
-                                  variants_1 +
-                                  '-' +
-                                  possibleValues[possibleValuesKeys[possibleValuesKeys.length - 1]][
-                                    i
-                                  ]
-                                // templateVariants.push({
-                                //   variantName: variants_2,
-                                //   size: template.size,
-                                //   templateName: template.name,
-                                //   defaultValues: {
-                                //     ...template.defaultDynamicFieldsValues,
-                                //     trigger:
-                                //       possibleValues[possibleValuesKeys[0]][t],
-                                //   },
-                                // });
-                                if (variants_2.includes('MIN')) {
-                                  // template.defaultDynamicFieldsValues
-                                  let defaultValues = {}
-                                  const defaultValuesTemplate = templateDefaultValues.find(
-                                    (defaultValue: any) => defaultValue.templateId === template._id,
-                                  )
-                                  for (const [key, value] of Object.entries(
-                                    template.defaultDynamicFieldsValues,
-                                  )) {
-                                    delete defaultValuesTemplate.defaultValues[key]
-                                    if (
-                                      key.toLowerCase().includes('text') ||
-                                      key.toLowerCase().includes('headline') ||
-                                      key.toLowerCase().includes('legal') ||
-                                      key.toLowerCase().includes('subheadline')
-                                    ) {
-                                      let html = `${value}`
-                                      let div = document.createElement('div')
-                                      div.innerHTML = html
-                                      let textLegalHeading = div.textContent || div.innerText || ''
-                                      defaultValues[key] = textLegalHeading.slice(
-                                        0,
-                                        Math.round(textLegalHeading.length / 2),
-                                      )
-                                    } else if (
-                                      // key.toLowerCase().includes('animation') ||
-                                      // key.toLowerCase().includes('trigger')
-                                      template.possibleValues.hasOwnProperty(key)
-                                    )
-                                      defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
-                                    else defaultValues[key] = value
-                                  }
-                                  // defaultValues['RMK_1_grey_image_1'] = 'apparelImage1.png'
-                                  // defaultValues['RMK_1_grey_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_1_grey_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_1_transparent_image_1'] = 'footwearlImage1.png'
-                                  // defaultValues['RMK_1_transparent_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_1_transparent_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_2_grey_image_1'] = 'apparelImage1.png'
-                                  // defaultValues['RMK_2_grey_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_2_grey_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_2_transparent_image_1'] = 'footwearlImage1.png'
-                                  // defaultValues['RMK_2_transparent_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_2_transparent_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_3_grey_image_1'] = 'apparelImage1.png'
-                                  // defaultValues['RMK_3_grey_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_3_grey_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_3_transparent_image_1'] = 'footwearlImage1.png'
-                                  // defaultValues['RMK_3_transparent_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_3_transparent_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_4_grey_image_1'] = 'apparelImage1.png'
-                                  // defaultValues['RMK_4_grey_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_4_grey_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_4_transparent_image_1'] = 'footwearlImage1.png'
-                                  // defaultValues['RMK_4_transparent_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_4_transparent_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_background_gradient_a_1'] = '#E7AEF6'
-                                  // defaultValues['RMK_background_gradient_a_2'] = '##FE9F84'
-                                  // defaultValues['RMK_background_gradient_a_3'] = '#E7AEF6'
-                                  // defaultValues['RMK_background_gradient_a_4'] = '#FE9F84'
-                                  // defaultValues['RMK_background_gradient_b_1'] = '#ABB0F6'
-                                  // defaultValues['RMK_background_gradient_b_2'] = '#FF7AE2'
-                                  // defaultValues['RMK_background_gradient_b_3'] = '#ABB0F6'
-                                  // defaultValues['RMK_background_gradient_b_4'] = '#FF7AE2'
-                                  // defaultValues['RMK_condition_1'] = 'Sale'
-                                  // defaultValues['RMK_condition_2'] = 'New'
-                                  // defaultValues['RMK_condition_3'] = 'New'
-                                  // defaultValues['RMK_condition_4'] = 'Sale'
-                                  // defaultValues['RMK_currency'] = '$'
-                                  // defaultValues['RMK_model_type_1'] = 'Apparel'
-                                  // defaultValues['RMK_model_type_2'] = 'Footwear'
-                                  // defaultValues['RMK_model_type_3'] = 'Apparel'
-                                  // defaultValues['RMK_model_type_4'] = 'Footwear'
-                                  // defaultValues['RMK_price_1'] = '999.91'
-                                  // defaultValues['RMK_price_2'] = '999.92'
-                                  // defaultValues['RMK_price_3'] = '999.93'
-                                  // defaultValues['RMK_price_4'] = '999.94'
-                                  // defaultValues['RMK_sale_percentage_1'] = '25%'
-                                  // defaultValues['RMK_sale_percentage_2'] = '25%'
-                                  // defaultValues['RMK_sale_percentage_3'] = '25%'
-                                  // defaultValues['RMK_sale_percentage_4'] = '25%'
-                                  // defaultValues['RMK_sale_price_1'] = '999.99'
-                                  // defaultValues['RMK_sale_price_2'] = '999.99'
-                                  // defaultValues['RMK_sale_price_3'] = '999.99'
-                                  // defaultValues['RMK_sale_price_4'] = '999.99'
-                                  templateVariants.push({
-                                    variantName: variants_2,
-                                    size: template.size,
-                                    templateName: template.name,
-                                    defaultValues: {
-                                      ...defaultValues,
-                                      ...defaultValuesTemplate.defaultValues,
-                                      // trigger: possibleValues[possibleValuesKeys[0]][t],
-                                    },
-                                  })
-                                } else {
-                                  let defaultValues = {}
-                                  const defaultValuesTemplate = templateDefaultValues.find(
-                                    (defaultValue: any) => defaultValue.templateId === template._id,
-                                  )
-                                  for (const [key, value] of Object.entries(
-                                    template.defaultDynamicFieldsValues,
-                                  )) {
-                                    delete defaultValuesTemplate.defaultValues[key]
-                                    if (
-                                      // key.toLowerCase().includes('animation') ||
-                                      // key.toLowerCase().includes('trigger')
-                                      template.possibleValues.hasOwnProperty(key)
-                                    )
-                                      defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
-                                    else defaultValues[key] = value
-                                  }
-                                  // defaultValues['RMK_1_grey_image_1'] = 'apparelImage1.png'
-                                  // defaultValues['RMK_1_grey_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_1_grey_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_1_transparent_image_1'] = 'footwearlImage1.png'
-                                  // defaultValues['RMK_1_transparent_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_1_transparent_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_2_grey_image_1'] = 'apparelImage1.png'
-                                  // defaultValues['RMK_2_grey_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_2_grey_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_2_transparent_image_1'] = 'footwearlImage1.png'
-                                  // defaultValues['RMK_2_transparent_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_2_transparent_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_3_grey_image_1'] = 'apparelImage1.png'
-                                  // defaultValues['RMK_3_grey_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_3_grey_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_3_transparent_image_1'] = 'footwearlImage1.png'
-                                  // defaultValues['RMK_3_transparent_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_3_transparent_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_4_grey_image_1'] = 'apparelImage1.png'
-                                  // defaultValues['RMK_4_grey_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_4_grey_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_4_transparent_image_1'] = 'footwearlImage1.png'
-                                  // defaultValues['RMK_4_transparent_image_2'] = 'blank.png'
-                                  // defaultValues['RMK_4_transparent_image_3'] = 'blank.png'
-                                  // defaultValues['RMK_background_gradient_a_1'] = '#E7AEF6'
-                                  // defaultValues['RMK_background_gradient_a_2'] = '##FE9F84'
-                                  // defaultValues['RMK_background_gradient_a_3'] = '#E7AEF6'
-                                  // defaultValues['RMK_background_gradient_a_4'] = '#FE9F84'
-                                  // defaultValues['RMK_background_gradient_b_1'] = '#ABB0F6'
-                                  // defaultValues['RMK_background_gradient_b_2'] = '#FF7AE2'
-                                  // defaultValues['RMK_background_gradient_b_3'] = '#ABB0F6'
-                                  // defaultValues['RMK_background_gradient_b_4'] = '#FF7AE2'
-                                  // defaultValues['RMK_condition_1'] = 'Sale'
-                                  // defaultValues['RMK_condition_2'] = 'New'
-                                  // defaultValues['RMK_condition_3'] = 'New'
-                                  // defaultValues['RMK_condition_4'] = 'Sale'
-                                  // defaultValues['RMK_currency'] = '$'
-                                  // defaultValues['RMK_model_type_1'] = 'Apparel'
-                                  // defaultValues['RMK_model_type_2'] = 'Footwear'
-                                  // defaultValues['RMK_model_type_3'] = 'Apparel'
-                                  // defaultValues['RMK_model_type_4'] = 'Footwear'
-                                  // defaultValues['RMK_price_1'] = '999.91'
-                                  // defaultValues['RMK_price_2'] = '999.92'
-                                  // defaultValues['RMK_price_3'] = '999.93'
-                                  // defaultValues['RMK_price_4'] = '999.94'
-                                  // defaultValues['RMK_sale_percentage_1'] = '25%'
-                                  // defaultValues['RMK_sale_percentage_2'] = '25%'
-                                  // defaultValues['RMK_sale_percentage_3'] = '25%'
-                                  // defaultValues['RMK_sale_percentage_4'] = '25%'
-                                  // defaultValues['RMK_sale_price_1'] = '999.99'
-                                  // defaultValues['RMK_sale_price_2'] = '999.99'
-                                  // defaultValues['RMK_sale_price_3'] = '999.99'
-                                  // defaultValues['RMK_sale_price_4'] = '999.99'
-                                  templateVariants.push({
-                                    variantName: variants_2,
-                                    size: template.size,
-                                    templateName: template.name,
-                                    defaultValues: {
-                                      ...defaultValues,
-                                      ...defaultValuesTemplate.defaultValues,
-                                      // ...template.defaultDynamicFieldsValues,
-                                      // trigger: possibleValues[possibleValuesKeys[0]][t],
-                                    },
-                                  })
-                                }
-                                i++
-                              }
-                            } else {
-                              variants_1 +=
-                                g === 1
-                                  ? 'MIN-' + possibleValues[possibleValuesKeys[0]][t]
-                                  : 'MAX-' + possibleValues[possibleValuesKeys[0]][t]
-                              // templateVariants.push({
-                              //   variantName: variants_1,
-                              //   size: template.size,
-                              //   templateName: template.name,
-                              //   defaultValues: {
-                              //     ...template.defaultDynamicFieldsValues,
-                              //     trigger:
-                              //       possibleValues[possibleValuesKeys[0]][t],
-                              //   },
-                              // });
-                              if (variants_1.includes('MIN')) {
+                        g++
+                      }
+                    } else {
+                      let g = 0
+                      while (g < 2) {
+                        let t = 0
+                        while (
+                          t <
+                          possibleValues[
+                            possibleValuesKeys[
+                              possibleValuesKeys.length - possibleValuesKeys.length
+                            ]
+                          ].length
+                        ) {
+                          let variants_1 = ''
+                          if (possibleValuesKeys.length > 1) {
+                            let i = 0
+                            variants_1 +=
+                              g === 1
+                                ? 'MIN-' + possibleValues[possibleValuesKeys[0]][t]
+                                : 'MAX-' + possibleValues[possibleValuesKeys[0]][t]
+                            while (
+                              i <
+                              possibleValues[possibleValuesKeys[possibleValuesKeys.length - 1]]
+                                .length
+                            ) {
+                              let variants_2 = ''
+                              variants_2 +=
+                                variants_1 +
+                                '-' +
+                                possibleValues[possibleValuesKeys[possibleValuesKeys.length - 1]][i]
+                              if (variants_2.includes('MIN')) {
                                 let defaultValues = {}
                                 const defaultValuesTemplate = templateDefaultValues.find(
                                   (defaultValue: any) => defaultValue.templateId === template._id,
@@ -1774,75 +1099,17 @@ export default function DoneLayout() {
                                       0,
                                       Math.round(textLegalHeading.length / 2),
                                     )
-                                  } else if (
-                                    // key.toLowerCase().includes('animation') ||
-                                    // key.toLowerCase().includes('trigger')
-                                    template.possibleValues.hasOwnProperty(key)
-                                  )
+                                  } else if (template.possibleValues.hasOwnProperty(key))
                                     defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
                                   else defaultValues[key] = value
                                 }
-                                // defaultValues['RMK_1_grey_image_1'] = 'apparelImage1.png'
-                                // defaultValues['RMK_1_grey_image_2'] = 'blank.png'
-                                // defaultValues['RMK_1_grey_image_3'] = 'blank.png'
-                                // defaultValues['RMK_1_transparent_image_1'] = 'footwearlImage1.png'
-                                // defaultValues['RMK_1_transparent_image_2'] = 'blank.png'
-                                // defaultValues['RMK_1_transparent_image_3'] = 'blank.png'
-                                // defaultValues['RMK_2_grey_image_1'] = 'apparelImage1.png'
-                                // defaultValues['RMK_2_grey_image_2'] = 'blank.png'
-                                // defaultValues['RMK_2_grey_image_3'] = 'blank.png'
-                                // defaultValues['RMK_2_transparent_image_1'] = 'footwearlImage1.png'
-                                // defaultValues['RMK_2_transparent_image_2'] = 'blank.png'
-                                // defaultValues['RMK_2_transparent_image_3'] = 'blank.png'
-                                // defaultValues['RMK_3_grey_image_1'] = 'apparelImage1.png'
-                                // defaultValues['RMK_3_grey_image_2'] = 'blank.png'
-                                // defaultValues['RMK_3_grey_image_3'] = 'blank.png'
-                                // defaultValues['RMK_3_transparent_image_1'] = 'footwearlImage1.png'
-                                // defaultValues['RMK_3_transparent_image_2'] = 'blank.png'
-                                // defaultValues['RMK_3_transparent_image_3'] = 'blank.png'
-                                // defaultValues['RMK_4_grey_image_1'] = 'apparelImage1.png'
-                                // defaultValues['RMK_4_grey_image_2'] = 'blank.png'
-                                // defaultValues['RMK_4_grey_image_3'] = 'blank.png'
-                                // defaultValues['RMK_4_transparent_image_1'] = 'footwearlImage1.png'
-                                // defaultValues['RMK_4_transparent_image_2'] = 'blank.png'
-                                // defaultValues['RMK_4_transparent_image_3'] = 'blank.png'
-                                // defaultValues['RMK_background_gradient_a_1'] = '#E7AEF6'
-                                // defaultValues['RMK_background_gradient_a_2'] = '##FE9F84'
-                                // defaultValues['RMK_background_gradient_a_3'] = '#E7AEF6'
-                                // defaultValues['RMK_background_gradient_a_4'] = '#FE9F84'
-                                // defaultValues['RMK_background_gradient_b_1'] = '#ABB0F6'
-                                // defaultValues['RMK_background_gradient_b_2'] = '#FF7AE2'
-                                // defaultValues['RMK_background_gradient_b_3'] = '#ABB0F6'
-                                // defaultValues['RMK_background_gradient_b_4'] = '#FF7AE2'
-                                // defaultValues['RMK_condition_1'] = 'Sale'
-                                // defaultValues['RMK_condition_2'] = 'New'
-                                // defaultValues['RMK_condition_3'] = 'New'
-                                // defaultValues['RMK_condition_4'] = 'Sale'
-                                // defaultValues['RMK_currency'] = '$'
-                                // defaultValues['RMK_model_type_1'] = 'Apparel'
-                                // defaultValues['RMK_model_type_2'] = 'Footwear'
-                                // defaultValues['RMK_model_type_3'] = 'Apparel'
-                                // defaultValues['RMK_model_type_4'] = 'Footwear'
-                                // defaultValues['RMK_price_1'] = '999.91'
-                                // defaultValues['RMK_price_2'] = '999.92'
-                                // defaultValues['RMK_price_3'] = '999.93'
-                                // defaultValues['RMK_price_4'] = '999.94'
-                                // defaultValues['RMK_sale_percentage_1'] = '25%'
-                                // defaultValues['RMK_sale_percentage_2'] = '25%'
-                                // defaultValues['RMK_sale_percentage_3'] = '25%'
-                                // defaultValues['RMK_sale_percentage_4'] = '25%'
-                                // defaultValues['RMK_sale_price_1'] = '999.99'
-                                // defaultValues['RMK_sale_price_2'] = '999.99'
-                                // defaultValues['RMK_sale_price_3'] = '999.99'
-                                // defaultValues['RMK_sale_price_4'] = '999.99'
                                 templateVariants.push({
-                                  variantName: variants_1,
+                                  variantName: variants_2,
                                   size: template.size,
                                   templateName: template.name,
                                   defaultValues: {
                                     ...defaultValues,
                                     ...defaultValuesTemplate.defaultValues,
-                                    // trigger: possibleValues[possibleValuesKeys[0]][t],
                                   },
                                 })
                               } else {
@@ -1854,152 +1121,167 @@ export default function DoneLayout() {
                                   template.defaultDynamicFieldsValues,
                                 )) {
                                   delete defaultValuesTemplate.defaultValues[key]
-                                  if (
-                                    // key.toLowerCase().includes('animation') ||
-                                    // key.toLowerCase().includes('trigger')
-                                    template.possibleValues.hasOwnProperty(key)
-                                  )
+                                  if (template.possibleValues.hasOwnProperty(key))
                                     defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
                                   else defaultValues[key] = value
                                 }
-                                // defaultValues['RMK_1_grey_image_1'] = 'apparelImage1.png'
-                                // defaultValues['RMK_1_grey_image_2'] = 'blank.png'
-                                // defaultValues['RMK_1_grey_image_3'] = 'blank.png'
-                                // defaultValues['RMK_1_transparent_image_1'] = 'footwearlImage1.png'
-                                // defaultValues['RMK_1_transparent_image_2'] = 'blank.png'
-                                // defaultValues['RMK_1_transparent_image_3'] = 'blank.png'
-                                // defaultValues['RMK_2_grey_image_1'] = 'apparelImage1.png'
-                                // defaultValues['RMK_2_grey_image_2'] = 'blank.png'
-                                // defaultValues['RMK_2_grey_image_3'] = 'blank.png'
-                                // defaultValues['RMK_2_transparent_image_1'] = 'footwearlImage1.png'
-                                // defaultValues['RMK_2_transparent_image_2'] = 'blank.png'
-                                // defaultValues['RMK_2_transparent_image_3'] = 'blank.png'
-                                // defaultValues['RMK_3_grey_image_1'] = 'apparelImage1.png'
-                                // defaultValues['RMK_3_grey_image_2'] = 'blank.png'
-                                // defaultValues['RMK_3_grey_image_3'] = 'blank.png'
-                                // defaultValues['RMK_3_transparent_image_1'] = 'footwearlImage1.png'
-                                // defaultValues['RMK_3_transparent_image_2'] = 'blank.png'
-                                // defaultValues['RMK_3_transparent_image_3'] = 'blank.png'
-                                // defaultValues['RMK_4_grey_image_1'] = 'apparelImage1.png'
-                                // defaultValues['RMK_4_grey_image_2'] = 'blank.png'
-                                // defaultValues['RMK_4_grey_image_3'] = 'blank.png'
-                                // defaultValues['RMK_4_transparent_image_1'] = 'footwearlImage1.png'
-                                // defaultValues['RMK_4_transparent_image_2'] = 'blank.png'
-                                // defaultValues['RMK_4_transparent_image_3'] = 'blank.png'
-                                // defaultValues['RMK_background_gradient_a_1'] = '#E7AEF6'
-                                // defaultValues['RMK_background_gradient_a_2'] = '##FE9F84'
-                                // defaultValues['RMK_background_gradient_a_3'] = '#E7AEF6'
-                                // defaultValues['RMK_background_gradient_a_4'] = '#FE9F84'
-                                // defaultValues['RMK_background_gradient_b_1'] = '#ABB0F6'
-                                // defaultValues['RMK_background_gradient_b_2'] = '#FF7AE2'
-                                // defaultValues['RMK_background_gradient_b_3'] = '#ABB0F6'
-                                // defaultValues['RMK_background_gradient_b_4'] = '#FF7AE2'
-                                // defaultValues['RMK_condition_1'] = 'Sale'
-                                // defaultValues['RMK_condition_2'] = 'New'
-                                // defaultValues['RMK_condition_3'] = 'New'
-                                // defaultValues['RMK_condition_4'] = 'Sale'
-                                // defaultValues['RMK_currency'] = '$'
-                                // defaultValues['RMK_model_type_1'] = 'Apparel'
-                                // defaultValues['RMK_model_type_2'] = 'Footwear'
-                                // defaultValues['RMK_model_type_3'] = 'Apparel'
-                                // defaultValues['RMK_model_type_4'] = 'Footwear'
-                                // defaultValues['RMK_price_1'] = '999.91'
-                                // defaultValues['RMK_price_2'] = '999.92'
-                                // defaultValues['RMK_price_3'] = '999.93'
-                                // defaultValues['RMK_price_4'] = '999.94'
-                                // defaultValues['RMK_sale_percentage_1'] = '25%'
-                                // defaultValues['RMK_sale_percentage_2'] = '25%'
-                                // defaultValues['RMK_sale_percentage_3'] = '25%'
-                                // defaultValues['RMK_sale_percentage_4'] = '25%'
-                                // defaultValues['RMK_sale_price_1'] = '999.99'
-                                // defaultValues['RMK_sale_price_2'] = '999.99'
-                                // defaultValues['RMK_sale_price_3'] = '999.99'
-                                // defaultValues['RMK_sale_price_4'] = '999.99'
                                 templateVariants.push({
-                                  variantName: variants_1,
+                                  variantName: variants_2,
                                   size: template.size,
                                   templateName: template.name,
                                   defaultValues: {
                                     ...defaultValues,
                                     ...defaultValuesTemplate.defaultValues,
-                                    // ...template.defaultDynamicFieldsValues,
-                                    // trigger: possibleValues[possibleValuesKeys[0]][t],
                                   },
                                 })
                               }
+                              i++
                             }
-                            t++
-                          }
-                          g++
-                        }
-                      }
-                      let templatesVersions = {
-                        templateId: template._id,
-                        variants: templateVariants,
-                      }
-                      _templatesVersions.push(templatesVersions)
-                      __templates.push(template)
-                    } else {
-                      let variants = ['MAX', 'MIN']
-                      variants.forEach((variant) => {
-                        if (variant === 'MIN') {
-                          let defaultValues = {}
-                          for (const [key, value] of Object.entries(
-                            template.defaultDynamicFieldsValues,
-                          )) {
-                            if (
-                              key.toLowerCase().includes('text') ||
-                              key.toLowerCase().includes('headline') ||
-                              key.toLowerCase().includes('legal') ||
-                              key.toLowerCase().includes('subheadline')
-                            ) {
-                              let html = `${value}`
-                              let div = document.createElement('div')
-                              div.innerHTML = html
-                              let textLegalHeading = div.textContent || div.innerText || ''
-                              defaultValues[key] = textLegalHeading.slice(
-                                0,
-                                Math.round(textLegalHeading.length / 2),
+                          } else {
+                            variants_1 +=
+                              g === 1
+                                ? 'MIN-' + possibleValues[possibleValuesKeys[0]][t]
+                                : 'MAX-' + possibleValues[possibleValuesKeys[0]][t]
+                            if (variants_1.includes('MIN')) {
+                              let defaultValues = {}
+                              const defaultValuesTemplate = templateDefaultValues.find(
+                                (defaultValue: any) => defaultValue.templateId === template._id,
                               )
-                            } else defaultValues[key] = value
+                              for (const [key, value] of Object.entries(
+                                template.defaultDynamicFieldsValues,
+                              )) {
+                                delete defaultValuesTemplate.defaultValues[key]
+                                if (
+                                  key.toLowerCase().includes('text') ||
+                                  key.toLowerCase().includes('headline') ||
+                                  key.toLowerCase().includes('legal') ||
+                                  key.toLowerCase().includes('subheadline')
+                                ) {
+                                  let html = `${value}`
+                                  let div = document.createElement('div')
+                                  div.innerHTML = html
+                                  let textLegalHeading = div.textContent || div.innerText || ''
+                                  defaultValues[key] = textLegalHeading.slice(
+                                    0,
+                                    Math.round(textLegalHeading.length / 2),
+                                  )
+                                } else if (template.possibleValues.hasOwnProperty(key))
+                                  defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
+                                else defaultValues[key] = value
+                              }
+                              templateVariants.push({
+                                variantName: variants_1,
+                                size: template.size,
+                                templateName: template.name,
+                                defaultValues: {
+                                  ...defaultValues,
+                                  ...defaultValuesTemplate.defaultValues,
+                                },
+                              })
+                            } else {
+                              let defaultValues = {}
+                              const defaultValuesTemplate = templateDefaultValues.find(
+                                (defaultValue: any) => defaultValue.templateId === template._id,
+                              )
+                              for (const [key, value] of Object.entries(
+                                template.defaultDynamicFieldsValues,
+                              )) {
+                                delete defaultValuesTemplate.defaultValues[key]
+                                if (template.possibleValues.hasOwnProperty(key))
+                                  defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
+                                else defaultValues[key] = value
+                              }
+                              templateVariants.push({
+                                variantName: variants_1,
+                                size: template.size,
+                                templateName: template.name,
+                                defaultValues: {
+                                  ...defaultValues,
+                                  ...defaultValuesTemplate.defaultValues,
+                                },
+                              })
+                            }
                           }
-                          templateVariants.push({
-                            variantName: variant,
-                            size: template.size,
-                            templateName: template.name,
-                            defaultValues: {
-                              ...defaultValues,
-                            },
-                          })
-                        } else
-                          templateVariants.push({
-                            variantName: variant,
-                            size: template.size,
-                            templateName: template.name,
-                            defaultValues: {
-                              ...template.defaultDynamicFieldsValues,
-                            },
-                          })
-                      })
-                      let templatesVersions = {
-                        templateId: template._id,
-                        variants: templateVariants,
+                          t++
+                        }
+                        g++
                       }
-                      _templatesVersions.push(templatesVersions)
-                      __templates.push(template)
                     }
-                  })
-                  setLoading(!loading)
-                  dispatch(postTemplateVersion(_templatesVersions))
-                  _setTemplates(__templates)
-                }}
-              >
-                Done
-              </ButtonDoneStyled>
-            </Space>
+                    let templatesVersions = {
+                      templateId: template._id,
+                      variants: templateVariants,
+                    }
+                    _templatesVersions.push(templatesVersions)
+                    __templates.push(template)
+                  } else {
+                    let variants = ['MAX', 'MIN']
+                    variants.forEach((variant) => {
+                      if (variant === 'MIN') {
+                        let defaultValues = {}
+                        const defaultValuesTemplate = templateDefaultValues.find(
+                          (defaultValue: any) => defaultValue.templateId === template._id,
+                        )
+                        for (const [key, value] of Object.entries(
+                          template.defaultDynamicFieldsValues,
+                        )) {
+                          delete defaultValuesTemplate.defaultValues[key]
+                          if (
+                            key.toLowerCase().includes('text') ||
+                            key.toLowerCase().includes('headline') ||
+                            key.toLowerCase().includes('legal') ||
+                            key.toLowerCase().includes('subheadline')
+                          ) {
+                            let html = `${value}`
+                            let div = document.createElement('div')
+                            div.innerHTML = html
+                            let textLegalHeading = div.textContent || div.innerText || ''
+                            defaultValues[key] = textLegalHeading.slice(
+                              0,
+                              Math.round(textLegalHeading.length / 2),
+                            )
+                          } else defaultValues[key] = value
+                        }
+                        templateVariants.push({
+                          variantName: variant,
+                          size: template.size,
+                          templateName: template.name,
+                          defaultValues: {
+                            ...defaultValues,
+                            ...defaultValuesTemplate.defaultValues,
+                          },
+                        })
+                      } else {
+                        const defaultValuesTemplate = templateDefaultValues.find(
+                          (defaultValue: any) => defaultValue.templateId === template._id,
+                        )
+                        templateVariants.push({
+                          variantName: variant,
+                          size: template.size,
+                          templateName: template.name,
+                          defaultValues: {
+                            ...defaultValuesTemplate.defaultValues,
+                          },
+                        })
+                      }
+                    })
+                    let templatesVersions = {
+                      templateId: template._id,
+                      variants: templateVariants,
+                    }
+                    _templatesVersions.push(templatesVersions)
+                    __templates.push(template)
+                  }
+                })
+                setLoading(!loading)
+                dispatch(postTemplateVersion(_templatesVersions))
+                _setTemplates(__templates)
+              }}
+            >
+              Done
+            </ButtonDoneStyled>
           </Space>
-        </div>
-      </LayoutStyled>
-    </>
+        </Space>
+      </div>
+    </LayoutStyled>
   )
 }
