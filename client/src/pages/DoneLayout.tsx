@@ -1251,14 +1251,22 @@ export default function DoneLayout() {
                           },
                         })
                       } else {
+                        let defaultValues = {}
                         const defaultValuesTemplate = templateDefaultValues.find(
                           (defaultValue: any) => defaultValue.templateId === template._id,
                         )
+                        for (const [key, value] of Object.entries(
+                          template.defaultDynamicFieldsValues,
+                        )) {
+                          delete defaultValuesTemplate.defaultValues[key]
+                          defaultValues[key] = value
+                        }
                         templateVariants.push({
                           variantName: variant,
                           size: template.size,
                           templateName: template.name,
                           defaultValues: {
+                            ...defaultValues,
                             ...defaultValuesTemplate.defaultValues,
                           },
                         })
