@@ -360,14 +360,14 @@ export default function DoneLayout() {
         replace: true,
       })
   }
-  function isMediaType(value) {
+  function isMediaType(value: string) {
     var imageExtensions = /\.(jpg|jpeg|png|gif|bmp)$/i
     var videoExtensions = /\.(mp4|avi|mov|wmv|flv|mkv)$/i
     if (value.match(imageExtensions) || value.match(videoExtensions)) {
       return true
     }
   }
-  function isColor(value) {
+  function isColor(value: string) {
     function isRGBColor(value) {
       if (value.startsWith('rgb(') && value.endsWith(')')) {
         const values = value.substring(4, value.length - 1).split(',')
@@ -397,7 +397,7 @@ export default function DoneLayout() {
     }
     return isRGBColor(value) || isRGBAColor(value) || isHexColor(value)
   }
-  function isURL(url) {
+  function isURL(url: string) {
     try {
       new URL(url)
       return true
@@ -405,11 +405,18 @@ export default function DoneLayout() {
       return false
     }
   }
-  function isNumberWithPercentage(value) {
+  function isNumberWithPercentage(value: string) {
     const regex = /^-?\d+(\.\d+)?%$/
     return regex.test(value)
   }
-  const renderTemplateConfigurations = (template, possibleValues) => {
+  const textHeadingLegalMaxValue = (content: any) => {
+    let html = content
+    let div = document.createElement('div')
+    div.innerHTML = html
+    let textHeadingLegal = div.textContent || div.innerText || ''
+    return textHeadingLegal.length
+  }
+  const renderTemplateConfigurations = (template: any, possibleValues: any) => {
     return (
       <Space direction="vertical" style={{width: '100%', marginLeft: 18}}>
         <CollapseStyled
@@ -445,7 +452,6 @@ export default function DoneLayout() {
                         fontSize: 14,
                         width: 132,
                         color: '#1890ff',
-                        justifyContent: 'flex-end',
                       }}
                     >
                       {dynamicElement}:
@@ -483,18 +489,35 @@ export default function DoneLayout() {
                         fontSize: 14,
                         width: 132,
                         color: '#1890ff',
-                        justifyContent: 'flex-end',
                       }}
                     >
                       {dynamicElement}:
                     </Space>
                     <Space
-                      style={{
-                        color: template.defaultDynamicFieldsValues[dynamicElement],
-                        border: '2px solid #1890ff',
-                        borderRadius: 5,
-                        padding: 4,
-                      }}
+                      style={
+                        template.defaultDynamicFieldsValues[dynamicElement] ===
+                          'rgb(255, 255, 255)' ||
+                        template.defaultDynamicFieldsValues[dynamicElement] === '#fff' ||
+                        template.defaultDynamicFieldsValues[dynamicElement] === '#ffffff' ||
+                        template.defaultDynamicFieldsValues[dynamicElement] === '#FFFFFF' ||
+                        template.defaultDynamicFieldsValues[dynamicElement] === '#FFF' ||
+                        template.defaultDynamicFieldsValues[dynamicElement].toLowerCase() ===
+                          'white'
+                          ? {
+                              background: '-webkit-linear-gradient(#eee, #333)',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent',
+                              border: '2px solid #1890ff',
+                              borderRadius: 5,
+                              padding: 4,
+                            }
+                          : {
+                              color: template.defaultDynamicFieldsValues[dynamicElement],
+                              border: '2px solid #1890ff',
+                              borderRadius: 5,
+                              padding: 4,
+                            }
+                      }
                     >
                       {template.defaultDynamicFieldsValues[dynamicElement]}
                     </Space>
@@ -520,7 +543,6 @@ export default function DoneLayout() {
                         fontSize: 14,
                         width: 132,
                         color: '#1890ff',
-                        justifyContent: 'flex-end',
                       }}
                     >
                       {dynamicElement}:
@@ -530,6 +552,7 @@ export default function DoneLayout() {
                         border: '2px solid #1890ff',
                         borderRadius: 5,
                         padding: 4,
+                        overflowWrap: 'anywhere',
                       }}
                     >
                       {template.defaultDynamicFieldsValues[dynamicElement]}
@@ -556,7 +579,6 @@ export default function DoneLayout() {
                         fontSize: 14,
                         width: 132,
                         color: '#1890ff',
-                        justifyContent: 'flex-end',
                       }}
                     >
                       {dynamicElement}:
@@ -592,7 +614,6 @@ export default function DoneLayout() {
                         fontSize: 14,
                         width: 132,
                         color: '#1890ff',
-                        justifyContent: 'flex-end',
                       }}
                     >
                       {dynamicElement}:
@@ -628,7 +649,6 @@ export default function DoneLayout() {
                         fontSize: 14,
                         width: 132,
                         color: '#1890ff',
-                        justifyContent: 'flex-end',
                       }}
                     >
                       {dynamicElement}:
@@ -664,7 +684,6 @@ export default function DoneLayout() {
                         fontSize: 14,
                         width: 132,
                         color: '#1890ff',
-                        justifyContent: 'flex-end',
                       }}
                     >
                       {dynamicElement}:
@@ -700,7 +719,6 @@ export default function DoneLayout() {
                         fontSize: 14,
                         width: 132,
                         color: '#1890ff',
-                        justifyContent: 'flex-end',
                       }}
                     >
                       {dynamicElement}:
@@ -740,7 +758,6 @@ export default function DoneLayout() {
                         fontSize: 14,
                         width: 132,
                         color: '#1890ff',
-                        justifyContent: 'flex-end',
                       }}
                     >
                       {dynamicElement}:
@@ -776,7 +793,6 @@ export default function DoneLayout() {
                         fontSize: 14,
                         width: 132,
                         color: '#1890ff',
-                        justifyContent: 'flex-end',
                       }}
                     >
                       {dynamicElement}:
@@ -786,6 +802,7 @@ export default function DoneLayout() {
                         border: '2px solid #1890ff',
                         borderRadius: 5,
                         padding: 4,
+                        overflowWrap: 'anywhere',
                       }}
                     >
                       {template.defaultDynamicFieldsValues[dynamicElement]}
@@ -812,7 +829,6 @@ export default function DoneLayout() {
                         fontSize: 14,
                         width: 132,
                         color: '#1890ff',
-                        justifyContent: 'flex-end',
                       }}
                     >
                       {dynamicElement}:
@@ -842,13 +858,6 @@ export default function DoneLayout() {
         })}
       </Space>
     )
-  }
-  const textHeadingLegalMaxValue = (content) => {
-    let html = content
-    let div = document.createElement('div')
-    div.innerHTML = html
-    let textHeadingLegal = div.textContent || div.innerText || ''
-    return textHeadingLegal.length
   }
   return (
     <LayoutStyled>
