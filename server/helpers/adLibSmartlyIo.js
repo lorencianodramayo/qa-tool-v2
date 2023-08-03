@@ -306,6 +306,7 @@ const translate = async (req, res) => {
     const language = await Language.find({ language: req.language });
     return res.status(200).json({
       translate: language[0].content.substring(0, req.textHeadlineLegal.length),
+      length: language[0].content.length,
     });
   } catch (error) {
     console.log(error);
