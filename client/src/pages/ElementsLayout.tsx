@@ -2,7 +2,6 @@
 import styled from 'styled-components'
 import {
   Button,
-  Divider,
   InputNumber,
   Layout,
   Space,
@@ -18,7 +17,7 @@ import {
 } from 'antd'
 import type {Color, ColorPickerProps} from 'antd/es/color-picker'
 import FloatLabel from '../components/FloatLabel/FloatLabel'
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {
   CaretUpOutlined,
   CaretDownOutlined,
@@ -29,18 +28,11 @@ import {
   LinkOutlined,
   WarningTwoTone,
 } from '@ant-design/icons'
-import type {UploadProps} from 'antd'
 import {Upload} from 'antd'
 import {useLocation, useNavigate} from 'react-router-dom'
 import {useDispatch, useSelector} from 'react-redux'
-import {postLanguage} from '../features/language/languageSlice'
 import {getLanguages, postUploadXlsx} from '../features/Element/elementSlice'
 import apiService from '../api/apiService'
-// import {postTemplateVersionImageVideoCloud} from '../features/Done/doneSlice'
-import {
-  useAppDispatch,
-  // useAppSelector
-} from '../store'
 const {Panel} = Collapse
 type LayoutType = Parameters<typeof Form>[0]['layout']
 const LayoutStyled = styled(Layout)`
@@ -291,40 +283,12 @@ const UploadStyledv2 = styled(Upload)`
     color: #339af0;
   }
 `
-const FormItemStyled = styled(Form.Item)`
-  .ant-input:hover,
-  .ant-input:focus,
-  .ant-input:active {
-    z-index: unset;
-    border-color: #d9d9d9;
-    box-shadow: unset;
-    border-color: #d9d9d9;
-  }
-`
 const FloatButtonStyled = styled(FloatButton)`
   &.ant-float-btn-primary:focus {
     outline: unset;
   }
   &.ant-float-btn-primary .ant-float-btn-body:hover {
     background: #1677ff;
-  }
-`
-const ButtonAddLanguageStyled = styled(Button)`
-  padding: 4px 6.7px;
-  background-color: #1890ff;
-  border-color: transparent;
-  font-weight: 400;
-  font-size: 14px !important;
-  &.ant-btn-primary:not(:disabled):hover {
-    background-color: #1890ff;
-    border-color: #1890ff;
-  }
-  &:focus {
-    outline: none;
-  }
-  &.ant-btn-dangerous:not(:disabled):hover {
-    background-color: #ff4d4f !important;
-    border-color: #ff4d4f !important;
   }
 `
 const ButtonStyled = styled(Button)`
@@ -350,7 +314,6 @@ export default function ElementsLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useDispatch()
-  const dispatchv2 = useAppDispatch()
   const [currentStep, _] = useState<number>(1)
   const {languages, isLanguagesSuccess, isUploadXlsxSuccess} = useSelector(
     (state: any) => state.element,
@@ -372,7 +335,8 @@ export default function ElementsLayout() {
   const [formatHex, setFormatHex] = useState<ColorPickerProps['format']>('hex')
   const [formatRgb, setFormatRgb] = useState<ColorPickerProps['format']>('rgb')
   const [languageLength, setLanguageLength] = useState<number>(0)
-  const [languageSelected, setLanguageSelected] = useState<boolean>(false)
+  const [languageSelected, setLanguageSelected] = useState<boolean>([])
+  const [replicate, setReplicate] = useState<number>(null)
   useEffect(() => {
     if (!isLanguagesSuccess) dispatch(getLanguages())
     let lang = []
@@ -388,16 +352,17 @@ export default function ElementsLayout() {
     if (!isLanguagesSuccess) dispatch(getLanguages())
   }, [isUploadXlsxSuccess])
   useEffect(() => {
+    let languageSelected = []
     let replicate = []
     replicate.push({
       value: 0,
       label: 'All Template',
     })
     templates
-      .filter((template, i) => {
+      .filter((template: any, i: number) => {
         if (i !== templateIndex) return template
       })
-      .map((template) =>
+      .map((template: any) =>
         replicate.push({
           value: template._id,
           label: template.size + ' - ' + template.name,
@@ -424,9 +389,11 @@ export default function ElementsLayout() {
         setPossibleValues((possibleValues) => [...possibleValues, key])
       }
     }
-  }, [templateIndex])
+    templates.map(() => languageSelected.push(true))
+    setLanguageSelected(languageSelected)
+  }, [])
   useEffect(() => {
-    templates[templateIndex]['dynamicElements'].map(async (dynamicElement) => {
+    templates[templateIndex]['dynamicElements'].map(async (dynamicElement: any) => {
       let html = templates[templateIndex]['defaultDynamicFieldsValues'][dynamicElement]
       let div = document.createElement('div')
       div.innerHTML = html
@@ -708,7 +675,7 @@ export default function ElementsLayout() {
     }
     return false
   }
-  const renderTemplateConfigurations = (template, possibleValues) => {
+  const renderTemplateConfigurations = (template: any, possibleValues: any) => {
     return (
       <Space direction="vertical" style={{marginLeft: 4}}>
         <CollapseStyled
@@ -724,7 +691,7 @@ export default function ElementsLayout() {
             ))}
           </Panel>
         </CollapseStyled>
-        {!languageSelected && (
+        {languageSelected[templateIndex] && (
           <Space
             style={{
               display: 'flex',
@@ -743,10 +710,10 @@ export default function ElementsLayout() {
         )}
         <div
           style={{
-            pointerEvents: languageSelected ? 'unset' : 'none',
+            pointerEvents: !languageSelected[templateIndex] ? 'unset' : 'none',
           }}
         >
-          {template.dynamicElements.map((dynamicElement, i) => {
+          {template.dynamicElements.map((dynamicElement: any, i: number) => {
             const buttonCases = [
               {
                 value: 'Capitalize',
@@ -1596,7 +1563,7 @@ export default function ElementsLayout() {
                           ),
                         }}
                         bordered={true}
-                        defaultValue={textHeadingLegalMaxValue(
+                        value={textHeadingLegalMaxValue(
                           template.defaultDynamicFieldsValues[dynamicElement],
                         )}
                         onStep={(value) => {
@@ -1644,7 +1611,6 @@ export default function ElementsLayout() {
                           let defaultDynamicFieldsValues =
                             templates[templateIndex].defaultDynamicFieldsValues
                           const newDefaultDynamicFieldsValues = {
-                            // [dynamicElement]: dataInputString[i],
                             [dynamicElement]: filteredLanguage[0].content.substring(0, value),
                           }
                           defaultDynamicFieldsValues = {
@@ -1748,7 +1714,7 @@ export default function ElementsLayout() {
             label="Language"
             placeholder="Select a language"
             name="language"
-            onChange={async (language) => {
+            onChange={async (language: string) => {
               setLanguage(language)
               let defaultDynamicFieldsValues = templates[templateIndex].defaultDynamicFieldsValues
               for (const [element, value] of Object.entries(
@@ -1762,7 +1728,6 @@ export default function ElementsLayout() {
                 ) {
                   const {translate, length} = await translateTextHeadlineLegal(language, value)
                   setLanguageLength(length)
-                  setLanguageSelected(!languageSelected)
                   const newDefaultDynamicFieldsValues = {
                     [element]: translate,
                   }
@@ -1770,7 +1735,7 @@ export default function ElementsLayout() {
                     ...defaultDynamicFieldsValues,
                     ...newDefaultDynamicFieldsValues,
                   }
-                  const newState = templates.map((template, i) => {
+                  const newState = templates.map((template: any, i: number) => {
                     if (templateIndex === i) {
                       return {
                         ...template,
@@ -1784,6 +1749,9 @@ export default function ElementsLayout() {
                   setTemplates(newState)
                 }
               }
+              let newLangaugesSelected = [...languageSelected]
+              newLangaugesSelected[templateIndex] = false
+              setLanguageSelected(newLangaugesSelected)
               setLoading(false)
             }}
             value={language}
@@ -1793,7 +1761,7 @@ export default function ElementsLayout() {
           />
         </Space>
       </div>
-      {!templates[templateIndex].replicated && (
+      {templates.length > 1 && (
         <div style={{pointerEvents: loading ? 'none' : 'unset'}}>
           <Space style={{float: 'right', marginRight: 44, marginTop: 11}}>
             <FloatLabel
@@ -1806,54 +1774,57 @@ export default function ElementsLayout() {
               select={true}
               selectOptions={replicates}
               showArrow={true}
-              onChange={(value) => {
+              onChange={(value: number) => {
+                setReplicate(value)
                 let defaultDynamicFieldsValues = templates[templateIndex].defaultDynamicFieldsValues
                 let dynamicElementsStyles = templates[templateIndex].dynamicElementsStyles
                 let replicatedTemplates = []
+                let newLangaugesSelected = [...languageSelected]
                 if (value === 0) {
-                  templates.map((template, i) => {
+                  templates.map((template: any, i: number) => {
                     if (i !== templateIndex)
                       if (dynamicElementsStyles !== undefined)
                         replicatedTemplates.push(
                           Object.assign({}, template, {
                             defaultDynamicFieldsValues: defaultDynamicFieldsValues,
                             dynamicElementsStyles: dynamicElementsStyles,
-                            replicated: true,
                           }),
                         )
                       else
                         replicatedTemplates.push(
                           Object.assign({}, template, {
                             defaultDynamicFieldsValues: defaultDynamicFieldsValues,
-                            replicated: true,
                           }),
                         )
                     else replicatedTemplates.push(template)
+                    newLangaugesSelected[i] = false
                   })
+                  setLanguageSelected(newLangaugesSelected)
                   setTemplates(replicatedTemplates)
                 } else {
-                  templates.map((template) => {
-                    if (template._id === value)
+                  templates.map((template: any, i: number) => {
+                    if (template._id === value) {
+                      newLangaugesSelected[i] = false
                       if (dynamicElementsStyles !== undefined)
                         replicatedTemplates.push(
                           Object.assign({}, template, {
                             defaultDynamicFieldsValues: defaultDynamicFieldsValues,
                             dynamicElementsStyles: dynamicElementsStyles,
-                            replicated: true,
                           }),
                         )
                       else
                         replicatedTemplates.push(
                           Object.assign({}, template, {
                             defaultDynamicFieldsValues: defaultDynamicFieldsValues,
-                            replicated: true,
                           }),
                         )
-                    else replicatedTemplates.push(template)
+                    } else replicatedTemplates.push(template)
                   })
+                  setLanguageSelected(newLangaugesSelected)
                   setTemplates(replicatedTemplates)
                 }
               }}
+              value={replicate}
             />
           </Space>
         </div>
@@ -1867,12 +1838,13 @@ export default function ElementsLayout() {
         }}
       >
         <DivMenuStyled style={{width: '20%'}}>
-          {templates.map((template, i) => (
+          {templates.map((template: any, i: number) => (
             <DivMenuItemStyled
               key={i}
               onClick={() => {
                 setTemplateIndex(i)
                 filesRef.current = []
+                setReplicate(null)
               }}
               style={templateIndex === i ? activeStyle : {}}
             >
@@ -1894,7 +1866,7 @@ export default function ElementsLayout() {
           <Space style={{margin: '10px 20px 0 0'}}>
             <ButtonStyled
               style={{
-                pointerEvents: languageSelected ? 'unset' : 'none',
+                pointerEvents: !languageSelected[templateIndex] ? 'unset' : 'none',
               }}
               type="primary"
               onClick={() => {
@@ -1938,6 +1910,9 @@ export default function ElementsLayout() {
         centered
         onOk={() => setShowLanguageModal(!showLanguageModal)}
         onCancel={() => setShowLanguageModal(!showLanguageModal)}
+        maskStyle={{
+          backgroundColor: 'transparent',
+        }}
       >
         <Space
           style={{
@@ -1954,7 +1929,7 @@ export default function ElementsLayout() {
             label="Language"
             placeholder="Select a language"
             name="language"
-            onChange={async (language) => {
+            onChange={async (language: string) => {
               setLanguage(language)
               let defaultDynamicFieldsValues = templates[templateIndex].defaultDynamicFieldsValues
               for (const [element, value] of Object.entries(
@@ -1968,7 +1943,6 @@ export default function ElementsLayout() {
                 ) {
                   const {translate, length} = await translateTextHeadlineLegal(language, value)
                   setLanguageLength(length)
-                  setLanguageSelected(!languageSelected)
                   const newDefaultDynamicFieldsValues = {
                     [element]: translate,
                   }
@@ -1990,6 +1964,9 @@ export default function ElementsLayout() {
                   setTemplates(newState)
                 }
               }
+              let newLangaugesSelected = [...languageSelected]
+              newLangaugesSelected[templateIndex] = false
+              setLanguageSelected(newLangaugesSelected)
               setLoading(false)
               setShowLanguageModal(!showLanguageModal)
             }}
