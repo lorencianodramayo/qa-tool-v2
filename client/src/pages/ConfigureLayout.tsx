@@ -1,18 +1,7 @@
 // @ts-nocheck
 import styled from 'styled-components'
 import {useEffect, useState} from 'react'
-import {
-  Layout,
-  Space,
-  Divider,
-  Spin,
-  notification,
-  Select,
-  Checkbox,
-  TreeSelect,
-  Button,
-  Steps,
-} from 'antd'
+import {Layout, Space, Spin, notification, Checkbox, TreeSelect, Button, Steps} from 'antd'
 import type {CheckboxChangeEvent} from 'antd/es/checkbox'
 import FloatLabel from '../components/FloatLabel/FloatLabel'
 import {DeleteFilled} from '@ant-design/icons'
@@ -23,8 +12,6 @@ import {
 } from '../features/Configure/configureSlice'
 import {useLocation, useNavigate} from 'react-router-dom'
 import {useAppDispatch, useAppSelector} from '../store'
-import Cookies from 'js-cookie'
-import axios from 'axios'
 const {TreeNode} = TreeSelect
 const LayoutStyled = styled(Layout)`
   width: 71.7em;
@@ -121,7 +108,7 @@ const TreeSelectStyled = styled(TreeSelect)`
     border: 1px solid #d9d9d9 !important;
   }
 `
-const ButtonAddDeleteStyled = styled(Button)`
+const ButtonDeleteStyled = styled(Button)`
   padding: 4px 6.7px;
   background-color: #1890ff;
   border-color: transparent;
@@ -163,37 +150,25 @@ const ConfigureLayout = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
-  const [currentStep, setCurrentStep] = useState<number>(0)
+  const [currentStep] = useState<number>(0)
   const [api, contextHolder] = notification.useNotification()
   const [conceptLinkValue, setConceptLinkValue] = useState<string>(
     location.state === null ? '' : location.state.conceptLinkValue,
   )
   const [conceptLinkError, setConceptLinkError] = useState<boolean>(false)
-  // const [templateValue, setTemplateValue] = useState<string>('')
-  // const [defaultVersionValue, setDefaultVersionValue] = useState<string>('')
   const [templateName, setTemplateName] = useState<string>('')
   const [templates, setTemplates] = useState<any>([])
-  const [newVersionTemplate, setNewVersionTemplate] = useState<any>([])
   const [fetching, setFetching] = useState<boolean>(false)
-  // const [selectOptionVersions, setSelectOptionVersions] = useState<any>([])
   const [platform, setPlatform] = useState<string>('')
   const [partnerId, setPartnerId] = useState<string>('')
-  const [singleTemplateSelection, setSingleTemplateSelection] = useState<string>('')
-  const [singleVersionSelection, setSingleVersionSelection] = useState<boolean>(false)
   const [multipleTemplateSelection, setMultipleTemplateSelection] = useState<string>('')
   const [multipleVersionSelection, setMultipleVersionSelection] = useState<boolean>(false)
-  const [_templateDefaultValues, setTemplateDefaultValues] = useState<any>(
-    // location.state.templateDefaultValues,
-    [],
-  )
-  // const [treeValues, setTreeValues] = useState<string[]>([])
-  // const [newTemplates, setNewTemplates] = useState<any>([])
+  const [_templateDefaultValues, setTemplateDefaultValues] = useState<any>([])
   interface TreeNodeData {
     title: string
     value: string
   }
   const [treeData, setTreeData] = useState<TreeNodeData[]>([])
-  // const [authToken, setAuthToken] = useState(null)
   const [searchValue, setSearchValue] = useState<string>('')
   const [selectAll, setSelectAll] = useState<boolean>(
     location.state === null ? false : location.state.selectAll,
@@ -208,21 +183,9 @@ const ConfigureLayout = () => {
     templateSelectedVersion,
     isTemplateSelectedVersionsSuccess,
   } = useAppSelector((state: any) => state.configure)
-  // useEffect(() => {
-  //   const handleCookieChange = () => {
-  //     const authToken = Cookies.get('session')
-  //     setAuthToken(authToken)
-  //   }
-  //   window.addEventListener('load', handleCookieChange)
-  //   window.addEventListener('cookiechange', handleCookieChange)
-  //   return () => {
-  //     window.removeEventListener('load', handleCookieChange)
-  //     window.removeEventListener('cookiechange', handleCookieChange)
-  //   }
-  // }, [])
   useEffect(() => {
     if (location.state !== null) {
-      // setTemplateDefaultValues(location.state.templateDefaultValues)
+      setTemplateDefaultValues(location.state.templateDefaultValues)
       let conceptLink = location.state.conceptLinkValue.split('/')
       let platform = conceptLink[2].split('.')
       setPlatform(platform[0])
@@ -240,33 +203,6 @@ const ConfigureLayout = () => {
   useEffect(() => {
     if (isTemplateSelectedVersionsSuccess) {
       let templateSelectedVersionBody = null
-      templates.map((tmpl: any, i: number) => {
-        if (tmpl._id === singleTemplateSelection) {
-          templateSelectedVersionBody = Object.assign({}, templateSelectedVersion.body, {
-            templateVersion: tmpl.templateVersion,
-          })
-          if (singleVersionSelection) {
-            setNewVersionTemplate(templateSelectedVersionBody)
-            setDefaultVersionValue({
-              value: templateSelectedVersionBody._id,
-              label:
-                templateSelectedVersionBody.version + 1 ===
-                templateSelectedVersionBody.templateVersion.length
-                  ? 'Version ' +
-                    (templateSelectedVersionBody.templateVersion[
-                      templateSelectedVersionBody.version
-                    ].version +
-                      1) +
-                    ' (latest)'
-                  : 'Version ' +
-                    (templateSelectedVersionBody.templateVersion[
-                      templateSelectedVersionBody.version
-                    ].version +
-                      1),
-            })
-          }
-        }
-      })
       if (multipleVersionSelection)
         setTemplates((templates) => {
           return templates.map((template) => {
@@ -281,7 +217,6 @@ const ConfigureLayout = () => {
         })
       setFetching(false)
       setMultipleVersionSelection(false)
-      setSingleVersionSelection(false)
     }
   }, [isTemplateSelectedVersionsSuccess, templateSelectedVersion])
   useEffect(() => {
@@ -303,11 +238,11 @@ const ConfigureLayout = () => {
           message: 'Configure',
           description: 'Please Select or Add Template!',
         })
-      else if (_templateDefaultValues.length === 0)
+      else if (_templateDefaultValues.length === 0 && location.state === null)
         navigate('/qa-tool-v2/configure/generate/elements', {
           state: {
             templateName: templateName,
-            templates: templates.filter((tmpl) =>
+            templates: templates.filter((tmpl: any) =>
               selectedValues.includes(tmpl.size + ' ' + tmpl.name),
             ),
             templateDefaultValues: templateDefaultValues.data,
@@ -319,7 +254,7 @@ const ConfigureLayout = () => {
         })
     }
   }, [templateDefaultValues, isTemplateDefaultValuesLoading, isTemplateDefaultValuesSuccess])
-  const onChangeSteps = (value: number) => {
+  const onChangeSteps = () => {
     if (conceptLinkError || conceptLinkValue === '')
       api.error({
         message: 'Configure',
@@ -359,8 +294,10 @@ const ConfigureLayout = () => {
     setTemplateName(templates.data.body.name)
     if (location.state !== null)
       setTemplates(
-        templates.data.body.templates.map((originalObj) => {
-          const newObj = location.state.templates.find((newObj) => newObj._id === originalObj._id)
+        templates.data.body.templates.map((originalObj: any) => {
+          const newObj = location.state.templates.find(
+            (newObj: any) => newObj._id === originalObj._id,
+          )
           return newObj ? {...originalObj, ...newObj} : originalObj
         }),
       )
@@ -406,29 +343,7 @@ const ConfigureLayout = () => {
   const renderTreeNodes = (data: TreeNodeData[]) => {
     return data.map((node) => <TreeNode title={node.title} value={node.value} key={node.value} />)
   }
-  const getSelectOptionTemplates = () => {
-    let getSelectOptionTemplates = []
-    templates.map((template, index) =>
-      getSelectOptionTemplates.push({
-        value: template._id,
-        label: template.size + '-' + template.name,
-      }),
-    )
-    return getSelectOptionTemplates
-  }
-  const addSelectTemplatesVersions = () => {
-    let template = []
-    templates.map((tmpl) => {
-      if (tmpl._id === singleTemplateSelection) template.push(tmpl)
-    })
-    setTemplates([
-      ...templates,
-      typeof newVersionTemplate === 'object' && newVersionTemplate.length !== 0
-        ? newVersionTemplate
-        : template[0],
-    ])
-  }
-  const getSelectOptionVersions = (template) => {
+  const getSelectOptionVersions = (template: any) => {
     let getSelectOptionVersions = []
     template.templateVersion.map((templateVersion, index) => {
       getSelectOptionVersions.push({
@@ -436,10 +351,14 @@ const ConfigureLayout = () => {
         label:
           index + 1 === template.templateVersion.length
             ? 'Version ' +
-              (templateVersion.versionName === null ? index + 1 : templateVersion.versionName) +
+              (templateVersion.versionName === null
+                ? templateVersion.version + 1
+                : templateVersion.versionName) +
               ' (latest)'
             : 'Version ' +
-              (templateVersion.versionName === null ? index + 1 : templateVersion.versionName),
+              (templateVersion.versionName === null
+                ? templateVersion.version + 1
+                : templateVersion.versionName),
         approved: templateVersion.approvals !== undefined ? true : false,
       })
     })
@@ -451,20 +370,16 @@ const ConfigureLayout = () => {
     )[0]
     let lastItem: boolean =
       template.templateVersion.indexOf(defaultVersion) === template.templateVersion.length - 1
-    let defaultVersionValue: any = []
-    defaultVersionValue.push({
-      value:
-        template.templateVersion.filter((tmplVersion: any) => tmplVersion.id === template._id)[0]
-          .versionName === null
-          ? defaultVersion.version + 1 + `${lastItem ? ' (latest)' : ''}`
-          : defaultVersion.versionName + `${lastItem ? ' (latest)' : ''}`,
+    return {
+      value: template.templateVersion.filter(
+        (tmplVersion: any) => tmplVersion.id === template._id,
+      )[0].id,
       label:
         template.templateVersion.filter((tmplVersion: any) => tmplVersion.id === template._id)[0]
           .versionName === null
           ? defaultVersion.version + 1 + `${lastItem ? ' (latest)' : ''}`
           : defaultVersion.versionName + `${lastItem ? ' (latest)' : ''}`,
-    })
-    return defaultVersionValue
+    }
   }
   const removeSelectTemplatesVersions = (template) => {
     setSelectAll(false)
@@ -712,7 +627,7 @@ const ConfigureLayout = () => {
                         pointerEvents: fetching ? 'none' : 'unset',
                       }}
                     >
-                      <ButtonAddDeleteStyled
+                      <ButtonDeleteStyled
                         type="primary"
                         shape="circle"
                         danger
@@ -734,7 +649,7 @@ const ConfigureLayout = () => {
                 if (_templateDefaultValues.length === 0)
                   dispatch(
                     postTemplateDefaultValues(
-                      templates.filter((tmpl) =>
+                      templates.filter((tmpl: any) =>
                         selectedValues.includes(tmpl.size + ' ' + tmpl.name),
                       ),
                     ),
@@ -743,7 +658,7 @@ const ConfigureLayout = () => {
                   navigate('/qa-tool-v2/configure/generate/elements', {
                     state: {
                       templateName: templateName,
-                      templates: templates.filter((tmpl) =>
+                      templates: templates.filter((tmpl: any) =>
                         selectedValues.includes(tmpl.size + ' ' + tmpl.name),
                       ),
                       templateDefaultValues: _templateDefaultValues,
