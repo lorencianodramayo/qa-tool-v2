@@ -6,6 +6,7 @@ import sharedVariantReducer from '../features/SharedVariant/sharedVariantSlice'
 import configureReducer from '../features/Configure/configureSlice'
 import elementReducer from '../features/Element/elementSlice'
 import doneReducer from '../features/Done/doneSlice'
+import conceptTemplateVersionReducer from '../features/ConceptTemplateVersion/conceptTemplateVersionSlice'
 // v3
 import uploadReducer from '../features/v3/Upload/uploadSlice'
 import templateReducer from '../features/v3/Template/templateSlice'
@@ -20,6 +21,7 @@ export const store = configureStore({
     configure: configureReducer,
     element: elementReducer,
     done: doneReducer,
+    conceptTemplateVersion: conceptTemplateVersionReducer,
     // v3
     upload: uploadReducer,
     template: templateReducer,

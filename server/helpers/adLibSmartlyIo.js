@@ -5,6 +5,7 @@ const { Storage } = require("@google-cloud/storage");
 require("dotenv").config();
 const { Language } = require("../models/language");
 const { TemplateVersion } = require("../models/templateVersion");
+const { Variants } = require("../models/variants");
 const { SharedVariant } = require("../models/sharedVariants");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
@@ -322,31 +323,109 @@ const getTemplatesVersions = async (req, res) => {
     return res.status(500).json(error);
   }
 };
+const batchSize = 1000;
+const dataQueue = [];
+function enqueueData(data) {
+  dataQueue.push(data);
+}
+function dequeueData() {
+  return dataQueue.shift();
+}
+async function insertDataInBatch() {
+  const dataBatch = [];
+  while (dataQueue.length > 0 && dataBatch.length < batchSize) {
+    const data = dequeueData();
+    dataBatch.push(data);
+  }
+  if (dataBatch.length > 0) {
+    try {
+      await Variants.insertMany(dataBatch);
+      console.log(
+        `Inserted ${dataBatch.length} ${new Date()} records into MongoDB`
+      );
+      Variants.countDocuments({}, (err, count) => {
+        if (err) {
+          console.error("Error:", err);
+        } else {
+          console.log("Number of documents:", count);
+        }
+      });
+    } catch (err) {
+      console.error("Error inserting data into MongoDB:", err);
+    }
+  }
+}
+async function startInsertion() {
+  return new Promise(async (resolve, reject) => {
+    const interval = 5000;
+    const insertionInterval = setInterval(() => {
+      insertDataInBatch();
+      if (dataQueue.length === 0) {
+        clearInterval(insertionInterval);
+        resolve("Data insertion completed successfully!");
+      }
+    }, interval);
+  });
+}
 const postTemplateVersion = async (req, res) => {
   try {
     TemplateVersion.deleteMany({}, (err) => {
       if (err) {
-        res.status(500).json(error);
+        res.status(500).json(err);
       }
     });
-    const request = req;
-    const templatesVersions = request;
-    delete templatesVersions.template;
-    TemplateVersion.insertMany(templatesVersions, (err, tempalateVersion) => {
-      if (err) res.status(500).json(error);
-      else {
-        res.status(200).json({ templatesVersions: tempalateVersion });
-        // for (let i = 0; i < tempalateVersion.length; i++) {
-        //   const templatesVersionsCloud = {
-        //     template: templatesVersions.template,
-        //     creativeId: tempalateVersion[i]._id,
-        //   }
-        //   postTemplateVersionCloud(templatesVersionsCloud).then((response) =>
-        //     console.log(response)
-        //   ).error((error) => console.log(error));
-        // }
+    Variants.deleteMany({}, (err) => {
+      if (err) {
+        res.status(500).json(err);
       }
     });
+    const filteredData1 = req.map((item) => {
+      const { ["variants"]: _, ...rest } = item;
+      return rest;
+    });
+    const filteredData2 = req.map((item) => {
+      const { ["templateId"]: _, ...rest } = item;
+      return rest;
+    });
+    const dataArray = [];
+    TemplateVersion.insertMany(filteredData1, (err, tempalateVersion) => {
+      if (err) res.status(500).json(err);
+      filteredData2.map((filtData2, i) => {
+        const newVariants = filtData2.variants.map((obj) => {
+          return { ...obj, templateId: tempalateVersion[i]._id };
+        });
+        for (let i = 0; i < newVariants.length; i++) {
+          dataArray.push(newVariants[i]);
+        }
+      });
+      dataArray.forEach((data) => {
+        enqueueData(data);
+      });
+      startInsertion()
+        .then(() => {
+          return res.status(200).json({ templatesVersions: tempalateVersion });
+        })
+        .catch((err) => {
+          console.log(err);
+          return res.status(500).json(err);
+        });
+    });
+    // delete templatesVersions.template;
+    // TemplateVersion.insertMany(templatesVersions, (err, tempalateVersion) => {
+    //   if (err) res.status(500).json(error);
+    //   else {
+    //     res.status(200).json({ templatesVersions: tempalateVersion });
+    //     // for (let i = 0; i < tempalateVersion.length; i++) {
+    //     //   const templatesVersionsCloud = {
+    //     //     template: templatesVersions.template,
+    //     //     creativeId: tempalateVersion[i]._id,
+    //     //   }
+    //     //   postTemplateVersionCloud(templatesVersionsCloud).then((response) =>
+    //     //     console.log(response)
+    //     //   ).error((error) => console.log(error));
+    //     // }
+    //   }
+    // });
     // const tempalateVersion = new TemplateVersion(templatesVersions);
     // tempalateVersion.insertMany((err) => {
     //   if (err) return res.status(500).json({ templatesVersions: err });
@@ -530,6 +609,15 @@ const postTemplateVersionImageVideoCloud = async (req, res) => {
     res.status(500).json(error);
   }
 };
+const getVariants = async (req, res) => {
+  try {
+    const variants = await Variants.find();
+    return res.status(200).json(variants);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
 module.exports = {
   getPartner,
   getTemplates,
@@ -544,4 +632,5 @@ module.exports = {
   postTemplateVersionCloud,
   getTemplateSelectedVersion,
   postTemplateVersionImageVideoCloud,
+  getVariants,
 };
