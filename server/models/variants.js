@@ -2,8 +2,11 @@ const { default: mongoose } = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const VariantSchema = new Schema(
+const VariantsSchema = new Schema(
   {
+    templateId: {
+      type: String,
+    },
     templateName: {
       type: String,
     },
@@ -20,13 +23,6 @@ const VariantSchema = new Schema(
   { _id: false }
 );
 
-const TemplateVersionSchema = new Schema({
-  templateId: {
-    type: String,
-  },
-  // variants: [VariantSchema],
-});
-
 module.exports = {
-  TemplateVersion: mongoose.model("templatesVersions", TemplateVersionSchema),
+  Variants: mongoose.model("variants", VariantsSchema),
 };

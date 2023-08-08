@@ -51,4 +51,7 @@ router.get("/getTemplateSelectedVersion", async (req, res) => {
 router.post("/postTemplateVersionImageVideoCloud", async (req, res) => {
   await adLibSmartlyIo.postTemplateVersionImageVideoCloud(req, res);
 });
+router.get("/getVariants", async (req, res) => {
+  await adLibSmartlyIo.getVariants(req, res);
+});
 module.exports = router;

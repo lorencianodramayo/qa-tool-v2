@@ -57,9 +57,9 @@ const IFrameCard = ({variant, i}: IFrameCardProps) => {
   const [isPause, setPause] = useState<{isPause: boolean}[]>([])
   const [isDone, setDone] = useState<{isDone: boolean}[]>([])
   useEffect(() => {
-    let refreshes = []
-    let isPause = []
-    variant.variants.map((variant) => {
+    let refreshes: any = []
+    let isPause: any = []
+    variant.variants.map((_: any) => {
       refreshes.push({
         refresh: 0,
       })
@@ -74,7 +74,7 @@ const IFrameCard = ({variant, i}: IFrameCardProps) => {
     setPause(isPause)
     setDone(isDone)
   }, [])
-  const onLoad = (e, data) => {
+  const onLoad = (e: any, data: any) => {
     e.preventDefault()
     window.addEventListener(
       'message',

@@ -1,4 +1,4 @@
-// @ts-nocheck
+// // @ts-nocheck
 import styled from 'styled-components'
 import {useEffect, useState} from 'react'
 import {Layout, Space, Spin, notification, Checkbox, TreeSelect, Button, Steps} from 'antd'
@@ -151,7 +151,6 @@ const ConfigureLayout = () => {
   const location = useLocation()
   const dispatch = useAppDispatch()
   const [currentStep] = useState<number>(0)
-  const [api, contextHolder] = notification.useNotification()
   const [conceptLinkValue, setConceptLinkValue] = useState<string>(
     location.state === null ? '' : location.state.conceptLinkValue,
   )
@@ -164,6 +163,7 @@ const ConfigureLayout = () => {
   const [multipleTemplateSelection, setMultipleTemplateSelection] = useState<string>('')
   const [multipleVersionSelection, setMultipleVersionSelection] = useState<boolean>(false)
   const [_templateDefaultValues, setTemplateDefaultValues] = useState<any>([])
+  const [api, contextHolder] = notification.useNotification()
   interface TreeNodeData {
     title: string
     value: string
@@ -238,7 +238,7 @@ const ConfigureLayout = () => {
           message: 'Configure',
           description: 'Please Select or Add Template!',
         })
-      else if (_templateDefaultValues.length === 0 && location.state === null)
+      else if (_templateDefaultValues.length === 0 && location.state === null) {
         navigate('/qa-tool-v2/configure/generate/elements', {
           state: {
             templateName: templateName,
@@ -249,9 +249,11 @@ const ConfigureLayout = () => {
             conceptLinkValue: conceptLinkValue,
             selectAll: selectAll,
             selectedValues: selectedValues.length > 0 ? selectedValues : [],
+            languageSelected: location.state !== null ? location.state.languageSelected : null,
           },
           replace: true,
         })
+      }
     }
   }, [templateDefaultValues, isTemplateDefaultValuesLoading, isTemplateDefaultValuesSuccess])
   const onChangeSteps = () => {
@@ -281,6 +283,7 @@ const ConfigureLayout = () => {
           conceptLinkValue: conceptLinkValue,
           selectAll: selectAll,
           selectedValues: selectedValues.length > 0 ? selectedValues : [],
+          languageSelected: location.state !== null ? location.state.languageSelected : null,
         },
         replace: true,
       })
@@ -381,7 +384,7 @@ const ConfigureLayout = () => {
           : defaultVersion.versionName + `${lastItem ? ' (latest)' : ''}`,
     }
   }
-  const removeSelectTemplatesVersions = (template) => {
+  const removeSelectTemplatesVersions = (template: any) => {
     setSelectAll(false)
     setSelectedValues(selectedValues.filter((item) => item !== template.size + ' ' + template.name))
   }
@@ -665,6 +668,8 @@ const ConfigureLayout = () => {
                       conceptLinkValue: conceptLinkValue,
                       selectAll: selectAll,
                       selectedValues: selectedValues.length > 0 ? selectedValues : [],
+                      languageSelected:
+                        location.state !== null ? location.state.languageSelected : null,
                     },
                     replace: true,
                   })

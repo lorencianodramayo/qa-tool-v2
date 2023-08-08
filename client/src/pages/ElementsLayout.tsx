@@ -325,7 +325,7 @@ export default function ElementsLayout() {
   const templateDefaultValues: any = location.state.templateDefaultValues
   const [possibleValues, setPossibleValues] = useState<any>([])
   const [templateIndex, setTemplateIndex] = useState<number>(0)
-  const [showLanguageModal, setShowLanguageModal] = useState<boolean>(true)
+  const [showLanguageModal, setShowLanguageModal] = useState<boolean>(false)
   const [form] = Form.useForm()
   const formLayout: LayoutType = 'inline'
   const [api, contextHolder] = notification.useNotification()
@@ -389,8 +389,14 @@ export default function ElementsLayout() {
         setPossibleValues((possibleValues) => [...possibleValues, key])
       }
     }
-    templates.map(() => languageSelected.push(true))
-    setLanguageSelected(languageSelected)
+    if (location.state.languageSelected !== null) {
+      if (location.state.languageSelected[templateIndex]) setShowLanguageModal(true)
+      setLanguageSelected(location.state.languageSelected)
+    } else {
+      setShowLanguageModal(true)
+      templates.map(() => languageSelected.push(true))
+      setLanguageSelected(languageSelected)
+    }
   }, [])
   useEffect(() => {
     templates[templateIndex]['dynamicElements'].map(async (dynamicElement: any) => {
@@ -419,7 +425,7 @@ export default function ElementsLayout() {
       navigate('/qa-tool-v2/configure/generate', {
         state: {
           templateName: templateName,
-          templates: location.state.templates.map((originalObj) => {
+          templates: location.state.templates.map((originalObj: any) => {
             const newObj = templates.find((newObj) => newObj._id === originalObj._id)
             return newObj ? {...originalObj, ...newObj} : originalObj
           }),
@@ -427,6 +433,7 @@ export default function ElementsLayout() {
           conceptLinkValue: location.state.conceptLinkValue,
           selectAll: location.state.selectAll,
           selectedValues: location.state.selectedValues,
+          languageSelected: languageSelected,
         },
         replace: true,
       })
@@ -434,7 +441,7 @@ export default function ElementsLayout() {
       navigate('/qa-tool-v2/configure/generate/elements/done', {
         state: {
           templateName: templateName,
-          templates: location.state.templates.map((originalObj) => {
+          templates: location.state.templates.map((originalObj: any) => {
             const newObj = templates.find((newObj) => newObj._id === originalObj._id)
             return newObj ? {...originalObj, ...newObj} : originalObj
           }),
@@ -442,6 +449,7 @@ export default function ElementsLayout() {
           conceptLinkValue: location.state.conceptLinkValue,
           selectAll: location.state.selectAll,
           selectedValues: location.state.selectedValues,
+          languageSelected: languageSelected,
         },
         replace: true,
       })
@@ -1845,6 +1853,7 @@ export default function ElementsLayout() {
                 setTemplateIndex(i)
                 filesRef.current = []
                 setReplicate(null)
+                if (languageSelected[i]) setShowLanguageModal(true)
               }}
               style={templateIndex === i ? activeStyle : {}}
             >
@@ -1865,15 +1874,15 @@ export default function ElementsLayout() {
         <Space style={{width: '100%', justifyContent: 'right'}}>
           <Space style={{margin: '10px 20px 0 0'}}>
             <ButtonStyled
-              style={{
-                pointerEvents: !languageSelected[templateIndex] ? 'unset' : 'none',
-              }}
+              // style={{
+              //   pointerEvents: !languageSelected[templateIndex] ? 'unset' : 'none',
+              // }}
               type="primary"
               onClick={() => {
                 navigate('/qa-tool-v2/configure/generate/elements/done', {
                   state: {
                     templateName: templateName,
-                    templates: location.state.templates.map((originalObj) => {
+                    templates: location.state.templates.map((originalObj: any) => {
                       const newObj = templates.find((newObj) => newObj._id === originalObj._id)
                       return newObj ? {...originalObj, ...newObj} : originalObj
                     }),
@@ -1881,6 +1890,7 @@ export default function ElementsLayout() {
                     conceptLinkValue: location.state.conceptLinkValue,
                     selectAll: location.state.selectAll,
                     selectedValues: location.state.selectedValues,
+                    languageSelected: languageSelected,
                   },
                   replace: true,
                 })
@@ -1891,7 +1901,7 @@ export default function ElementsLayout() {
           </Space>
         </Space>
       </div>
-      <Modal
+      {/* <Modal
         title="Language Setting"
         open={showLanguageModal}
         mask={true}
@@ -1976,7 +1986,7 @@ export default function ElementsLayout() {
             showArrow={true}
           />
         </Space>
-      </Modal>
+      </Modal> */}
     </LayoutStyled>
   )
 }

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, {useEffect, useRef, useState} from 'react'
+import React, {useRef, useState} from 'react'
 import styled from 'styled-components'
 import {
   DesktopOutlined,
@@ -7,6 +7,7 @@ import {
   ShareAltOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  SearchOutlined,
 } from '@ant-design/icons'
 import {
   Badge,
@@ -23,8 +24,10 @@ import {
   Input,
   Checkbox,
 } from 'antd'
+import {CheckboxValueType} from 'antd/lib/checkbox/Group'
 import {useLocation} from 'react-router-dom'
 import {Layout} from 'antd'
+import OptionFilterSvg from './../../public/assets/svg/options.svg'
 const {Content} = Layout
 import {
   getTemplatesVersions,
@@ -33,6 +36,11 @@ import {
 import {useSelector, useDispatch} from 'react-redux'
 import {ThunkDispatch} from 'redux-thunk'
 import IFrameCard from '../components/IFrame/IFrameCard'
+import {useOnMountv2} from '../hooks'
+import {getVariants} from '../features/ConceptTemplateVersion/conceptTemplateVersionSlice'
+interface CheckedDefaultOptionFiltersProps {
+  checkedList: string[]
+}
 const {TreeNode} = TreeSelect
 const ContentStyled = styled(Content)`
   &::-webkit-scrollbar {
@@ -66,6 +74,22 @@ const DrawerStyled = styled(Drawer)`
     font-weight: bold;
   }
 `
+const InputSearchStyled = styled(Input)`
+  &.ant-input-group > .ant-input:first-child,
+  .ant-input-group .ant-input-group-addon:first-child {
+    color: #d9d9d9;
+    border-end-start-radius: ${(props) => (props.optionfilter === 'true' ? '0 !important' : '6px')};
+  }
+  &.ant-input-group > .ant-input:last-child,
+  .ant-input-group .ant-input-group-addon:last-child {
+    border-start-end-radius: 6px !important;
+    border-end-end-radius: ${(props) => (props.optionfilter === 'true' ? '0' : '6px')};
+  }
+  &.ant-input-group > .ant-input:last-child:hover,
+  .ant-input-group .ant-input-group-addon:last-child:hover {
+    cursor: pointer;
+  }
+`
 const FloatButtonMobileShareStyled = styled(FloatButton)`
   &.ant-float-btn-primary:focus {
     outline: unset;
@@ -74,7 +98,6 @@ const FloatButtonMobileShareStyled = styled(FloatButton)`
     background: #1677ff;
   }
 `
-const InputStyled = styled(Input)``
 const TreeSelectStyled = styled(TreeSelect)`
   &.ant-select-multiple .ant-select-selector {
     box-shadow: unset !important;
@@ -92,10 +115,22 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     isAddSharedVariantSuccess,
     addSharedVariant,
   } = useSelector((state: any) => state.templateVersion)
+  const {isTemplateVariantsSuccess, templateVariants} = useSelector(
+    (state: any) => state.conceptTemplateVersion,
+  )
   const [drawerVisible, setDrawerVisible] = useState<boolean>(false)
   const [mobile, setMobile] = useState<boolean>(false)
   const [isMobile, setIsMobile] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
+  const [optionFilter, setOptionFilter] = useState<boolean>(false)
+  const [defaultOptionFilters] = useState<[{label: string; value: string}]>([
+    {label: 'Variant Name', value: 'variantName'},
+    {label: 'Variant Size', value: 'variantSize'},
+  ])
+  const [optionFilterSearch, setOptionFilterSearch] = useState<string>('')
+  const [checkedDefaultOptionFilters, setCheckedDefaultOptionFilters] = useState<
+    CheckedDefaultOptionFiltersProps['checkedList']
+  >(['variantName', 'variantSize'])
   const [variants, setVariants] = useState<any>([])
   const [combinations, setCombinations] = useState<number>(0)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
@@ -109,6 +144,8 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const [searchVariantSizeValue, setSearchVariantSizeValue] = useState<string>('')
   const [selectAllVariantSizes, setSelectAllVariantSizes] = useState<boolean>(true)
   const [selectedVariantSizeValues, setSelectedVariantSizeValues] = useState<string[]>([])
+  const rowRef = useRef<HTMLDivElement>(null)
+  const colRef = useRef<HTMLDivElement>(null)
   const [shareVariantNameTreeData, setShareVariantNameTreeData] = useState<TreeNodeData[]>([])
   const [shareSearchVariantNameValue, setShareSearchVariantNameValue] = useState<string>('')
   const [shareSelectAllVariantNames, setShareSelectAllVariantNames] = useState<boolean>(true)
@@ -117,7 +154,8 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const [shareSearchVariantSizeValue, setShareSearchVariantSizeValue] = useState<string>('')
   const [shareSelectAllVariantSizes, setShareSelectAllVariantSizes] = useState<boolean>(true)
   const [shareSelectedVariantSizeValues, setShareSelectedVariantSizeValues] = useState<string[]>([])
-  useEffect(() => {
+  const [templates, setTemplates] = useState<any>([])
+  useOnMountv2(() => {
     const checkIfMobile = () => {
       const isMobileDevice = window.innerWidth <= 768
       setMobile(isMobileDevice)
@@ -128,17 +166,39 @@ const ConceptTemplateVersionLayout: React.FC = () => {
       window.removeEventListener('resize', checkIfMobile)
     }
   }, [])
-  useEffect(() => {
+  useOnMountv2(() => {
     setLoading(!loading)
     dispatch(getTemplatesVersions())
-  }, [dispatch])
-  useEffect(() => {
-    if (isTemplatesVersionsSuccess) {
-      const interval = setInterval(() => {
-        console.log('asdf', templatesVersions)
+    dispatch(getVariants())
+  }, [])
+  useOnMountv2(() => {
+    if (isTemplatesVersionsSuccess && isTemplateVariantsSuccess) {
+      const timeout = setTimeout(() => {
+        let templates: any = []
+        templatesVersions.map((templatesVersion: any) => {
+          let _templateVariants: any = []
+          templateVariants.map((templateVariant: any) => {
+            if (templatesVersion._id === templateVariant.templateId) {
+              _templateVariants.push({
+                _id: templateVariant._id,
+                templateId: templateVariant.templateId,
+                templateName: templateVariant.templateName,
+                size: templateVariant.size,
+                variantName: templateVariant.variantName,
+                defaultValues: templateVariant.defaultValues,
+              })
+            }
+          })
+          templates.push({
+            _id: templatesVersion._id,
+            templateId: templatesVersion.templateId,
+            variants: _templateVariants,
+          })
+        })
         let treeDataVariantNames: TreeNodeData[] = []
         let treeDataVariantSizes: TreeNodeData[] = []
-        templatesVersions.map((templateVersion) => {
+        setTemplates(templates)
+        templates.map((templateVersion: any) => {
           templateVersion.variants.map((variantName) => {
             const variantNameExist = treeDataVariantNames.some(
               (el) => el.value === variantName.variantName,
@@ -190,16 +250,16 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         let combinations = 0
         let filterVariants = []
         let i = 0
-        templatesVersions.map((templateVersion) => {
+        templates.map((template: any) => {
           let updatedDefaultValues = {}
           let defaultValues = {}
           let variantDefaultValues = {}
-          templateVersion.variants.map((variant) => {
+          template.variants.map((variant: any) => {
             combinations += 1
             for (const [key, value] of Object.entries(variant.defaultValues)) {
-              imageVideoFiles?.map((imageVideoFile) => {
-                if (imageVideoFile.creativeId === templateVersion._id)
-                  imageVideoFile.files.map((file) => {
+              imageVideoFiles.map((imageVideoFile: any) => {
+                if (imageVideoFile.creativeId === template._id)
+                  imageVideoFile.files.map((file: any) => {
                     if (file.dynamicElementKey === key)
                       updatedDefaultValues[
                         key
@@ -212,14 +272,16 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             const variantSizeExist = filterVariants.some((el) => el.size === variant.size)
             if (!variantSizeExist) {
               filterVariants.push({
-                _id: templateVersion._id,
+                _id: template._id,
                 templateName: variant.templateName,
                 size: variant.size,
                 variants: [
                   {
                     variantName: variant.variantName,
                     defaultValues:
-                      imageVideoFiles !== undefined ? variantDefaultValues : variant.defaultValues,
+                      imageVideoFiles.length > 0 && imageVideoFiles !== undefined
+                        ? variantDefaultValues
+                        : variant.defaultValues,
                   },
                 ],
               })
@@ -230,7 +292,9 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 {
                   variantName: variant.variantName,
                   defaultValues:
-                    imageVideoFiles !== undefined ? variantDefaultValues : variant.defaultValues,
+                    imageVideoFiles.length > 0 && imageVideoFiles !== undefined
+                      ? variantDefaultValues
+                      : variant.defaultValues,
                 },
               ]
             }
@@ -240,18 +304,101 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         setVariants(filterVariants)
         setLoading(false)
       }, 8000)
-      return () => clearInterval(interval)
+      return () => clearTimeout(timeout)
     }
   }, [
     templatesVersions,
+    templateVariants,
     selectAllVariantNames,
     selectAllVariantSizes,
     shareSelectAllVariantNames,
     shareSelectAllVariantSizes,
   ])
-  useEffect(() => {
+  // useOnMountv2(() => {
+  //   let a: number = 0
+  //   let filterVariants = []
+  //   let i = 0
+  //   templatesVersions?.map((templateVersion) => {
+  //     let updatedDefaultValues = {}
+  //     let defaultValues = {}
+  //     let variantDefaultValues = {}
+  //     templateVersion.variants.map((variant: any) => {
+  //       for (const [key, value] of Object.entries(variant.defaultValues)) {
+  //         imageVideoFiles?.map((imageVideoFile: any) => {
+  //           if (imageVideoFile.creativeId === templateVersion._id)
+  //             imageVideoFile.files.map((file: File) => {
+  //               if (file.dynamicElementKey === key)
+  //                 updatedDefaultValues[
+  //                   key
+  //                 ] = `https://storage.googleapis.com/creative-templates/${imageVideoFile.creativeId}/asset/${file.dynamicElementKey}/${file.fileData.name}`
+  //             })
+  //         })
+  //         defaultValues[key] = value
+  //       }
+  //       variantDefaultValues = Object.assign(defaultValues, updatedDefaultValues)
+  //       const variantSizeExist = filterVariants.some((el) => el.size === variant.size)
+  //       if (!variantSizeExist) {
+  //         filterVariants.push({
+  //           _id: templateVersion._id,
+  //           templateName: variant.templateName,
+  //           size: variant.size,
+  //           variants: [
+  //             {
+  //               variantName: variant.variantName,
+  //               defaultValues:
+  //                 imageVideoFiles !== undefined ? variantDefaultValues : variant.defaultValues,
+  //             },
+  //           ],
+  //         })
+  //         i++
+  //       } else {
+  //         filterVariants[i - 1].variants = [
+  //           ...filterVariants[i - 1].variants,
+  //           {
+  //             variantName: variant.variantName,
+  //             defaultValues:
+  //               imageVideoFiles !== undefined ? variantDefaultValues : variant.defaultValues,
+  //           },
+  //         ]
+  //       }
+  //     })
+  //   })
+  //   let _variants: any = []
+  //   filterVariants.map((varianta: any) => {
+  //     let _variantVariants: any = []
+  //     varianta.variants.map((variantb: any) => {
+  //       if (variantb.variantName.toLowerCase().includes(optionFilterSearch.toLowerCase())) {
+  //         if (rowRef.current && colRef.current) {
+  //           a += colRef.current.offsetWidth
+  //           if (a > rowRef.current.offsetWidth) console.log('qwer')
+  //         }
+  //         _variantVariants.push({
+  //           variantName: variantb.variantName,
+  //           defaultValues: variantb.defaultValues,
+  //         })
+  //       }
+  //     })
+  //     _variants.push({
+  //       _id: varianta._id,
+  //       templateName: varianta.templateName,
+  //       size: varianta.size,
+  //       variants: _variantVariants,
+  //     })
+  //   })
+  //   if (optionFilterSearch === '') setVariants(variants)
+  //   else setVariants(_variants)
+  // }, [optionFilterSearch, rowRef, colRef])
+  // useOnMountv2(() => {
+  //   if (rowRef.current && colRef.current) {
+  //     console.log('qwer', rowRef.current.offsetWidth, colRef.current.offsetWidth)
+  //   }
+  // }, [rowRef, colRef])
+  useOnMountv2(() => {
     if (isAddSharedVariantSuccess) setSharedLoading(false)
   }, [isAddSharedVariantSuccess])
+  // const clearAllDefaultOptionFilters = () => setCheckedDefaultOptionFilters([])
+  // const onChangeCheckboxGroup = (checkedList: CheckboxValueType[]) =>
+  //   setCheckedDefaultOptionFilters(checkedList)
   const handleSelectAllVariantNames = (e: CheckboxChangeEvent) => {
     setSelectAllVariantNames(e.target.checked)
     let filteredVariantNameValues = null
@@ -693,12 +840,11 @@ const ConceptTemplateVersionLayout: React.FC = () => {
       >
         <Space direction="vertical" size={0} style={{backgroundColor: '#fff'}}>
           {
-            // !loading && variants?.variants && (
-            <Space.Compact
-              block
+            <div
               style={{
                 background: 'linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)',
-                padding: '0 0 3px 0',
+                padding: '3px 0 3px 0',
+                display: 'flex',
               }}
             >
               <ButtonMenuStyled
@@ -706,14 +852,77 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 icon={<MenuUnfoldOutlined />}
                 onClick={() => setDrawerVisible(!drawerVisible)}
               />
-              <Space.Compact
-                block
+              <div
                 style={{
-                  marginRight: 15.8,
-                  justifyContent: 'right',
+                  marginLeft: 'auto',
+                  // width: '34.5%',
+                  display: 'flex',
+                  alignItems: 'center',
                 }}
               >
-                <Space>
+                {/* <Space.Compact
+                  block
+                  style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    width: 350,
+                    marginRight: 15.8,
+                  }}
+                >
+                  <InputSearchStyled
+                    optionfilter={optionFilter.toString()}
+                    addonBefore={<SearchOutlined />}
+                    addonAfter={
+                      <img
+                        width="14"
+                        src={OptionFilterSvg}
+                        alt="Your SVG"
+                        onClick={() => setOptionFilter(!optionFilter)}
+                      />
+                    }
+                    onChange={(e) => setOptionFilterSearch(e.target.value)}
+                    placeholder="Search"
+                  />
+                  <Space.Compact
+                    block
+                    style={{
+                      zIndex: 9999,
+                      display: optionFilter ? 'block' : 'none',
+                      borderBottomLeftRadius: 6,
+                      borderBottomRightRadius: 6,
+                      width: '100%',
+                      position: 'absolute',
+                      top: 32,
+                      left: -0.1,
+                      backgroundColor: '#fff',
+                      border: '1px solid rgb(204, 204, 204)',
+                      padding: 8,
+                      boxShadow: 'rgba(0, 0, 0, 0.15) 0px 2px 8px',
+                    }}
+                  >
+                    <Space.Compact block>
+                      <Checkbox.Group
+                        options={defaultOptionFilters}
+                        value={checkedDefaultOptionFilters}
+                        onChange={onChangeCheckboxGroup}
+                      />
+                    </Space.Compact>
+                    <Space
+                      wrap
+                      style={{
+                        marginTop: 10,
+                      }}
+                    >
+                      <Button onClick={clearAllDefaultOptionFilters}>Clear</Button>
+                    </Space>
+                  </Space.Compact>
+                </Space.Compact> */}
+                <div
+                  style={{
+                    display: 'inline-block',
+                    marginRight: 15.8,
+                  }}
+                >
                   <Badge
                     count={combinations}
                     overflowCount={combinations}
@@ -724,6 +933,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                       color: '#fff',
                       borderRadius: 5,
                       padding: 0,
+                      marginRight: 6,
                     }}
                   />
                   <Space
@@ -733,10 +943,9 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                   >
                     Combinations
                   </Space>
-                </Space>
-              </Space.Compact>
-            </Space.Compact>
-            // )
+                </div>
+              </div>
+            </div>
           }
         </Space>
         <ContentStyled
@@ -747,8 +956,8 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         >
           {isMobile
             ? variants
-                .filter((variant) => selectedVariantSizeValues.includes(variant.size))
-                .map((variant) => (
+                .filter((variant: any) => selectedVariantSizeValues.includes(variant.size))
+                .map((variant: any) => (
                   <>
                     <Space.Compact block style={{marginBottom: 5}}>
                       <Space.Compact
@@ -795,8 +1004,8 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                   </>
                 ))
             : variants
-                .filter((variant) => selectedVariantSizeValues.includes(variant.size))
-                .map((variant) => (
+                .filter((variant: any) => selectedVariantSizeValues.includes(variant.size))
+                .map((variant: any) => (
                   <>
                     <Space.Compact block style={{marginBottom: 5}}>
                       <Space.Compact
@@ -845,6 +1054,65 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                     </Row>
                   </>
                 ))}
+          {/* // variants
+            //     .filter((variant) => selectedVariantSizeValues.includes(variant.size))
+            //     .map((variant) => (
+            //       <>
+            //         <Col>
+            //           <Space.Compact block style={{marginBottom: 5}}>
+            //             <Space.Compact
+            //               block
+            //               style={{
+            //                 justifyContent: 'center',
+            //                 background: 'linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)',
+            //                 color: '#fff',
+            //                 fontWeight: 'bold',
+            //                 borderRadius: 5,
+            //               }}
+            //             >
+            //               {variant.templateName} {variant.size}
+            //             </Space.Compact>
+            //           </Space.Compact>
+            //           <Row
+            //             ref={rowRef}
+            //             gutter={[15.9, 22.4]}
+            //             style={{
+            //               width: '100%',
+            //               justifyContent: 'center',
+            //             }}
+            //           >
+            //             {variant.variants
+            //               .filter((variant: any) =>
+            //                 selectedVariantNameValues.includes(variant.variantName),
+            //               )
+            //               // .filter((variant: any) => {
+            //               //   return variant.variantName
+            //               //     .toLowerCase()
+            //               //     .includes(optionFilterSearch.toLowerCase())
+            //               // })
+            //               .map((_: any, i: number) => (
+            //                 <>
+            //                   <Col ref={colRef}>
+            //                     <Space.Compact
+            //                       block
+            //                       style={{
+            //                         background:
+            //                           'linear-gradient(90.03deg, #F22076 0.03%, #29125F 100.05%)',
+            //                         borderTopLeftRadius: '5px',
+            //                         borderTopRightRadius: '5px',
+            //                         height: '5px',
+            //                       }}
+            //                     >
+            //                       {' '}
+            //                     </Space.Compact>
+            //                     <IFrameCard variant={variant} i={i} />
+            //                   </Col>
+            //                 </>
+            //               ))}
+            //           </Row>
+            //         </Col>
+            //       </>
+            //     ))} */}
         </ContentStyled>
       </Layout>
       <Modal
@@ -856,8 +1124,8 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         onOk={() => {
           let filterVariants = []
           let i = 0
-          templatesVersions.map((templateVersion) => {
-            templateVersion.variants.map((variant) => {
+          templates.map((template: any) => {
+            template.variants.map((variant: any) => {
               if (
                 shareSelectedVariantNameValues.length === 0 &&
                 shareSelectedVariantSizeValues.length === 0
@@ -867,8 +1135,8 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 )
                 if (!variantSizeExist) {
                   filterVariants.push({
-                    _id: templateVersion._id,
-                    templateId: templateVersion.templateId,
+                    _id: template._id,
+                    templateId: template.templateId,
                     variants: [
                       {
                         templateName: variant.templateName,
@@ -906,8 +1174,8 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                       )
                       if (!variantExist) {
                         filterVariants.push({
-                          _id: templateVersion._id,
-                          templateId: templateVersion.templateId,
+                          _id: template._id,
+                          templateId: template.templateId,
                           variants: [
                             {
                               templateName: variant.templateName,
@@ -941,8 +1209,8 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                     )
                     if (!variantSizeExist) {
                       filterVariants.push({
-                        _id: templateVersion._id,
-                        templateId: templateVersion.templateId,
+                        _id: template._id,
+                        templateId: template.templateId,
                         variants: [
                           {
                             templateName: variant.templateName,
@@ -975,8 +1243,8 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                     )
                     if (!variantSizeExist) {
                       filterVariants.push({
-                        _id: templateVersion._id,
-                        templateId: templateVersion.templateId,
+                        _id: template._id,
+                        templateId: template.templateId,
                         variants: [
                           {
                             templateName: variant.templateName,
@@ -1041,18 +1309,6 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             <Space.Compact block className="variant">
               Variants
             </Space.Compact>
-            {/* <Space>
-              <Checkbox
-                checked={shareSelectAllVariantNames}
-                onChange={
-                  shareSelectAllVariantNames
-                    ? handleShareUnselectAllVariantNames
-                    : handleShareSelectAllVariantNames
-                }
-              >
-                {shareSelectAllVariantNames ? 'Unselect All' : 'Select All'}
-              </Checkbox>
-            </Space> */}
             <Space.Compact block>
               <TreeSelectStyled
                 style={{
@@ -1132,18 +1388,6 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             <Space.Compact block className="size">
               Sizes
             </Space.Compact>
-            {/* <Space>
-              <Checkbox
-                checked={shareSelectAllVariantSizes}
-                onChange={
-                  shareSelectAllVariantSizes
-                    ? handleShareUnselectAllVariantSizes
-                    : handleShareSelectAllVariantSizes
-                }
-              >
-                {shareSelectAllVariantSizes ? 'Unselect All' : 'Select All'}
-              </Checkbox>
-            </Space> */}
             <Space.Compact block>
               <TreeSelectStyled
                 style={{
@@ -1227,7 +1471,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             <Space style={{fontWeight: 'bold'}}>Link:</Space>{' '}
             {addSharedVariant !== null ? (
               <Space.Compact style={{width: '92%'}}>
-                <InputStyled
+                <Input
                   ref={sharedLinkRef}
                   defaultValue={
                     window.location.origin + '/qa-tool-v2/' + addSharedVariant.sharedVariants._id

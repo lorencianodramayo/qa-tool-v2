@@ -1,32 +1,11 @@
 // @ts-nocheck
 import styled from 'styled-components'
-import {
-  Button,
-  Divider,
-  Input,
-  InputNumber,
-  Spin,
-  Layout,
-  Space,
-  notification,
-  Steps,
-  Collapse,
-} from 'antd'
+import {Button, Spin, Layout, Space, notification, Steps, Collapse} from 'antd'
 import {useEffect, useState} from 'react'
-import {
-  CheckOutlined,
-  CaretUpOutlined,
-  CaretDownOutlined,
-  CloseOutlined,
-  ProfileFilled,
-  CaretRightOutlined,
-} from '@ant-design/icons'
-import type {UploadProps} from 'antd'
-import {message, Upload} from 'antd'
+import {ProfileFilled, CaretRightOutlined} from '@ant-design/icons'
 import {useLocation, useNavigate} from 'react-router-dom'
 import {
   postTemplateVersion,
-  postSharedVariants,
   postTemplateVersionCloud,
 } from '../features/templateVersion/templateVersionSlice'
 import {useDispatch, useSelector} from 'react-redux'
@@ -193,7 +172,6 @@ export default function DoneLayout() {
   const [loading, setLoading] = useState<boolean>(false)
   const [_templates, _setTemplates] = useState<any>([])
   const [api, contextHolder] = notification.useNotification()
-  const [colorHex, setColorHex] = useState<Color[] | string[]>([])
   useEffect(() => {
     if (
       typeof templates[templateIndex].possibleValues === 'object' &&
@@ -219,7 +197,7 @@ export default function DoneLayout() {
   useEffect(() => {
     if (isAddTemplateVersionSuccess) {
       let templatesVersions = []
-      addTemplateVersion.templatesVersions.map((templatesVersion, i) => {
+      addTemplateVersion.templatesVersions.map((templatesVersion: any, i: number) => {
         let data = {
           creativeId: templatesVersion._id,
           templateUrl: _templates[i].url,
@@ -232,7 +210,7 @@ export default function DoneLayout() {
   useEffect(() => {
     if (isAddTemplateVersionCloudSuccess) {
       let files = []
-      addTemplateVersion.templatesVersions.map((templatesVersion, i) => {
+      addTemplateVersion.templatesVersions.map((templatesVersion: any, i: number) => {
         if (_templates[i].defaultDynamicFieldsValuesFiles)
           files.push({
             creativeId: templatesVersion._id,
@@ -263,8 +241,8 @@ export default function DoneLayout() {
             state: {
               templateName: templateName,
               templates: templates,
-              templateDefaultValues: templateDefaultValues,
-              sharedVariants: addSharedVariant,
+              addTemplateVersion: addTemplateVersion,
+              imageVideoFiles: imageVideoFiles,
             },
             replace: true,
           })
@@ -324,8 +302,7 @@ export default function DoneLayout() {
           state: {
             templateName: templateName,
             templates: templates,
-            templateDefaultValues: templateDefaultValues,
-            sharedVariants: addSharedVariant,
+            addTemplateVersion: addTemplateVersion,
             imageVideoFiles: imageVideoFiles,
           },
           replace: true,
@@ -356,6 +333,7 @@ export default function DoneLayout() {
           conceptLinkValue: location.state.conceptLinkValue,
           selectAll: location.state.selectAll,
           selectedValues: location.state.selectedValues,
+          languageSelected: location.state !== null ? location.state.languageSelected : null,
         },
         replace: true,
       })
@@ -944,7 +922,7 @@ export default function DoneLayout() {
               onClick={() => {
                 let _templatesVersions = []
                 let __templates = []
-                templates.map((template) => {
+                templates.map((template: any) => {
                   let templateVariants = []
                   if (template.hasOwnProperty('possibleValues')) {
                     let possibleValues = template.possibleValues
