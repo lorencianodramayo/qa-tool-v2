@@ -204,7 +204,10 @@ export default function DoneLayout() {
         }
         templatesVersions.push(data)
       })
-      dispatch(postTemplateVersionCloud(templatesVersions))
+      const timeout = setTimeout(() => {
+        dispatch(postTemplateVersionCloud(templatesVersions))
+      }, 1000)
+      return () => clearTimeout(timeout)
     }
   }, [isAddTemplateVersionSuccess, addTemplateVersion])
   useEffect(() => {

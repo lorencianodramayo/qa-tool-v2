@@ -716,75 +716,234 @@ export default function ElementsLayout() {
             </Space>
           </Space>
         )}
-        <div
-          style={{
-            pointerEvents: !languageSelected[templateIndex] ? 'unset' : 'none',
-          }}
-        >
-          {template.dynamicElements.map((dynamicElement: any, i: number) => {
-            const buttonCases = [
-              {
-                value: 'Capitalize',
-                label: 'Aa',
-              },
-              {value: 'Lowercase', label: 'aa'},
-              {value: 'Uppercase', label: 'AA'},
-            ]
-            if (!possibleValues.includes(dynamicElement) || possibleValues.length === 0) {
-              if (isMediaType(template.defaultDynamicFieldsValues[dynamicElement]))
-                return (
-                  <Space
-                    key={i}
-                    direction="horizontal"
-                    style={{
-                      display: 'flex',
-                      marginTop: 20.4,
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Space>
-                      <Space
-                        style={{
-                          fontWeight: 400,
-                          fontSize: 14,
-                          width: 132,
-                          color: '#000',
-                        }}
-                      >
-                        {dynamicElement}:
-                      </Space>
-                    </Space>
+        {template.dynamicElements.map((dynamicElement: any, i: number) => {
+          const buttonCases = [
+            {
+              value: 'Capitalize',
+              label: 'Aa',
+            },
+            {value: 'Lowercase', label: 'aa'},
+            {value: 'Uppercase', label: 'AA'},
+          ]
+          if (!possibleValues.includes(dynamicElement) || possibleValues.length === 0) {
+            if (isMediaType(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
                     <Space
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
                       }}
                     >
-                      <UploadStyledv2
-                        maxCount={1}
-                        fileList={defaultFileList(template, dynamicElement)}
-                        showUploadList={{
-                          showRemoveIcon: true,
-                          removeIcon: (
-                            <CloseOutlined
-                              onClick={(e) => console.log(e, 'custom removeIcon event')}
-                            />
-                          ),
-                        }}
-                        customRequest={async ({onSuccess}) => {
-                          setTimeout(() => {
-                            onSuccess('ok')
-                          }, 0)
-                        }}
-                        beforeUpload={(file) => {
-                          const files = {
-                            dynamicElementKey: dynamicElement,
-                            fileData: file,
+                      {dynamicElement}:
+                    </Space>
+                  </Space>
+                  <Space
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <UploadStyledv2
+                      disabled={!languageSelected[templateIndex] ? false : true}
+                      maxCount={1}
+                      fileList={defaultFileList(template, dynamicElement)}
+                      showUploadList={{
+                        showRemoveIcon: true,
+                        removeIcon: (
+                          <CloseOutlined
+                            onClick={(e) => console.log(e, 'custom removeIcon event')}
+                          />
+                        ),
+                      }}
+                      customRequest={async ({onSuccess}) => {
+                        setTimeout(() => {
+                          onSuccess('ok')
+                        }, 0)
+                      }}
+                      beforeUpload={(file) => {
+                        const files = {
+                          dynamicElementKey: dynamicElement,
+                          fileData: file,
+                        }
+                        filesRef.current = [...filesRef.current, files]
+                        let defaultDynamicFieldsValues = []
+                        const newDefaultDynamicFieldsValues = {
+                          [dynamicElement]: file.name,
+                        }
+                        defaultDynamicFieldsValues = {
+                          ...template.defaultDynamicFieldsValues,
+                          ...newDefaultDynamicFieldsValues,
+                        }
+                        const newState = templates.map((template, i) => {
+                          if (templateIndex === i) {
+                            return {
+                              ...template,
+                              ...{
+                                ['defaultDynamicFieldsValuesFiles']: filesRef.current,
+                              },
+                            }
                           }
-                          filesRef.current = [...filesRef.current, files]
+                          return template
+                        })
+                        setTemplates(newState)
+                      }}
+                    >
+                      <Button
+                        disabled={!languageSelected[templateIndex] ? false : true}
+                        icon={<UploadOutlined />}
+                      >
+                        Upload
+                      </Button>
+                    </UploadStyledv2>
+                  </Space>
+                </Space>
+              )
+            else if (isColor(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space
+                      style={
+                        template.defaultDynamicFieldsValues[dynamicElement] ===
+                          'rgb(255, 255, 255)' ||
+                        template.defaultDynamicFieldsValues[dynamicElement] === '#fff' ||
+                        template.defaultDynamicFieldsValues[dynamicElement] === '#ffffff' ||
+                        template.defaultDynamicFieldsValues[dynamicElement] === '#FFFFFF' ||
+                        template.defaultDynamicFieldsValues[dynamicElement] === '#FFF' ||
+                        template.defaultDynamicFieldsValues[dynamicElement].toLowerCase() ===
+                          'white'
+                          ? {
+                              background: '-webkit-linear-gradient(#eee, #333)',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent',
+                            }
+                          : {
+                              color: template.defaultDynamicFieldsValues[dynamicElement],
+                            }
+                      }
+                    >
+                      {template.defaultDynamicFieldsValues[dynamicElement]}
+                    </Space>
+                  </Space>
+                  <Space>
+                    <ColorPickerStyled
+                      disabled={!languageSelected[templateIndex] ? false : true}
+                      style={{marginRight: 51.6}}
+                      format={
+                        isRGBColor(template.defaultDynamicFieldsValues[dynamicElement])
+                          ? formatRgb
+                          : isHexColor(template.defaultDynamicFieldsValues[dynamicElement])
+                          ? formatHex
+                          : isRGBAColor(template.defaultDynamicFieldsValues[dynamicElement])
+                          ? formatRgb
+                          : formatHex
+                      }
+                      value={template.defaultDynamicFieldsValues[dynamicElement]}
+                      onChange={(value: Color) => {
+                        let color: string = ''
+                        if (isRGBColor(template.defaultDynamicFieldsValues[dynamicElement]))
+                          color = value.toRgbString()
+                        else if (isHexColor(template.defaultDynamicFieldsValues[dynamicElement]))
+                          color = value.toHexString()
+                        else color = value.toRgbString()
+                        let defaultDynamicFieldsValues =
+                          templates[templateIndex].defaultDynamicFieldsValues
+                        const newDefaultDynamicFieldsValues = {
+                          [dynamicElement]: color,
+                        }
+                        defaultDynamicFieldsValues = {
+                          ...defaultDynamicFieldsValues,
+                          ...newDefaultDynamicFieldsValues,
+                        }
+                        const newState = templates.map((template, i) => {
+                          if (templateIndex === i) {
+                            return {
+                              ...template,
+                              ...{
+                                ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                              },
+                            }
+                          }
+                          return template
+                        })
+                        setTemplates(newState)
+                      }}
+                      onFormatChange={
+                        isRGBColor(template.defaultDynamicFieldsValues[dynamicElement])
+                          ? setFormatRgb
+                          : isHexColor(template.defaultDynamicFieldsValues[dynamicElement])
+                          ? setFormatHex
+                          : isRGBAColor(template.defaultDynamicFieldsValues[dynamicElement])
+                          ? setFormatRgb
+                          : setFormatHex
+                      }
+                    />
+                  </Space>
+                </Space>
+              )
+            else if (isURL(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
                           let defaultDynamicFieldsValues = []
                           const newDefaultDynamicFieldsValues = {
-                            [dynamicElement]: file.name,
+                            [dynamicElement]: e.target.value,
                           }
                           defaultDynamicFieldsValues = {
                             ...template.defaultDynamicFieldsValues,
@@ -795,7 +954,7 @@ export default function ElementsLayout() {
                               return {
                                 ...template,
                                 ...{
-                                  ['defaultDynamicFieldsValuesFiles']: filesRef.current,
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
                                 },
                               }
                             }
@@ -803,82 +962,196 @@ export default function ElementsLayout() {
                           })
                           setTemplates(newState)
                         }}
-                      >
-                        <Button icon={<UploadOutlined />}>Upload</Button>
-                      </UploadStyledv2>
+                      />
                     </Space>
                   </Space>
-                )
-              else if (isColor(template.defaultDynamicFieldsValues[dynamicElement]))
-                return (
-                  <Space
-                    key={i}
-                    direction="horizontal"
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: 20.4,
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Space>
-                      <Space
-                        style={{
-                          fontWeight: 400,
-                          fontSize: 14,
-                          width: 132,
-                          color: '#000',
+                  <Space>
+                    <Space style={{marginRight: 51.6}}>
+                      <ButtonStyled
+                        disabled={!languageSelected[templateIndex] ? false : true}
+                        type="primary"
+                        icon={<LinkOutlined />}
+                        onClick={() => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: 'https://www.google.com',
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
                         }}
-                      >
-                        {dynamicElement}:
-                      </Space>
-                      <Space
-                        style={
-                          template.defaultDynamicFieldsValues[dynamicElement] ===
-                            'rgb(255, 255, 255)' ||
-                          template.defaultDynamicFieldsValues[dynamicElement] === '#fff' ||
-                          template.defaultDynamicFieldsValues[dynamicElement] === '#ffffff' ||
-                          template.defaultDynamicFieldsValues[dynamicElement] === '#FFFFFF' ||
-                          template.defaultDynamicFieldsValues[dynamicElement] === '#FFF' ||
-                          template.defaultDynamicFieldsValues[dynamicElement].toLowerCase() ===
-                            'white'
-                            ? {
-                                background: '-webkit-linear-gradient(#eee, #333)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                              }
-                            : {
-                                color: template.defaultDynamicFieldsValues[dynamicElement],
-                              }
-                        }
-                      >
-                        {template.defaultDynamicFieldsValues[dynamicElement]}
-                      </Space>
+                      />
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (/^-?\d*\.?\d+$/.test(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                      }}
+                    >
+                      {dynamicElement}:
                     </Space>
                     <Space>
-                      <ColorPickerStyled
-                        style={{marginRight: 51.6}}
-                        format={
-                          isRGBColor(template.defaultDynamicFieldsValues[dynamicElement])
-                            ? formatRgb
-                            : isHexColor(template.defaultDynamicFieldsValues[dynamicElement])
-                            ? formatHex
-                            : isRGBAColor(template.defaultDynamicFieldsValues[dynamicElement])
-                            ? formatRgb
-                            : formatHex
-                        }
+                      <InputStyled
+                        disabled={!languageSelected[templateIndex] ? false : true}
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
                         value={template.defaultDynamicFieldsValues[dynamicElement]}
-                        onChange={(value: Color) => {
-                          let color: string = ''
-                          if (isRGBColor(template.defaultDynamicFieldsValues[dynamicElement]))
-                            color = value.toRgbString()
-                          else if (isHexColor(template.defaultDynamicFieldsValues[dynamicElement]))
-                            color = value.toHexString()
-                          else color = value.toRgbString()
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (isNumberWithPercentage(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        disabled={!languageSelected[templateIndex] ? false : true}
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (Number(template.defaultDynamicFieldsValues[dynamicElement]) > 0)
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                  </Space>
+                  <Space>
+                    <InputNumberStyled
+                      disabled={!languageSelected[templateIndex] ? false : true}
+                      style={{
+                        marginRight: 51.6,
+                      }}
+                      controls={{
+                        upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                        downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                      }}
+                      bordered={true}
+                      defaultValue={template.defaultDynamicFieldsValues[dynamicElement]}
+                      onChange={(value) => {
+                        if (value > 0) {
                           let defaultDynamicFieldsValues =
                             templates[templateIndex].defaultDynamicFieldsValues
                           const newDefaultDynamicFieldsValues = {
-                            [dynamicElement]: color,
+                            [dynamicElement]: value.toString(),
                           }
                           defaultDynamicFieldsValues = {
                             ...defaultDynamicFieldsValues,
@@ -896,755 +1169,487 @@ export default function ElementsLayout() {
                             return template
                           })
                           setTemplates(newState)
-                        }}
-                        onFormatChange={
-                          isRGBColor(template.defaultDynamicFieldsValues[dynamicElement])
-                            ? setFormatRgb
-                            : isHexColor(template.defaultDynamicFieldsValues[dynamicElement])
-                            ? setFormatHex
-                            : isRGBAColor(template.defaultDynamicFieldsValues[dynamicElement])
-                            ? setFormatRgb
-                            : setFormatHex
                         }
-                      />
-                    </Space>
+                      }}
+                    />
                   </Space>
-                )
-              else if (isURL(template.defaultDynamicFieldsValues[dynamicElement]))
-                return (
-                  <Space
-                    key={i}
-                    direction="horizontal"
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: 20.4,
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Space>
-                      <Space
-                        style={{
-                          fontWeight: 400,
-                          fontSize: 14,
-                          width: 132,
-                          color: '#000',
-                        }}
-                      >
-                        {dynamicElement}:
-                      </Space>
-                      <Space>
-                        <InputStyled
-                          style={{width: 356}}
-                          placeholder={`${dynamicElement}`}
-                          value={template.defaultDynamicFieldsValues[dynamicElement]}
-                          onChange={(e) => {
-                            let defaultDynamicFieldsValues = []
-                            const newDefaultDynamicFieldsValues = {
-                              [dynamicElement]: e.target.value,
-                            }
-                            defaultDynamicFieldsValues = {
-                              ...template.defaultDynamicFieldsValues,
-                              ...newDefaultDynamicFieldsValues,
-                            }
-                            const newState = templates.map((template, i) => {
-                              if (templateIndex === i) {
-                                return {
-                                  ...template,
-                                  ...{
-                                    ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                  },
-                                }
-                              }
-                              return template
-                            })
-                            setTemplates(newState)
-                          }}
-                        />
-                      </Space>
-                    </Space>
-                    <Space>
-                      <Space style={{marginRight: 51.6}}>
-                        <ButtonStyled
-                          type="primary"
-                          icon={<LinkOutlined />}
-                          onClick={() => {
-                            let defaultDynamicFieldsValues = []
-                            const newDefaultDynamicFieldsValues = {
-                              [dynamicElement]: 'https://www.google.com',
-                            }
-                            defaultDynamicFieldsValues = {
-                              ...template.defaultDynamicFieldsValues,
-                              ...newDefaultDynamicFieldsValues,
-                            }
-                            const newState = templates.map((template, i) => {
-                              if (templateIndex === i) {
-                                return {
-                                  ...template,
-                                  ...{
-                                    ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                  },
-                                }
-                              }
-                              return template
-                            })
-                            setTemplates(newState)
-                          }}
-                        />
-                      </Space>
-                    </Space>
-                  </Space>
-                )
-              else if (/^-?\d*\.?\d+$/.test(template.defaultDynamicFieldsValues[dynamicElement]))
-                return (
-                  <Space
-                    key={i}
-                    direction="horizontal"
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: 20.4,
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Space>
-                      <Space
-                        style={{
-                          fontWeight: 400,
-                          fontSize: 14,
-                          width: 132,
-                          color: '#000',
-                        }}
-                      >
-                        {dynamicElement}:
-                      </Space>
-                      <Space>
-                        <InputStyled
-                          style={{width: 356}}
-                          placeholder={`${dynamicElement}`}
-                          value={template.defaultDynamicFieldsValues[dynamicElement]}
-                          onChange={(e) => {
-                            let defaultDynamicFieldsValues = []
-                            const newDefaultDynamicFieldsValues = {
-                              [dynamicElement]: e.target.value,
-                            }
-                            defaultDynamicFieldsValues = {
-                              ...template.defaultDynamicFieldsValues,
-                              ...newDefaultDynamicFieldsValues,
-                            }
-                            const newState = templates.map((template, i) => {
-                              if (templateIndex === i) {
-                                return {
-                                  ...template,
-                                  ...{
-                                    ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                  },
-                                }
-                              }
-                              return template
-                            })
-                            setTemplates(newState)
-                          }}
-                        />
-                      </Space>
-                    </Space>
-                  </Space>
-                )
-              else if (isNumberWithPercentage(template.defaultDynamicFieldsValues[dynamicElement]))
-                return (
-                  <Space
-                    key={i}
-                    direction="horizontal"
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: 20.4,
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Space>
-                      <Space
-                        style={{
-                          fontWeight: 400,
-                          fontSize: 14,
-                          width: 132,
-                          color: '#000',
-                        }}
-                      >
-                        {dynamicElement}:
-                      </Space>
-                      <Space>
-                        <InputStyled
-                          style={{width: 356}}
-                          placeholder={`${dynamicElement}`}
-                          value={template.defaultDynamicFieldsValues[dynamicElement]}
-                          onChange={(e) => {
-                            let defaultDynamicFieldsValues = []
-                            const newDefaultDynamicFieldsValues = {
-                              [dynamicElement]: e.target.value,
-                            }
-                            defaultDynamicFieldsValues = {
-                              ...template.defaultDynamicFieldsValues,
-                              ...newDefaultDynamicFieldsValues,
-                            }
-                            const newState = templates.map((template, i) => {
-                              if (templateIndex === i) {
-                                return {
-                                  ...template,
-                                  ...{
-                                    ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                  },
-                                }
-                              }
-                              return template
-                            })
-                            setTemplates(newState)
-                          }}
-                        />
-                      </Space>
-                    </Space>
-                  </Space>
-                )
-              else if (Number(template.defaultDynamicFieldsValues[dynamicElement]) > 0)
-                return (
-                  <Space
-                    key={i}
-                    direction="horizontal"
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: 20.4,
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Space>
-                      <Space
-                        style={{
-                          fontWeight: 400,
-                          fontSize: 14,
-                          width: 132,
-                          color: '#000',
-                        }}
-                      >
-                        {dynamicElement}:
-                      </Space>
-                    </Space>
-                    <Space>
-                      <InputNumberStyled
-                        style={{
-                          marginRight: 51.6,
-                        }}
-                        controls={{
-                          upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-                          downIcon: (
-                            <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />
-                          ),
-                        }}
-                        bordered={true}
-                        defaultValue={template.defaultDynamicFieldsValues[dynamicElement]}
-                        onChange={(value) => {
-                          if (value > 0) {
-                            let defaultDynamicFieldsValues =
-                              templates[templateIndex].defaultDynamicFieldsValues
-                            const newDefaultDynamicFieldsValues = {
-                              [dynamicElement]: value.toString(),
-                            }
-                            defaultDynamicFieldsValues = {
-                              ...defaultDynamicFieldsValues,
-                              ...newDefaultDynamicFieldsValues,
-                            }
-                            const newState = templates.map((template, i) => {
-                              if (templateIndex === i) {
-                                return {
-                                  ...template,
-                                  ...{
-                                    ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                  },
-                                }
-                              }
-                              return template
-                            })
-                            setTemplates(newState)
-                          }
-                        }}
-                      />
-                    </Space>
-                  </Space>
-                )
-              else if (Number(template.defaultDynamicFieldsValues[dynamicElement]) < 0)
-                return (
-                  <Space
-                    key={i}
-                    direction="horizontal"
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: 20.4,
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Space>
-                      <Space
-                        style={{
-                          fontWeight: 400,
-                          fontSize: 14,
-                          width: 132,
-                          color: '#000',
-                        }}
-                      >
-                        {dynamicElement}:
-                      </Space>
-                    </Space>
-                    <Space>
-                      <InputNumberStyled
-                        style={{
-                          marginRight: 51.6,
-                        }}
-                        controls={{
-                          upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-                          downIcon: (
-                            <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />
-                          ),
-                        }}
-                        bordered={true}
-                        defaultValue={template.defaultDynamicFieldsValues[dynamicElement]}
-                        onChange={(value) => {
-                          if (value > 0) {
-                            let defaultDynamicFieldsValues =
-                              templates[templateIndex].defaultDynamicFieldsValues
-                            const newDefaultDynamicFieldsValues = {
-                              [dynamicElement]: value.toString(),
-                            }
-                            defaultDynamicFieldsValues = {
-                              ...defaultDynamicFieldsValues,
-                              ...newDefaultDynamicFieldsValues,
-                            }
-                            const newState = templates.map((template, i) => {
-                              if (templateIndex === i) {
-                                return {
-                                  ...template,
-                                  ...{
-                                    ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                  },
-                                }
-                              }
-                              return template
-                            })
-                            setTemplates(newState)
-                          }
-                        }}
-                      />
-                    </Space>
-                  </Space>
-                )
-              else if (/^\d+(,\d+)*$/.test(template.defaultDynamicFieldsValues[dynamicElement]))
-                return (
-                  <Space
-                    key={i}
-                    direction="horizontal"
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: 20.4,
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Space>
-                      <Space
-                        style={{
-                          fontWeight: 400,
-                          fontSize: 14,
-                          width: 132,
-                          color: '#000',
-                        }}
-                      >
-                        {dynamicElement}:
-                      </Space>
-                      <Space>
-                        <InputStyled
-                          style={{width: 356}}
-                          placeholder={`${dynamicElement}`}
-                          value={template.defaultDynamicFieldsValues[dynamicElement]}
-                          onChange={(e) => {
-                            let defaultDynamicFieldsValues = []
-                            const newDefaultDynamicFieldsValues = {
-                              [dynamicElement]: e.target.value,
-                            }
-                            defaultDynamicFieldsValues = {
-                              ...template.defaultDynamicFieldsValues,
-                              ...newDefaultDynamicFieldsValues,
-                            }
-                            const newState = templates.map((template, i) => {
-                              if (templateIndex === i) {
-                                return {
-                                  ...template,
-                                  ...{
-                                    ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                  },
-                                }
-                              }
-                              return template
-                            })
-                            setTemplates(newState)
-                          }}
-                        />
-                      </Space>
-                    </Space>
-                  </Space>
-                )
-              else if (
-                /^\((-?\d+(\.\d+)?|-\.\d+)\)$/.test(
-                  template.defaultDynamicFieldsValues[dynamicElement],
-                )
+                </Space>
               )
-                return (
-                  <Space
-                    key={i}
-                    direction="horizontal"
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: 20.4,
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Space>
-                      <Space
-                        style={{
-                          fontWeight: 400,
-                          fontSize: 14,
-                          width: 132,
-                          color: '#000',
-                        }}
-                      >
-                        {dynamicElement}:
-                      </Space>
-                      <Space>
-                        <InputStyled
-                          style={{width: 356}}
-                          placeholder={`${dynamicElement}`}
-                          value={template.defaultDynamicFieldsValues[dynamicElement]}
-                          onChange={(e) => {
-                            let defaultDynamicFieldsValues = []
-                            const newDefaultDynamicFieldsValues = {
-                              [dynamicElement]: e.target.value,
-                            }
-                            defaultDynamicFieldsValues = {
-                              ...template.defaultDynamicFieldsValues,
-                              ...newDefaultDynamicFieldsValues,
-                            }
-                            const newState = templates.map((template, i) => {
-                              if (templateIndex === i) {
-                                return {
-                                  ...template,
-                                  ...{
-                                    ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                  },
-                                }
-                              }
-                              return template
-                            })
-                            setTemplates(newState)
-                          }}
-                        />
-                      </Space>
+            else if (Number(template.defaultDynamicFieldsValues[dynamicElement]) < 0)
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                      }}
+                    >
+                      {dynamicElement}:
                     </Space>
                   </Space>
-                )
-              else if (dynamicElement.includes('cssAttrib') || dynamicElement.includes('Variable'))
-                return (
-                  <Space
-                    key={i}
-                    direction="horizontal"
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: 20.4,
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Space>
-                      <Space
-                        style={{
-                          fontWeight: 400,
-                          fontSize: 14,
-                          width: 132,
-                          color: '#000',
-                        }}
-                      >
-                        {dynamicElement}:
-                      </Space>
-                      <Space>
-                        <InputStyled
-                          style={{width: 356}}
-                          placeholder={`${dynamicElement}`}
-                          value={template.defaultDynamicFieldsValues[dynamicElement]}
-                          onChange={(e) => {
-                            let defaultDynamicFieldsValues = []
-                            const newDefaultDynamicFieldsValues = {
-                              [dynamicElement]: e.target.value,
-                            }
-                            defaultDynamicFieldsValues = {
-                              ...template.defaultDynamicFieldsValues,
-                              ...newDefaultDynamicFieldsValues,
-                            }
-                            const newState = templates.map((template, i) => {
-                              if (templateIndex === i) {
-                                return {
-                                  ...template,
-                                  ...{
-                                    ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                  },
-                                }
+                  <Space>
+                    <InputNumberStyled
+                      disabled={!languageSelected[templateIndex] ? false : true}
+                      style={{
+                        marginRight: 51.6,
+                      }}
+                      controls={{
+                        upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                        downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                      }}
+                      bordered={true}
+                      defaultValue={template.defaultDynamicFieldsValues[dynamicElement]}
+                      onChange={(value) => {
+                        if (value > 0) {
+                          let defaultDynamicFieldsValues =
+                            templates[templateIndex].defaultDynamicFieldsValues
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: value.toString(),
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
                               }
-                              return template
-                            })
-                            setTemplates(newState)
-                          }}
-                        />
-                      </Space>
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }
+                      }}
+                    />
+                  </Space>
+                </Space>
+              )
+            else if (/^\d+(,\d+)*$/.test(template.defaultDynamicFieldsValues[dynamicElement]))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        disabled={!languageSelected[templateIndex] ? false : true}
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
                     </Space>
                   </Space>
-                )
-              else
-                return (
-                  <Space
-                    key={i}
-                    direction="horizontal"
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: 20.4,
-                      marginLeft: 15,
-                    }}
-                  >
-                    <Space>
-                      <Space
-                        style={{
-                          fontWeight: 400,
-                          fontSize: 14,
-                          width: 132,
-                          color: '#000',
-                        }}
-                      >
-                        {dynamicElement}:
-                      </Space>
-                      <Space>
-                        <InputStyled
-                          style={{width: 356}}
-                          placeholder={`${dynamicElement}`}
-                          value={template.defaultDynamicFieldsValues[dynamicElement]}
-                          onChange={(e) => {
-                            let defaultDynamicFieldsValues = []
-                            const newDefaultDynamicFieldsValues = {
-                              [dynamicElement]: e.target.value,
-                            }
-                            defaultDynamicFieldsValues = {
-                              ...template.defaultDynamicFieldsValues,
-                              ...newDefaultDynamicFieldsValues,
-                            }
-                            const newState = templates.map((template, i) => {
-                              if (templateIndex === i) {
-                                return {
-                                  ...template,
-                                  ...{
-                                    ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                  },
-                                }
-                              }
-                              return template
-                            })
-                            setTemplates(newState)
-                          }}
-                        />
-                      </Space>
+                </Space>
+              )
+            else if (
+              /^\((-?\d+(\.\d+)?|-\.\d+)\)$/.test(
+                template.defaultDynamicFieldsValues[dynamicElement],
+              )
+            )
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                      }}
+                    >
+                      {dynamicElement}:
                     </Space>
                     <Space>
-                      <Space>
-                        {buttonCases.map((buttonCase) => (
-                          <ButtonCaseStyled
-                            style={
-                              template.hasOwnProperty('dynamicElementsStyles')
+                      <InputStyled
+                        disabled={!languageSelected[templateIndex] ? false : true}
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else if (dynamicElement.includes('cssAttrib') || dynamicElement.includes('Variable'))
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        disabled={!languageSelected[templateIndex] ? false : true}
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                </Space>
+              )
+            else
+              return (
+                <Space
+                  key={i}
+                  direction="horizontal"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: 20.4,
+                    marginLeft: 15,
+                  }}
+                >
+                  <Space>
+                    <Space
+                      style={{
+                        fontWeight: 400,
+                        fontSize: 14,
+                        width: 132,
+                        color: '#000',
+                      }}
+                    >
+                      {dynamicElement}:
+                    </Space>
+                    <Space>
+                      <InputStyled
+                        style={{width: 356}}
+                        placeholder={`${dynamicElement}`}
+                        value={template.defaultDynamicFieldsValues[dynamicElement]}
+                        onChange={(e) => {
+                          let defaultDynamicFieldsValues = []
+                          const newDefaultDynamicFieldsValues = {
+                            [dynamicElement]: e.target.value,
+                          }
+                          defaultDynamicFieldsValues = {
+                            ...template.defaultDynamicFieldsValues,
+                            ...newDefaultDynamicFieldsValues,
+                          }
+                          const newState = templates.map((template, i) => {
+                            if (templateIndex === i) {
+                              return {
+                                ...template,
+                                ...{
+                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                },
+                              }
+                            }
+                            return template
+                          })
+                          setTemplates(newState)
+                        }}
+                      />
+                    </Space>
+                  </Space>
+                  <Space>
+                    <Space>
+                      {buttonCases.map((buttonCase) => (
+                        <ButtonCaseStyled
+                          disabled={!languageSelected[templateIndex] ? false : true}
+                          style={
+                            template.hasOwnProperty('dynamicElementsStyles')
+                              ? template.dynamicElementsStyles.find((obj) => {
+                                  return obj[dynamicElement]
+                                })
                                 ? template.dynamicElementsStyles.find((obj) => {
                                     return obj[dynamicElement]
-                                  })
-                                  ? template.dynamicElementsStyles.find((obj) => {
-                                      return obj[dynamicElement]
-                                    })[dynamicElement].case === buttonCase.value
-                                    ? {
-                                        backgroundColor: '#339af0',
-                                        color: '#fff',
-                                        outline: 'unset',
-                                        borderColor: '#339af0',
-                                      }
-                                    : {}
+                                  })[dynamicElement].case === buttonCase.value
+                                  ? {
+                                      backgroundColor: '#339af0',
+                                      color: '#fff',
+                                      outline: 'unset',
+                                      borderColor: '#339af0',
+                                    }
                                   : {}
                                 : {}
-                            }
-                            size="large"
-                            onClick={() => {
-                              let dynamicElementsStyles = []
-                              let defaultDynamicFieldsValues = []
-                              if (template.hasOwnProperty('dynamicElementsStyles')) {
-                                let dynamicElementsStylesExists =
-                                  template.dynamicElementsStyles.filter((dynamicElementStyle) => {
-                                    return dynamicElementStyle.hasOwnProperty(dynamicElement)
-                                  }).length > 0
-                                if (dynamicElementsStylesExists) {
-                                  const newDynamicElementsStylesState =
-                                    template.dynamicElementsStyles.map((dynamicElementStyle) => {
-                                      if (dynamicElementStyle.hasOwnProperty(dynamicElement))
-                                        return {
-                                          ...dynamicElementStyle,
-                                          [dynamicElement]: {
-                                            case: buttonCase.value,
-                                            number: dynamicElementStyle[dynamicElement].number,
-                                          },
-                                        }
-                                      return dynamicElementStyle
-                                    })
-                                  newDynamicElementsStylesState.map((newDynamicElementStyleState) =>
-                                    dynamicElementsStyles.push(newDynamicElementStyleState),
-                                  )
-                                } else
-                                  dynamicElementsStyles.push(...template.dynamicElementsStyles, {
-                                    [dynamicElement]: {
-                                      case: buttonCase.value,
-                                      number: 0,
-                                    },
+                              : {}
+                          }
+                          size="large"
+                          onClick={() => {
+                            let dynamicElementsStyles = []
+                            let defaultDynamicFieldsValues = []
+                            if (template.hasOwnProperty('dynamicElementsStyles')) {
+                              let dynamicElementsStylesExists =
+                                template.dynamicElementsStyles.filter((dynamicElementStyle) => {
+                                  return dynamicElementStyle.hasOwnProperty(dynamicElement)
+                                }).length > 0
+                              if (dynamicElementsStylesExists) {
+                                const newDynamicElementsStylesState =
+                                  template.dynamicElementsStyles.map((dynamicElementStyle) => {
+                                    if (dynamicElementStyle.hasOwnProperty(dynamicElement))
+                                      return {
+                                        ...dynamicElementStyle,
+                                        [dynamicElement]: {
+                                          case: buttonCase.value,
+                                          number: dynamicElementStyle[dynamicElement].number,
+                                        },
+                                      }
+                                    return dynamicElementStyle
                                   })
-                                const newDefaultDynamicFieldsValues = {
-                                  [dynamicElement]: textHeadingLegalCase(
-                                    template.defaultDynamicFieldsValues[dynamicElement],
-                                    buttonCase.value,
-                                  ),
-                                }
-                                defaultDynamicFieldsValues = {
-                                  ...template.defaultDynamicFieldsValues,
-                                  ...newDefaultDynamicFieldsValues,
-                                }
-                              } else {
-                                dynamicElementsStyles.push({
+                                newDynamicElementsStylesState.map((newDynamicElementStyleState) =>
+                                  dynamicElementsStyles.push(newDynamicElementStyleState),
+                                )
+                              } else
+                                dynamicElementsStyles.push(...template.dynamicElementsStyles, {
                                   [dynamicElement]: {
                                     case: buttonCase.value,
                                     number: 0,
                                   },
                                 })
-                                const newDefaultDynamicFieldsValues = {
-                                  [dynamicElement]: textHeadingLegalCase(
-                                    template.defaultDynamicFieldsValues[dynamicElement],
-                                    buttonCase.value,
-                                  ),
-                                }
-                                defaultDynamicFieldsValues = {
-                                  ...template.defaultDynamicFieldsValues,
-                                  ...newDefaultDynamicFieldsValues,
-                                }
+                              const newDefaultDynamicFieldsValues = {
+                                [dynamicElement]: textHeadingLegalCase(
+                                  template.defaultDynamicFieldsValues[dynamicElement],
+                                  buttonCase.value,
+                                ),
                               }
-                              const newState = templates.map((template, i) => {
-                                if (templateIndex === i) {
-                                  return {
-                                    ...template,
-                                    dynamicElementsStyles,
-                                    ...{
-                                      ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                    },
-                                  }
-                                }
-                                return template
+                              defaultDynamicFieldsValues = {
+                                ...template.defaultDynamicFieldsValues,
+                                ...newDefaultDynamicFieldsValues,
+                              }
+                            } else {
+                              dynamicElementsStyles.push({
+                                [dynamicElement]: {
+                                  case: buttonCase.value,
+                                  number: 0,
+                                },
                               })
-                              setTemplates(newState)
-                            }}
-                          >
-                            {buttonCase.label}
-                          </ButtonCaseStyled>
-                        ))}
-                      </Space>
-                      <InputNumberStyled
-                        style={{
-                          marginRight: 51.6,
-                        }}
-                        controls={{
-                          upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
-                          downIcon: (
-                            <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />
-                          ),
-                        }}
-                        bordered={true}
-                        value={textHeadingLegalMaxValue(
-                          template.defaultDynamicFieldsValues[dynamicElement],
-                        )}
-                        onStep={(value) => {
-                          if (value > languageLength)
-                            api['warning']({
-                              message: `${dynamicElement}`,
-                              description: 'Character Limit Exceeds!',
-                            })
-                          const filteredLanguage = languages.filter((lang) => {
-                            if (language === '') return lang.language === 'Latin'
-                            else return lang.language === language
-                          })
-                          let defaultDynamicFieldsValues =
-                            templates[templateIndex].defaultDynamicFieldsValues
-                          const newDefaultDynamicFieldsValues = {
-                            [dynamicElement]: filteredLanguage[0].content.substring(0, value),
-                          }
-                          defaultDynamicFieldsValues = {
-                            ...defaultDynamicFieldsValues,
-                            ...newDefaultDynamicFieldsValues,
-                          }
-                          const newState = templates.map((template, i) => {
-                            if (templateIndex === i) {
-                              return {
-                                ...template,
-                                ...{
-                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                },
+                              const newDefaultDynamicFieldsValues = {
+                                [dynamicElement]: textHeadingLegalCase(
+                                  template.defaultDynamicFieldsValues[dynamicElement],
+                                  buttonCase.value,
+                                ),
+                              }
+                              defaultDynamicFieldsValues = {
+                                ...template.defaultDynamicFieldsValues,
+                                ...newDefaultDynamicFieldsValues,
                               }
                             }
-                            return template
-                          })
-                          setTemplates(newState)
-                        }}
-                        onChange={(value) => {
-                          if (value > languageLength)
-                            api['warning']({
-                              message: `${dynamicElement}`,
-                              description: 'Character Limit Exceeds!',
-                            })
-                          const filteredLanguage = languages.filter((lang) => {
-                            if (language === '') return lang.language === 'Latin'
-                            else return lang.language === language
-                          })
-                          let defaultDynamicFieldsValues =
-                            templates[templateIndex].defaultDynamicFieldsValues
-                          const newDefaultDynamicFieldsValues = {
-                            [dynamicElement]: filteredLanguage[0].content.substring(0, value),
-                          }
-                          defaultDynamicFieldsValues = {
-                            ...defaultDynamicFieldsValues,
-                            ...newDefaultDynamicFieldsValues,
-                          }
-                          const newState = templates.map((template, i) => {
-                            if (templateIndex === i) {
-                              return {
-                                ...template,
-                                ...{
-                                  ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
-                                },
+                            const newState = templates.map((template, i) => {
+                              if (templateIndex === i) {
+                                return {
+                                  ...template,
+                                  dynamicElementsStyles,
+                                  ...{
+                                    ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                                  },
+                                }
                               }
-                            }
-                            return template
-                          })
-                          setTemplates(newState)
-                        }}
-                      />
+                              return template
+                            })
+                            setTemplates(newState)
+                          }}
+                        >
+                          {buttonCase.label}
+                        </ButtonCaseStyled>
+                      ))}
                     </Space>
+                    <InputNumberStyled
+                      disabled={!languageSelected[templateIndex] ? false : true}
+                      style={{
+                        marginRight: 51.6,
+                      }}
+                      controls={{
+                        upIcon: <CaretUpOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                        downIcon: <CaretDownOutlined style={{color: '#339AF0', fontSize: 10.8}} />,
+                      }}
+                      bordered={true}
+                      value={textHeadingLegalMaxValue(
+                        template.defaultDynamicFieldsValues[dynamicElement],
+                      )}
+                      onStep={(value) => {
+                        if (value > languageLength)
+                          api['warning']({
+                            message: `${dynamicElement}`,
+                            description: 'Character Limit Exceeds!',
+                          })
+                        const filteredLanguage = languages.filter((lang) => {
+                          if (language === '') return lang.language === 'Latin'
+                          else return lang.language === language
+                        })
+                        let defaultDynamicFieldsValues =
+                          templates[templateIndex].defaultDynamicFieldsValues
+                        const newDefaultDynamicFieldsValues = {
+                          [dynamicElement]: filteredLanguage[0].content.substring(0, value),
+                        }
+                        defaultDynamicFieldsValues = {
+                          ...defaultDynamicFieldsValues,
+                          ...newDefaultDynamicFieldsValues,
+                        }
+                        const newState = templates.map((template, i) => {
+                          if (templateIndex === i) {
+                            return {
+                              ...template,
+                              ...{
+                                ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                              },
+                            }
+                          }
+                          return template
+                        })
+                        setTemplates(newState)
+                      }}
+                      onChange={(value) => {
+                        if (value > languageLength)
+                          api['warning']({
+                            message: `${dynamicElement}`,
+                            description: 'Character Limit Exceeds!',
+                          })
+                        const filteredLanguage = languages.filter((lang) => {
+                          if (language === '') return lang.language === 'Latin'
+                          else return lang.language === language
+                        })
+                        let defaultDynamicFieldsValues =
+                          templates[templateIndex].defaultDynamicFieldsValues
+                        const newDefaultDynamicFieldsValues = {
+                          [dynamicElement]: filteredLanguage[0].content.substring(0, value),
+                        }
+                        defaultDynamicFieldsValues = {
+                          ...defaultDynamicFieldsValues,
+                          ...newDefaultDynamicFieldsValues,
+                        }
+                        const newState = templates.map((template, i) => {
+                          if (templateIndex === i) {
+                            return {
+                              ...template,
+                              ...{
+                                ['defaultDynamicFieldsValues']: defaultDynamicFieldsValues,
+                              },
+                            }
+                          }
+                          return template
+                        })
+                        setTemplates(newState)
+                      }}
+                    />
                   </Space>
-                )
-            }
-          })}
-        </div>
+                </Space>
+              )
+          }
+        })}
       </Space>
     )
   }

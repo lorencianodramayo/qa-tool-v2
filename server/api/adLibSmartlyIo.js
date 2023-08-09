@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const adLibSmartlyIo = require("../helpers/adLibSmartlyIo");
+const { Variants } = require("../models/variants");
 // const multer = require('multer');
 // const storage = multer.memoryStorage();
 // const upload = multer({ storage });
@@ -53,5 +54,13 @@ router.post("/postTemplateVersionImageVideoCloud", async (req, res) => {
 });
 router.get("/getVariants", async (req, res) => {
   await adLibSmartlyIo.getVariants(req, res);
+});
+router.get("/variants", async (req, res) => {
+  const { page, pageSize } = req.query;
+  const skip = (page - 1) * pageSize;
+  const records = await Variants.find().skip(skip).limit(parseInt(pageSize));
+  const totalRecords = await Variants.countDocuments();
+  const totalPages = Math.ceil(totalRecords / pageSize);
+  res.status(200).json({ records, totalPages });
 });
 module.exports = router;
