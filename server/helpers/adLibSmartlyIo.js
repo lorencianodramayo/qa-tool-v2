@@ -611,8 +611,17 @@ const postTemplateVersionImageVideoCloud = async (req, res) => {
 };
 const getVariants = async (req, res) => {
   try {
-    const variants = await Variants.find();
-    return res.status(200).json(variants);
+    Variants.find({})
+      .limit(101)
+      .exec((err, variants) => {
+        if (err) {
+          res.status(500).json(err);
+          return;
+        }
+        return res.status(200).json(variants);
+      });
+    // const variants = await Variants.find();
+    // return res.status(200).json(variants);
   } catch (error) {
     console.log(error);
     res.status(500).json(error);

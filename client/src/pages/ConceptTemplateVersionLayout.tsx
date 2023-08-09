@@ -8,6 +8,8 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   SearchOutlined,
+  CaretLeftOutlined,
+  CaretRightOutlined,
 } from '@ant-design/icons'
 import {
   Badge,
@@ -38,6 +40,8 @@ import {ThunkDispatch} from 'redux-thunk'
 import IFrameCard from '../components/IFrame/IFrameCard'
 import {useOnMountv2} from '../hooks'
 import {getVariants} from '../features/ConceptTemplateVersion/conceptTemplateVersionSlice'
+import {setRecords, setCurrentPage} from './../features/ConceptTemplateVersion/PaginationSlice'
+import apiService from '../api/apiService'
 interface CheckedDefaultOptionFiltersProps {
   checkedList: string[]
 }
@@ -118,6 +122,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const {isTemplateVariantsSuccess, templateVariants} = useSelector(
     (state: any) => state.conceptTemplateVersion,
   )
+  const {records, totalPages, currentPage} = useSelector((state) => state.pagination)
   const [drawerVisible, setDrawerVisible] = useState<boolean>(false)
   const [mobile, setMobile] = useState<boolean>(false)
   const [isMobile, setIsMobile] = useState<boolean>(false)
@@ -154,7 +159,6 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const [shareSearchVariantSizeValue, setShareSearchVariantSizeValue] = useState<string>('')
   const [shareSelectAllVariantSizes, setShareSelectAllVariantSizes] = useState<boolean>(true)
   const [shareSelectedVariantSizeValues, setShareSelectedVariantSizeValues] = useState<string[]>([])
-  const [templates, setTemplates] = useState<any>([])
   useOnMountv2(() => {
     const checkIfMobile = () => {
       const isMobileDevice = window.innerWidth <= 768
@@ -167,55 +171,59 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     }
   }, [])
   useOnMountv2(() => {
-    setLoading(!loading)
-    dispatch(getTemplatesVersions())
-    dispatch(getVariants())
-  }, [])
+    const fetchData = async () => {
+      const response = await apiService.get(`/variants?page=${currentPage}&pageSize=101`)
+      setLoading(!loading)
+      dispatch(getTemplatesVersions())
+      dispatch(setRecords(response.data))
+    }
+    fetchData()
+  }, [currentPage, dispatch])
   useOnMountv2(() => {
-    if (isTemplatesVersionsSuccess && isTemplateVariantsSuccess) {
+    if (isTemplatesVersionsSuccess) {
       const timeout = setTimeout(() => {
-        let templates: any = []
+        let templates = []
         templatesVersions.map((templatesVersion: any) => {
           let _templateVariants: any = []
-          templateVariants.map((templateVariant: any) => {
-            if (templatesVersion._id === templateVariant.templateId) {
+          records.map((record: any) => {
+            if (templatesVersion._id === record.templateId) {
               _templateVariants.push({
-                _id: templateVariant._id,
-                templateId: templateVariant.templateId,
-                templateName: templateVariant.templateName,
-                size: templateVariant.size,
-                variantName: templateVariant.variantName,
-                defaultValues: templateVariant.defaultValues,
+                _id: record._id,
+                templateId: record.templateId,
+                templateName: record.templateName,
+                size: record.size,
+                variantName: record.variantName,
+                defaultValues: record.defaultValues,
               })
             }
           })
-          templates.push({
-            _id: templatesVersion._id,
-            templateId: templatesVersion.templateId,
-            variants: _templateVariants,
-          })
+          if (_templateVariants.length > 0)
+            templates.push({
+              _id: templatesVersion._id,
+              templateId: templatesVersion.templateId,
+              variants: _templateVariants,
+            })
         })
         let treeDataVariantNames: TreeNodeData[] = []
         let treeDataVariantSizes: TreeNodeData[] = []
-        setTemplates(templates)
-        templates.map((templateVersion: any) => {
-          templateVersion.variants.map((variantName) => {
-            const variantNameExist = treeDataVariantNames.some(
-              (el) => el.value === variantName.variantName,
-            )
-            const variantSizeExist = treeDataVariantSizes.some(
-              (el) => el.value === variantName.size,
-            )
-            if (!variantNameExist)
-              treeDataVariantNames.push({
-                title: variantName.variantName,
-                value: variantName.variantName,
-              })
-            if (!variantSizeExist)
-              treeDataVariantSizes.push({
-                title: variantName.size,
-                value: variantName.size,
-              })
+        templatesVersions.map((templatesVersion: any) => {
+          records.map((record: any) => {
+            if (templatesVersion._id === record.templateId) {
+              const variantNameExist = treeDataVariantNames.some(
+                (el) => el.value === record.variantName,
+              )
+              const variantSizeExist = treeDataVariantSizes.some((el) => el.value === record.size)
+              if (!variantNameExist)
+                treeDataVariantNames.push({
+                  title: record.variantName,
+                  value: record.variantName,
+                })
+              if (!variantSizeExist)
+                treeDataVariantSizes.push({
+                  title: record.size,
+                  value: record.size,
+                })
+            }
           })
         })
         setVariantNameTreeData(treeDataVariantNames)
@@ -308,12 +316,160 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     }
   }, [
     templatesVersions,
-    templateVariants,
     selectAllVariantNames,
     selectAllVariantSizes,
     shareSelectAllVariantNames,
     shareSelectAllVariantSizes,
   ])
+  // useOnMountv2(() => {
+  //   setLoading(!loading)
+  //   dispatch(getTemplatesVersions())
+  //   dispatch(getVariants())
+  // }, [])
+  // useOnMountv2(() => {
+  //   if (isTemplatesVersionsSuccess && isTemplateVariantsSuccess) {
+  //     const timeout = setTimeout(() => {
+  //       let templates = []
+  //       templatesVersions.map((templatesVersion: any) => {
+  //         let _templateVariants: any = []
+  //         templateVariants.map((templateVariant: any) => {
+  //           if (templatesVersion._id === templateVariant.templateId) {
+  //             _templateVariants.push({
+  //               _id: templateVariant._id,
+  //               templateId: templateVariant.templateId,
+  //               templateName: templateVariant.templateName,
+  //               size: templateVariant.size,
+  //               variantName: templateVariant.variantName,
+  //               defaultValues: templateVariant.defaultValues,
+  //             })
+  //           }
+  //         })
+  //         if (_templateVariants.length > 0)
+  //           templates.push({
+  //             _id: templatesVersion._id,
+  //             templateId: templatesVersion.templateId,
+  //             variants: _templateVariants,
+  //           })
+  //       })
+  //       let treeDataVariantNames: TreeNodeData[] = []
+  //       let treeDataVariantSizes: TreeNodeData[] = []
+  //       setTemplates(templates)
+  //       templates.map((templateVersion: any) => {
+  //         templateVersion.variants.map((variantName) => {
+  //           const variantNameExist = treeDataVariantNames.some(
+  //             (el) => el.value === variantName.variantName,
+  //           )
+  //           const variantSizeExist = treeDataVariantSizes.some(
+  //             (el) => el.value === variantName.size,
+  //           )
+  //           if (!variantNameExist)
+  //             treeDataVariantNames.push({
+  //               title: variantName.variantName,
+  //               value: variantName.variantName,
+  //             })
+  //           if (!variantSizeExist)
+  //             treeDataVariantSizes.push({
+  //               title: variantName.size,
+  //               value: variantName.size,
+  //             })
+  //         })
+  //       })
+  //       setVariantNameTreeData(treeDataVariantNames)
+  //       if (selectAllVariantNames) {
+  //         const filteredVariantNameValues = treeDataVariantNames
+  //           .filter((node) => filterVariantTreeNode(searchVariantNameValue, node))
+  //           .map((node) => node.value)
+  //         setSelectedVariantNameValues(filteredVariantNameValues)
+  //       }
+  //       setVariantSizeTreeData(treeDataVariantSizes)
+  //       if (selectAllVariantSizes) {
+  //         const filteredVariantSizeValues = treeDataVariantSizes
+  //           .filter((node) => filterVariantTreeNode(searchVariantSizeValue, node))
+  //           .map((node) => node.value)
+  //         setSelectedVariantSizeValues(filteredVariantSizeValues)
+  //       }
+  //       //
+  //       setShareVariantNameTreeData(treeDataVariantNames)
+  //       if (shareSelectAllVariantNames) {
+  //         const filteredShareVariantNameValues = treeDataVariantNames
+  //           .filter((node) => filterVariantTreeNode(shareSearchVariantNameValue, node))
+  //           .map((node) => node.value)
+  //         setShareSelectedVariantNameValues(filteredShareVariantNameValues)
+  //       }
+  //       setShareVariantSizeTreeData(treeDataVariantSizes)
+  //       if (shareSelectAllVariantSizes) {
+  //         const filteredShareVariantSizeValues = treeDataVariantSizes
+  //           .filter((node) => filterVariantTreeNode(shareSearchVariantSizeValue, node))
+  //           .map((node) => node.value)
+  //         setShareSelectedVariantSizeValues(filteredShareVariantSizeValues)
+  //       }
+  //       let combinations = 0
+  //       let filterVariants = []
+  //       let i = 0
+  //       templates.map((template: any) => {
+  //         let updatedDefaultValues = {}
+  //         let defaultValues = {}
+  //         let variantDefaultValues = {}
+  //         template.variants.map((variant: any) => {
+  //           combinations += 1
+  //           for (const [key, value] of Object.entries(variant.defaultValues)) {
+  //             imageVideoFiles.map((imageVideoFile: any) => {
+  //               if (imageVideoFile.creativeId === template._id)
+  //                 imageVideoFile.files.map((file: any) => {
+  //                   if (file.dynamicElementKey === key)
+  //                     updatedDefaultValues[
+  //                       key
+  //                     ] = `https://storage.googleapis.com/creative-templates/${imageVideoFile.creativeId}/asset/${file.dynamicElementKey}/${file.fileData.name}`
+  //                 })
+  //             })
+  //             defaultValues[key] = value
+  //           }
+  //           variantDefaultValues = Object.assign(defaultValues, updatedDefaultValues)
+  //           const variantSizeExist = filterVariants.some((el) => el.size === variant.size)
+  //           if (!variantSizeExist) {
+  //             filterVariants.push({
+  //               _id: template._id,
+  //               templateName: variant.templateName,
+  //               size: variant.size,
+  //               variants: [
+  //                 {
+  //                   variantName: variant.variantName,
+  //                   defaultValues:
+  //                     imageVideoFiles.length > 0 && imageVideoFiles !== undefined
+  //                       ? variantDefaultValues
+  //                       : variant.defaultValues,
+  //                 },
+  //               ],
+  //             })
+  //             i++
+  //           } else {
+  //             filterVariants[i - 1].variants = [
+  //               ...filterVariants[i - 1].variants,
+  //               {
+  //                 variantName: variant.variantName,
+  //                 defaultValues:
+  //                   imageVideoFiles.length > 0 && imageVideoFiles !== undefined
+  //                     ? variantDefaultValues
+  //                     : variant.defaultValues,
+  //               },
+  //             ]
+  //           }
+  //         })
+  //       })
+  //       setCombinations(combinations)
+  //       setVariants(filterVariants)
+  //       setLoading(false)
+  //     }, 8000)
+  //     return () => clearTimeout(timeout)
+  //   }
+  // }, [
+  //   templatesVersions,
+  //   templateVariants,
+  //   selectAllVariantNames,
+  //   selectAllVariantSizes,
+  //   shareSelectAllVariantNames,
+  //   shareSelectAllVariantSizes,
+  // ])
   // useOnMountv2(() => {
   //   let a: number = 0
   //   let filterVariants = []
@@ -411,16 +567,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
       setSelectedVariantNameValues(filteredVariantNameValues)
     else setSelectedVariantNameValues((prevValues) => [...prevValues, ...filteredVariantNameValues])
     let treeDataVariantNames: TreeNodeData[] = []
-    templatesVersions.map((templateVersion) => {
-      templateVersion.variants.map((variantName) => {
-        const variantNameExist = treeDataVariantNames.some(
-          (el) => el.value === variantName.variantName,
-        )
-        if (!variantNameExist)
-          treeDataVariantNames.push({
-            title: variantName.variantName,
-            value: variantName.variantName,
-          })
+    templatesVersions.map((templatesVersion: any) => {
+      records.map((record: any) => {
+        if (templatesVersion._id === record.templateId) {
+          const variantNameExist = treeDataVariantNames.some(
+            (el) => el.value === record.variantName,
+          )
+          if (!variantNameExist)
+            treeDataVariantNames.push({
+              title: record.variantName,
+              value: record.variantName,
+            })
+        }
       })
     })
     setVariantNameTreeData(treeDataVariantNames)
@@ -430,16 +588,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     setSearchVariantNameValue('')
     setSelectedVariantNameValues([])
     let treeDataVariantNames: TreeNodeData[] = []
-    templatesVersions.map((templateVersion) => {
-      templateVersion.variants.map((variantName) => {
-        const variantNameExist = treeDataVariantNames.some(
-          (el) => el.value === variantName.variantName,
-        )
-        if (!variantNameExist)
-          treeDataVariantNames.push({
-            title: variantName.variantName,
-            value: variantName.variantName,
-          })
+    templatesVersions.map((templatesVersion: any) => {
+      records.map((record: any) => {
+        if (templatesVersion._id === record.templateId) {
+          const variantNameExist = treeDataVariantNames.some(
+            (el) => el.value === record.variantName,
+          )
+          if (!variantNameExist)
+            treeDataVariantNames.push({
+              title: record.variantName,
+              value: record.variantName,
+            })
+        }
       })
     })
     setVariantNameTreeData(treeDataVariantNames)
@@ -460,14 +620,16 @@ const ConceptTemplateVersionLayout: React.FC = () => {
       setSelectedVariantSizeValues(filteredVariantSizeValues)
     else setSelectedVariantSizeValues((prevValues) => [...prevValues, ...filteredVariantSizeValues])
     let treeDataVariantSizes: TreeNodeData[] = []
-    templatesVersions.map((templateVersion) => {
-      templateVersion.variants.map((variantName) => {
-        const variantSizeExist = treeDataVariantSizes.some((el) => el.value === variantName.size)
-        if (!variantSizeExist)
-          treeDataVariantSizes.push({
-            title: variantName.size,
-            value: variantName.size,
-          })
+    templatesVersions.map((templatesVersion: any) => {
+      records.map((record: any) => {
+        if (templatesVersion._id === record.templateId) {
+          const variantSizeExist = treeDataVariantSizes.some((el) => el.value === record.size)
+          if (!variantSizeExist)
+            treeDataVariantSizes.push({
+              title: record.size,
+              value: record.size,
+            })
+        }
       })
     })
     setVariantSizeTreeData(treeDataVariantSizes)
@@ -477,14 +639,16 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     setSearchVariantSizeValue('')
     setSelectedVariantSizeValues([])
     let treeDataVariantSizes: TreeNodeData[] = []
-    templatesVersions.map((templateVersion) => {
-      templateVersion.variants.map((variantName) => {
-        const variantSizeExist = treeDataVariantSizes.some((el) => el.value === variantName.size)
-        if (!variantSizeExist)
-          treeDataVariantSizes.push({
-            title: variantName.size,
-            value: variantName.size,
-          })
+    templatesVersions.map((templatesVersion: any) => {
+      records.map((record: any) => {
+        if (templatesVersion._id === record.templateId) {
+          const variantSizeExist = treeDataVariantSizes.some((el) => el.value === record.size)
+          if (!variantSizeExist)
+            treeDataVariantSizes.push({
+              title: record.size,
+              value: record.size,
+            })
+        }
       })
     })
     setVariantSizeTreeData(treeDataVariantSizes)
@@ -512,16 +676,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         ...filteredShareVariantNameValues,
       ])
     let treeDataVariantNames: TreeNodeData[] = []
-    templatesVersions.map((templateVersion) => {
-      templateVersion.variants.map((variantName) => {
-        const variantNameExist = treeDataVariantNames.some(
-          (el) => el.value === variantName.variantName,
-        )
-        if (!variantNameExist)
-          treeDataVariantNames.push({
-            title: variantName.variantName,
-            value: variantName.variantName,
-          })
+    templatesVersions.map((templatesVersion: any) => {
+      records.map((record: any) => {
+        if (templatesVersion._id === record.templateId) {
+          const variantNameExist = treeDataVariantNames.some(
+            (el) => el.value === record.variantName,
+          )
+          if (!variantNameExist)
+            treeDataVariantNames.push({
+              title: record.variantName,
+              value: record.variantName,
+            })
+        }
       })
     })
     setShareVariantNameTreeData(treeDataVariantNames)
@@ -531,16 +697,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     setShareSearchVariantNameValue('')
     setShareSelectedVariantNameValues([])
     let treeDataVariantNames: TreeNodeData[] = []
-    templatesVersions.map((templateVersion) => {
-      templateVersion.variants.map((variantName) => {
-        const variantNameExist = treeDataVariantNames.some(
-          (el) => el.value === variantName.variantName,
-        )
-        if (!variantNameExist)
-          treeDataVariantNames.push({
-            title: variantName.variantName,
-            value: variantName.variantName,
-          })
+    templatesVersions.map((templatesVersion: any) => {
+      records.map((record: any) => {
+        if (templatesVersion._id === record.templateId) {
+          const variantNameExist = treeDataVariantNames.some(
+            (el) => el.value === record.variantName,
+          )
+          if (!variantNameExist)
+            treeDataVariantNames.push({
+              title: record.variantName,
+              value: record.variantName,
+            })
+        }
       })
     })
     setShareVariantNameTreeData(treeDataVariantNames)
@@ -568,14 +736,16 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         ...filteredShareVariantSizeValues,
       ])
     let treeDataVariantSizes: TreeNodeData[] = []
-    templatesVersions.map((templateVersion) => {
-      templateVersion.variants.map((variantName) => {
-        const variantSizeExist = treeDataVariantSizes.some((el) => el.value === variantName.size)
-        if (!variantSizeExist)
-          treeDataVariantSizes.push({
-            title: variantName.size,
-            value: variantName.size,
-          })
+    templatesVersions.map((templatesVersion: any) => {
+      records.map((record: any) => {
+        if (templatesVersion._id === record.templateId) {
+          const variantSizeExist = treeDataVariantSizes.some((el) => el.value === record.size)
+          if (!variantSizeExist)
+            treeDataVariantSizes.push({
+              title: record.size,
+              value: record.size,
+            })
+        }
       })
     })
     setShareVariantSizeTreeData(treeDataVariantSizes)
@@ -585,14 +755,16 @@ const ConceptTemplateVersionLayout: React.FC = () => {
     setShareSearchVariantSizeValue('')
     setShareSelectedVariantSizeValues([])
     let treeDataVariantSizes: TreeNodeData[] = []
-    templatesVersions.map((templateVersion) => {
-      templateVersion.variants.map((variantName) => {
-        const variantSizeExist = treeDataVariantSizes.some((el) => el.value === variantName.size)
-        if (!variantSizeExist)
-          treeDataVariantSizes.push({
-            title: variantName.size,
-            value: variantName.size,
-          })
+    templatesVersions.map((templatesVersion: any) => {
+      records.map((record: any) => {
+        if (templatesVersion._id === record.templateId) {
+          const variantSizeExist = treeDataVariantSizes.some((el) => el.value === record.size)
+          if (!variantSizeExist)
+            treeDataVariantSizes.push({
+              title: record.size,
+              value: record.size,
+            })
+        }
       })
     })
     setShareVariantSizeTreeData(treeDataVariantSizes)
@@ -609,8 +781,25 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const renderTreeNodes = (data: TreeNodeData[]) => {
     return data.map((node) => <TreeNode title={node.title} value={node.value} key={node.value} />)
   }
+
   return (
-    <Layout style={{height: 'calc(100vh - 64px)'}}>
+    <Layout style={{height: 'calc(100vh - 64px)', pointerEvents: loading ? 'none' : 'unset'}}>
+      <FloatButton
+        disabled={currentPage === 1}
+        shape="circle"
+        type="primary"
+        style={{right: 152}}
+        icon={<CaretLeftOutlined />}
+        onClick={() => dispatch(setCurrentPage(currentPage - 1))}
+      />
+      <FloatButton
+        disabled={currentPage === totalPages}
+        shape="circle"
+        type="primary"
+        style={{right: 94}}
+        icon={<CaretRightOutlined />}
+        onClick={() => dispatch(setCurrentPage(currentPage + 1))}
+      />
       <FloatButton.Group shape="square">
         {!mobile && (
           <FloatButtonMobileShareStyled
@@ -714,16 +903,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
               setSearchVariantNameValue(value)
               setSelectAllVariantNames(false)
               let treeDataVariantNames: TreeNodeData[] = []
-              templatesVersions.map((templateVersion) => {
-                templateVersion.variants.map((variantName) => {
-                  const variantNameExist = treeDataVariantNames.some(
-                    (el) => el.value === variantName.variantName,
-                  )
-                  if (!variantNameExist)
-                    treeDataVariantNames.push({
-                      title: variantName.variantName,
-                      value: variantName.variantName,
-                    })
+              templatesVersions.map((templatesVersion: any) => {
+                records.map((record: any) => {
+                  if (templatesVersion._id === record.templateId) {
+                    const variantNameExist = treeDataVariantNames.some(
+                      (el) => el.value === record.variantName,
+                    )
+                    if (!variantNameExist)
+                      treeDataVariantNames.push({
+                        title: record.variantName,
+                        value: record.variantName,
+                      })
+                  }
                 })
               })
               setVariantNameTreeData(
@@ -734,16 +925,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             }}
             onClear={() => {
               let treeDataVariantNames: TreeNodeData[] = []
-              templatesVersions.map((templateVersion) => {
-                templateVersion.variants.map((variantName) => {
-                  const variantNameExist = treeDataVariantNames.some(
-                    (el) => el.value === variantName.variantName,
-                  )
-                  if (!variantNameExist)
-                    treeDataVariantNames.push({
-                      title: variantName.variantName,
-                      value: variantName.variantName,
-                    })
+              templatesVersions.map((templatesVersion: any) => {
+                records.map((record: any) => {
+                  if (templatesVersion._id === record.templateId) {
+                    const variantNameExist = treeDataVariantNames.some(
+                      (el) => el.value === record.variantName,
+                    )
+                    if (!variantNameExist)
+                      treeDataVariantNames.push({
+                        title: record.variantName,
+                        value: record.variantName,
+                      })
+                  }
                 })
               })
               setVariantNameTreeData(treeDataVariantNames)
@@ -794,16 +987,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
               setSearchVariantSizeValue(value)
               setSelectAllVariantSizes(false)
               let treeDataVariantSizes: TreeNodeData[] = []
-              templatesVersions.map((templateVersion) => {
-                templateVersion.variants.map((variantName) => {
-                  const variantSizeExist = treeDataVariantSizes.some(
-                    (el) => el.value === variantName.size,
-                  )
-                  if (!variantSizeExist)
-                    treeDataVariantSizes.push({
-                      title: variantName.size,
-                      value: variantName.size,
-                    })
+              templatesVersions.map((templatesVersion: any) => {
+                records.map((record: any) => {
+                  if (templatesVersion._id === record.templateId) {
+                    const variantSizeExist = treeDataVariantSizes.some(
+                      (el) => el.value === record.size,
+                    )
+                    if (!variantSizeExist)
+                      treeDataVariantSizes.push({
+                        title: record.size,
+                        value: record.size,
+                      })
+                  }
                 })
               })
               setVariantSizeTreeData(
@@ -814,16 +1009,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
             }}
             onClear={() => {
               let treeDataVariantSizes: TreeNodeData[] = []
-              templatesVersions.map((templateVersion) => {
-                templateVersion.variants.map((variantName) => {
-                  const variantSizeExist = treeDataVariantSizes.some(
-                    (el) => el.value === variantName.size,
-                  )
-                  if (!variantSizeExist)
-                    treeDataVariantSizes.push({
-                      title: variantName.size,
-                      value: variantName.size,
-                    })
+              templatesVersions.map((templatesVersion: any) => {
+                records.map((record: any) => {
+                  if (templatesVersion._id === record.templateId) {
+                    const variantSizeExist = treeDataVariantSizes.some(
+                      (el) => el.value === record.size,
+                    )
+                    if (!variantSizeExist)
+                      treeDataVariantSizes.push({
+                        title: record.size,
+                        value: record.size,
+                      })
+                  }
                 })
               })
               setVariantSizeTreeData(treeDataVariantSizes)
@@ -1124,64 +1321,100 @@ const ConceptTemplateVersionLayout: React.FC = () => {
         onOk={() => {
           let filterVariants = []
           let i = 0
-          templates.map((template: any) => {
-            template.variants.map((variant: any) => {
-              if (
-                shareSelectedVariantNameValues.length === 0 &&
-                shareSelectedVariantSizeValues.length === 0
-              ) {
-                const variantSizeExist = filterVariants.some(
-                  (el) => el.variants[0].size === variant.size,
-                )
-                if (!variantSizeExist) {
-                  filterVariants.push({
-                    _id: template._id,
-                    templateId: template.templateId,
-                    variants: [
+          templatesVersions.map((templatesVersion: any) => {
+            records.map((record: any) => {
+              if (templatesVersion._id === record.templateId) {
+                if (
+                  shareSelectedVariantNameValues.length === 0 &&
+                  shareSelectedVariantSizeValues.length === 0
+                ) {
+                  const variantSizeExist = filterVariants.some(
+                    (el) => el.variants[0].size === record.size,
+                  )
+                  if (!variantSizeExist) {
+                    filterVariants.push({
+                      _id: template._id,
+                      templateId: template.templateId,
+                      variants: [
+                        {
+                          templateName: record.templateName,
+                          size: record.size,
+                          variantName: record.variantName,
+                          defaultValues: record.defaultValues,
+                        },
+                      ],
+                    })
+                    i++
+                  } else {
+                    filterVariants[i - 1].variants = [
+                      ...filterVariants[i - 1].variants,
                       {
-                        templateName: variant.templateName,
-                        size: variant.size,
-                        variantName: variant.variantName,
-                        defaultValues: variant.defaultValues,
+                        templateName: record.templateName,
+                        size: record.size,
+                        variantName: record.variantName,
+                        defaultValues: record.defaultValues,
                       },
-                    ],
-                  })
-                  i++
-                } else {
-                  filterVariants[i - 1].variants = [
-                    ...filterVariants[i - 1].variants,
-                    {
-                      templateName: variant.templateName,
-                      size: variant.size,
-                      variantName: variant.variantName,
-                      defaultValues: variant.defaultValues,
-                    },
-                  ]
+                    ]
+                  }
                 }
-              }
-              if (
-                shareSelectedVariantNameValues.length > 0 &&
-                shareSelectedVariantSizeValues.length > 0
-              ) {
-                shareSelectedVariantNameValues.map((selectedVariantName) =>
-                  shareSelectedVariantSizeValues.map((selectedVariantSize) => {
-                    if (
-                      variant.variantName === selectedVariantName &&
-                      variant.size === selectedVariantSize
-                    ) {
-                      const variantExist = filterVariants.some(
-                        (el) => el.variants[0].size === variant.size,
+                if (
+                  shareSelectedVariantNameValues.length > 0 &&
+                  shareSelectedVariantSizeValues.length > 0
+                ) {
+                  shareSelectedVariantNameValues.map((selectedVariantName) =>
+                    shareSelectedVariantSizeValues.map((selectedVariantSize) => {
+                      if (
+                        variant.variantName === selectedVariantName &&
+                        variant.size === selectedVariantSize
+                      ) {
+                        const variantExist = filterVariants.some(
+                          (el) => el.variants[0].size === record.size,
+                        )
+                        if (!variantExist) {
+                          filterVariants.push({
+                            _id: template._id,
+                            templateId: template.templateId,
+                            variants: [
+                              {
+                                templateName: record.templateName,
+                                size: record.size,
+                                variantName: record.variantName,
+                                defaultValues: record.defaultValues,
+                              },
+                            ],
+                          })
+                          i++
+                        } else {
+                          filterVariants[i - 1].variants = [
+                            ...filterVariants[i - 1].variants,
+                            {
+                              templateName: record.templateName,
+                              size: record.size,
+                              variantName: record.variantName,
+                              defaultValues: record.defaultValues,
+                            },
+                          ]
+                        }
+                      }
+                    }),
+                  )
+                }
+                if (shareSelectedVariantSizeValues.length === 0) {
+                  shareSelectedVariantNameValues.map((selectedVariantName) => {
+                    if (variant.variantName === selectedVariantName) {
+                      const variantSizeExist = filterVariants.some(
+                        (el) => el.variants[0].size === record.size,
                       )
-                      if (!variantExist) {
+                      if (!variantSizeExist) {
                         filterVariants.push({
                           _id: template._id,
                           templateId: template.templateId,
                           variants: [
                             {
-                              templateName: variant.templateName,
-                              size: variant.size,
-                              variantName: variant.variantName,
-                              defaultValues: variant.defaultValues,
+                              templateName: record.templateName,
+                              size: record.size,
+                              variantName: record.variantName,
+                              defaultValues: record.defaultValues,
                             },
                           ],
                         })
@@ -1190,84 +1423,50 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                         filterVariants[i - 1].variants = [
                           ...filterVariants[i - 1].variants,
                           {
-                            templateName: variant.templateName,
-                            size: variant.size,
-                            variantName: variant.variantName,
-                            defaultValues: variant.defaultValues,
+                            templateName: record.templateName,
+                            size: record.size,
+                            variantName: record.variantName,
+                            defaultValues: record.defaultValues,
                           },
                         ]
                       }
                     }
-                  }),
-                )
-              }
-              if (shareSelectedVariantSizeValues.length === 0) {
-                shareSelectedVariantNameValues.map((selectedVariantName) => {
-                  if (variant.variantName === selectedVariantName) {
-                    const variantSizeExist = filterVariants.some(
-                      (el) => el.variants[0].size === variant.size,
-                    )
-                    if (!variantSizeExist) {
-                      filterVariants.push({
-                        _id: template._id,
-                        templateId: template.templateId,
-                        variants: [
+                  })
+                }
+                if (shareSelectedVariantNameValues.length === 0) {
+                  shareSelectedVariantSizeValues.map((selectedVariantSize) => {
+                    if (variant.size === selectedVariantSize) {
+                      const variantSizeExist = filterVariants.some(
+                        (el) => el.variants[0].size === record.size,
+                      )
+                      if (!variantSizeExist) {
+                        filterVariants.push({
+                          _id: template._id,
+                          templateId: template.templateId,
+                          variants: [
+                            {
+                              templateName: record.templateName,
+                              size: record.size,
+                              variantName: record.variantName,
+                              defaultValues: record.defaultValues,
+                            },
+                          ],
+                        })
+                        i++
+                      } else {
+                        filterVariants[i - 1].variants = [
+                          ...filterVariants[i - 1].variants,
                           {
-                            templateName: variant.templateName,
-                            size: variant.size,
-                            variantName: variant.variantName,
-                            defaultValues: variant.defaultValues,
+                            templateName: record.templateName,
+                            size: record.size,
+                            variantName: record.variantName,
+                            defaultValues: record.defaultValues,
                           },
-                        ],
-                      })
-                      i++
-                    } else {
-                      filterVariants[i - 1].variants = [
-                        ...filterVariants[i - 1].variants,
-                        {
-                          templateName: variant.templateName,
-                          size: variant.size,
-                          variantName: variant.variantName,
-                          defaultValues: variant.defaultValues,
-                        },
-                      ]
+                        ]
+                      }
                     }
-                  }
-                })
-              }
-              if (shareSelectedVariantNameValues.length === 0) {
-                shareSelectedVariantSizeValues.map((selectedVariantSize) => {
-                  if (variant.size === selectedVariantSize) {
-                    const variantSizeExist = filterVariants.some(
-                      (el) => el.variants[0].size === variant.size,
-                    )
-                    if (!variantSizeExist) {
-                      filterVariants.push({
-                        _id: template._id,
-                        templateId: template.templateId,
-                        variants: [
-                          {
-                            templateName: variant.templateName,
-                            size: variant.size,
-                            variantName: variant.variantName,
-                            defaultValues: variant.defaultValues,
-                          },
-                        ],
-                      })
-                      i++
-                    } else {
-                      filterVariants[i - 1].variants = [
-                        ...filterVariants[i - 1].variants,
-                        {
-                          templateName: variant.templateName,
-                          size: variant.size,
-                          variantName: variant.variantName,
-                          defaultValues: variant.defaultValues,
-                        },
-                      ]
-                    }
-                  }
-                })
+                  })
+                }
               }
             })
           })
@@ -1347,16 +1546,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                   setShareSearchVariantNameValue(value)
                   setShareSelectAllVariantNames(false)
                   let treeDataVariantNames: TreeNodeData[] = []
-                  templatesVersions.map((templateVersion) => {
-                    templateVersion.variants.map((variantName) => {
-                      const variantNameExist = treeDataVariantNames.some(
-                        (el) => el.value === variantName.variantName,
-                      )
-                      if (!variantNameExist)
-                        treeDataVariantNames.push({
-                          title: variantName.variantName,
-                          value: variantName.variantName,
-                        })
+                  templatesVersions.map((templatesVersion: any) => {
+                    records.map((record: any) => {
+                      if (templatesVersion._id === record.templateId) {
+                        const variantNameExist = treeDataVariantNames.some(
+                          (el) => el.value === record.variantName,
+                        )
+                        if (!variantNameExist)
+                          treeDataVariantNames.push({
+                            title: record.variantName,
+                            value: record.variantName,
+                          })
+                      }
                     })
                   })
                   setShareVariantNameTreeData(
@@ -1367,16 +1568,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 }}
                 onClear={() => {
                   let treeDataVariantNames: TreeNodeData[] = []
-                  templatesVersions.map((templateVersion) => {
-                    templateVersion.variants.map((variantName) => {
-                      const variantNameExist = treeDataVariantNames.some(
-                        (el) => el.value === variantName.variantName,
-                      )
-                      if (!variantNameExist)
-                        treeDataVariantNames.push({
-                          title: variantName.variantName,
-                          value: variantName.variantName,
-                        })
+                  templatesVersions.map((templatesVersion: any) => {
+                    records.map((record: any) => {
+                      if (templatesVersion._id === record.templateId) {
+                        const variantNameExist = treeDataVariantNames.some(
+                          (el) => el.value === record.variantName,
+                        )
+                        if (!variantNameExist)
+                          treeDataVariantNames.push({
+                            title: record.variantName,
+                            value: record.variantName,
+                          })
+                      }
                     })
                   })
                   setShareVariantNameTreeData(treeDataVariantNames)
@@ -1426,16 +1629,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                   setShareSearchVariantSizeValue(value)
                   setShareSelectAllVariantSizes(false)
                   let treeDataVariantSizes: TreeNodeData[] = []
-                  templatesVersions.map((templateVersion) => {
-                    templateVersion.variants.map((variantName) => {
-                      const variantSizeExist = treeDataVariantSizes.some(
-                        (el) => el.value === variantName.size,
-                      )
-                      if (!variantSizeExist)
-                        treeDataVariantSizes.push({
-                          title: variantName.size,
-                          value: variantName.size,
-                        })
+                  templatesVersions.map((templatesVersion: any) => {
+                    records.map((record: any) => {
+                      if (templatesVersion._id === record.templateId) {
+                        const variantSizeExist = treeDataVariantSizes.some(
+                          (el) => el.value === record.size,
+                        )
+                        if (!variantSizeExist)
+                          treeDataVariantSizes.push({
+                            title: record.size,
+                            value: record.size,
+                          })
+                      }
                     })
                   })
                   setShareVariantSizeTreeData(
@@ -1446,16 +1651,18 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 }}
                 onClear={() => {
                   let treeDataVariantSizes: TreeNodeData[] = []
-                  templatesVersions.map((templateVersion) => {
-                    templateVersion.variants.map((variantName) => {
-                      const variantSizeExist = treeDataVariantSizes.some(
-                        (el) => el.value === variantName.size,
-                      )
-                      if (!variantSizeExist)
-                        treeDataVariantSizes.push({
-                          title: variantName.size,
-                          value: variantName.size,
-                        })
+                  templatesVersions.map((templatesVersion: any) => {
+                    records.map((record: any) => {
+                      if (templatesVersion._id === record.templateId) {
+                        const variantSizeExist = treeDataVariantSizes.some(
+                          (el) => el.value === record.size,
+                        )
+                        if (!variantSizeExist)
+                          treeDataVariantSizes.push({
+                            title: record.size,
+                            value: record.size,
+                          })
+                      }
                     })
                   })
                   setShareVariantSizeTreeData(treeDataVariantSizes)
