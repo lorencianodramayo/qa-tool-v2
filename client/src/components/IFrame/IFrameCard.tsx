@@ -1,7 +1,7 @@
 //@ts-nocheck
 import React, {useEffect, useRef, useState} from 'react'
 import styled from 'styled-components'
-import {Card, Space} from 'antd'
+import {Button, Card, Popover, Space} from 'antd'
 import {PlayCircleTwoTone, PauseCircleTwoTone, RedoOutlined} from '@ant-design/icons'
 const CardStyled = styled(Card)`
   border-radius: unset;
@@ -50,8 +50,9 @@ const SpaceCompactCardHeaderTitleStyled = styled(Space.Compact)`
 interface IFrameCardProps {
   variant: any
   i: number
+  currentPage: number
 }
-const IFrameCard = ({variant, i}: IFrameCardProps) => {
+const IFrameCard = ({variant, i, currentPage}: IFrameCardProps) => {
   const iframeRefs = useRef<HTMLIFrameElement[]>([])
   const [refreshes, setRefreshes] = useState<{refresh: number}[]>([])
   const [isPause, setPause] = useState<{isPause: boolean}[]>([])
@@ -61,7 +62,7 @@ const IFrameCard = ({variant, i}: IFrameCardProps) => {
     let isPause: any = []
     variant.variants.map((_: any) => {
       refreshes.push({
-        refresh: 0,
+        refresh: currentPage,
       })
       isPause.push({
         isPause: false,
@@ -73,7 +74,44 @@ const IFrameCard = ({variant, i}: IFrameCardProps) => {
     setRefreshes(refreshes)
     setPause(isPause)
     setDone(isDone)
-  }, [])
+  }, [variant])
+  function TrimmedText({text, maxWidth}) {
+    const [trimmedText, setTrimmedText] = useState(text)
+    useEffect(() => {
+      const span = document.getElementById('trimmed-span')
+      const spanWidth = span.offsetWidth
+      if (spanWidth <= maxWidth) {
+        return
+      }
+      const ellipsis = '...'
+      const ellipsisWidth = span.ownerDocument.createElement('span')
+      ellipsisWidth.textContent = ellipsis
+      span.appendChild(ellipsisWidth)
+      while (spanWidth > maxWidth) {
+        const newText = trimmedText.slice(0, -1)
+        setTrimmedText(newText)
+        if (span.offsetWidth + ellipsisWidth.offsetWidth <= maxWidth) {
+          setTrimmedText(newText + ellipsis)
+          break
+        }
+      }
+      span.removeChild(ellipsisWidth)
+    }, [text, maxWidth, trimmedText])
+    return (
+      <span
+        id="trimmed-span"
+        style={{
+          maxWidth: `${maxWidth}px`,
+          overflow: 'hidden',
+          display: 'inline-block',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {trimmedText}
+      </span>
+    )
+  }
   const onLoad = (e: any, data: any) => {
     e.preventDefault()
     window.addEventListener(
@@ -108,18 +146,23 @@ const IFrameCard = ({variant, i}: IFrameCardProps) => {
               float: 'left',
             }}
           >
-            <SpaceCompactCardHeaderTitleStyled
-              block
-              style={{
-                fontWeight: '500',
-                fontSize: 13,
-                height: '20.42px',
-                overflow: 'auto',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {variant.variants[i].variantName}
-            </SpaceCompactCardHeaderTitleStyled>
+            <Popover content={<div>{variant.variants[i].variantName}</div>} trigger="hover">
+              <SpaceCompactCardHeaderTitleStyled
+                block
+                style={{
+                  fontWeight: '500',
+                  fontSize: 13,
+                  height: '20.42px',
+                  overflow: 'auto',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <TrimmedText
+                  text={variant.variants[i].variantName}
+                  maxWidth={parseInt(variant.size.split('x')[0])}
+                />
+              </SpaceCompactCardHeaderTitleStyled>
+            </Popover>
           </div>
           <div
             style={{

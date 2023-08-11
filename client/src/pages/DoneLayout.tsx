@@ -921,6 +921,7 @@ export default function DoneLayout() {
         <Space style={{width: '100%', justifyContent: 'right'}}>
           <Space style={{margin: '10px 20px 0 0'}}>
             <ButtonDoneStyled
+              loading={loading}
               type="primary"
               onClick={() => {
                 let _templatesVersions = []

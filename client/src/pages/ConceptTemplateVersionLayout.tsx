@@ -25,6 +25,7 @@ import {
   QRCode,
   Input,
   Checkbox,
+  Pagination,
 } from 'antd'
 import {CheckboxValueType} from 'antd/lib/checkbox/Group'
 import {useLocation} from 'react-router-dom'
@@ -46,6 +47,7 @@ interface CheckedDefaultOptionFiltersProps {
   checkedList: string[]
 }
 const {TreeNode} = TreeSelect
+import type {PaginationProps} from 'antd'
 const ContentStyled = styled(Content)`
   &::-webkit-scrollbar {
     display: none;
@@ -122,7 +124,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const {isTemplateVariantsSuccess, templateVariants} = useSelector(
     (state: any) => state.conceptTemplateVersion,
   )
-  const {records, totalPages, currentPage} = useSelector((state) => state.pagination)
+  const {totalRecords, records, totalPages, currentPage} = useSelector((state) => state.pagination)
   const [drawerVisible, setDrawerVisible] = useState<boolean>(false)
   const [mobile, setMobile] = useState<boolean>(false)
   const [isMobile, setIsMobile] = useState<boolean>(false)
@@ -159,6 +161,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const [shareSearchVariantSizeValue, setShareSearchVariantSizeValue] = useState<string>('')
   const [shareSelectAllVariantSizes, setShareSelectAllVariantSizes] = useState<boolean>(true)
   const [shareSelectedVariantSizeValues, setShareSelectedVariantSizeValues] = useState<string[]>([])
+  const [current, setCurrent] = useState<number>(1)
   useOnMountv2(() => {
     const checkIfMobile = () => {
       const isMobileDevice = window.innerWidth <= 768
@@ -781,25 +784,36 @@ const ConceptTemplateVersionLayout: React.FC = () => {
   const renderTreeNodes = (data: TreeNodeData[]) => {
     return data.map((node) => <TreeNode title={node.title} value={node.value} key={node.value} />)
   }
-
+  const onChange: PaginationProps['onChange'] = (page) => {
+    setCurrent(page)
+    dispatch(setCurrentPage(page))
+  }
   return (
-    <Layout style={{height: 'calc(100vh - 64px)', pointerEvents: loading ? 'none' : 'unset'}}>
-      <FloatButton
-        disabled={currentPage === 1}
-        shape="circle"
-        type="primary"
-        style={{right: 152}}
-        icon={<CaretLeftOutlined />}
-        onClick={() => dispatch(setCurrentPage(currentPage - 1))}
-      />
-      <FloatButton
-        disabled={currentPage === totalPages}
-        shape="circle"
-        type="primary"
-        style={{right: 94}}
-        icon={<CaretRightOutlined />}
-        onClick={() => dispatch(setCurrentPage(currentPage + 1))}
-      />
+    <Layout
+      style={{
+        height: 'calc(100vh - 64px)',
+        pointerEvents: loading ? 'none' : 'unset',
+        position: 'relative',
+      }}
+    >
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 20,
+          right: 72,
+          zIndex: 999,
+          backgroundColor: '#fff',
+          borderRadius: 10,
+          padding: 5,
+        }}
+      >
+        <Pagination
+          current={current}
+          onChange={onChange}
+          total={totalRecords}
+          showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
+        />
+      </div>
       <FloatButton.Group shape="square">
         {!mobile && (
           <FloatButtonMobileShareStyled
@@ -1226,7 +1240,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                       }}
                     >
                       {variant.variants
-                        .filter((variant) =>
+                        .filter((variant: any) =>
                           selectedVariantNameValues.includes(variant.variantName),
                         )
                         .map((_: any, i: number) => (
@@ -1244,7 +1258,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                               >
                                 {' '}
                               </Space.Compact>
-                              <IFrameCard variant={variant} i={i} />
+                              <IFrameCard variant={variant} i={i} currentPage={currentPage} />
                             </Col>
                           </>
                         ))}
@@ -1333,8 +1347,8 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                   )
                   if (!variantSizeExist) {
                     filterVariants.push({
-                      _id: template._id,
-                      templateId: template.templateId,
+                      _id: templatesVersion._id,
+                      templateId: templatesVersion.templateId,
                       variants: [
                         {
                           templateName: record.templateName,
@@ -1364,16 +1378,16 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                   shareSelectedVariantNameValues.map((selectedVariantName) =>
                     shareSelectedVariantSizeValues.map((selectedVariantSize) => {
                       if (
-                        variant.variantName === selectedVariantName &&
-                        variant.size === selectedVariantSize
+                        record.variantName === selectedVariantName &&
+                        record.size === selectedVariantSize
                       ) {
                         const variantExist = filterVariants.some(
                           (el) => el.variants[0].size === record.size,
                         )
                         if (!variantExist) {
                           filterVariants.push({
-                            _id: template._id,
-                            templateId: template.templateId,
+                            _id: templatesVersion._id,
+                            templateId: templatesVersion.templateId,
                             variants: [
                               {
                                 templateName: record.templateName,
@@ -1401,14 +1415,14 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 }
                 if (shareSelectedVariantSizeValues.length === 0) {
                   shareSelectedVariantNameValues.map((selectedVariantName) => {
-                    if (variant.variantName === selectedVariantName) {
+                    if (record.variantName === selectedVariantName) {
                       const variantSizeExist = filterVariants.some(
                         (el) => el.variants[0].size === record.size,
                       )
                       if (!variantSizeExist) {
                         filterVariants.push({
-                          _id: template._id,
-                          templateId: template.templateId,
+                          _id: templatesVersion._id,
+                          templateId: templatesVersion.templateId,
                           variants: [
                             {
                               templateName: record.templateName,
@@ -1435,14 +1449,14 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                 }
                 if (shareSelectedVariantNameValues.length === 0) {
                   shareSelectedVariantSizeValues.map((selectedVariantSize) => {
-                    if (variant.size === selectedVariantSize) {
+                    if (record.size === selectedVariantSize) {
                       const variantSizeExist = filterVariants.some(
                         (el) => el.variants[0].size === record.size,
                       )
                       if (!variantSizeExist) {
                         filterVariants.push({
-                          _id: template._id,
-                          templateId: template.templateId,
+                          _id: templatesVersion._id,
+                          templateId: templatesVersion.templateId,
                           variants: [
                             {
                               templateName: record.templateName,
