@@ -197,17 +197,24 @@ export default function DoneLayout() {
   useEffect(() => {
     if (isAddTemplateVersionSuccess) {
       let templatesVersions = []
-      addTemplateVersion.templatesVersions.map((templatesVersion: any, i: number) => {
-        let data = {
-          creativeId: templatesVersion._id,
-          templateUrl: _templates[i].url,
-        }
-        templatesVersions.push(data)
-      })
-      const timeout = setTimeout(() => {
-        dispatch(postTemplateVersionCloud(templatesVersions))
-      }, 1000)
-      return () => clearTimeout(timeout)
+      if (Object.keys(addTemplateVersion).length !== 0) {
+        addTemplateVersion.templatesVersions.map((templatesVersion: any, i: number) => {
+          let data = {
+            creativeId: templatesVersion._id,
+            templateUrl: _templates[i].url,
+          }
+          templatesVersions.push(data)
+        })
+        const timeout = setTimeout(() => {
+          dispatch(postTemplateVersionCloud(templatesVersions))
+        }, 1000)
+        return () => clearTimeout(timeout)
+      } else {
+        api['error']({
+          message: 'Done',
+          description: 'Error Generating Templates, please try again!',
+        })
+      }
     }
   }, [isAddTemplateVersionSuccess, addTemplateVersion])
   useEffect(() => {
@@ -896,7 +903,7 @@ export default function DoneLayout() {
         }}
       >
         <DivMenuStyled style={{width: '20%'}}>
-          {templates.map((template, i) => (
+          {templates.map((template: any, i: number) => (
             <DivMenuItemStyled
               key={i}
               onClick={() => {
@@ -905,7 +912,7 @@ export default function DoneLayout() {
               style={templateIndex === i ? activeStyle : {}}
             >
               <ProfileFilled style={{marginRight: 4, fontSize: '18px'}} />
-              {template.size} - {template.name}
+              {template.size} - {template.url.split('/').pop().split('-')[1].replace('.zip', '')}
             </DivMenuItemStyled>
           ))}
         </DivMenuStyled>
@@ -927,6 +934,14 @@ export default function DoneLayout() {
                 let _templatesVersions = []
                 let __templates = []
                 templates.map((template: any) => {
+                  let parts = template.url.split('/')
+                  let templateName = parts
+                    .pop()
+                    .split('-')
+                    .slice(1)
+                    .join('-')
+                    .replace('.zip', '')
+                    .replace(/%20/g, ' ')
                   let templateVariants = []
                   if (template.hasOwnProperty('possibleValues')) {
                     let possibleValues = template.possibleValues
@@ -998,7 +1013,7 @@ export default function DoneLayout() {
                                     templateVariants.push({
                                       variantName: variants_2,
                                       size: template.size,
-                                      templateName: template.name,
+                                      templateName: templateName,
                                       defaultValues: {
                                         ...defaultValues,
                                         ...defaultValuesTemplate.defaultValues,
@@ -1035,7 +1050,7 @@ export default function DoneLayout() {
                                     templateVariants.push({
                                       variantName: variants_2,
                                       size: template.size,
-                                      templateName: template.name,
+                                      templateName: templateName,
                                       defaultValues: {
                                         ...defaultValues,
                                         ...defaultValuesTemplate.defaultValues,
@@ -1112,7 +1127,7 @@ export default function DoneLayout() {
                                 templateVariants.push({
                                   variantName: variants_2,
                                   size: template.size,
-                                  templateName: template.name,
+                                  templateName: templateName,
                                   defaultValues: {
                                     ...defaultValues,
                                     ...defaultValuesTemplate.defaultValues,
@@ -1146,7 +1161,7 @@ export default function DoneLayout() {
                                 templateVariants.push({
                                   variantName: variants_2,
                                   size: template.size,
-                                  templateName: template.name,
+                                  templateName: templateName,
                                   defaultValues: {
                                     ...defaultValues,
                                     ...defaultValuesTemplate.defaultValues,
@@ -1191,7 +1206,7 @@ export default function DoneLayout() {
                               templateVariants.push({
                                 variantName: variants_1,
                                 size: template.size,
-                                templateName: template.name,
+                                templateName: templateName,
                                 defaultValues: {
                                   ...defaultValues,
                                   ...defaultValuesTemplate.defaultValues,
@@ -1225,7 +1240,7 @@ export default function DoneLayout() {
                               templateVariants.push({
                                 variantName: variants_1,
                                 size: template.size,
-                                templateName: template.name,
+                                templateName: templateName,
                                 defaultValues: {
                                   ...defaultValues,
                                   ...defaultValuesTemplate.defaultValues,
@@ -1276,7 +1291,7 @@ export default function DoneLayout() {
                         templateVariants.push({
                           variantName: variant,
                           size: template.size,
-                          templateName: template.name,
+                          templateName: templateName,
                           defaultValues: {
                             ...defaultValues,
                             ...defaultValuesTemplate.defaultValues,
@@ -1308,7 +1323,7 @@ export default function DoneLayout() {
                         templateVariants.push({
                           variantName: variant,
                           size: template.size,
-                          templateName: template.name,
+                          templateName: templateName,
                           defaultValues: {
                             ...defaultValues,
                             ...defaultValuesTemplate.defaultValues,

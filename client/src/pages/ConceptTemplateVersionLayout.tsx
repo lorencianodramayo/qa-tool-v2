@@ -1208,7 +1208,7 @@ const ConceptTemplateVersionLayout: React.FC = () => {
                             >
                               {' '}
                             </Space.Compact>
-                            <IFrameCard variant={variant} i={i} />
+                            <IFrameCard variant={variant} i={i} currentPage={currentPage} />
                           </Col>
                         </Row>
                       ))}
