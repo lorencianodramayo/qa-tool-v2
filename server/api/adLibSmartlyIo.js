@@ -61,6 +61,6 @@ router.get("/variants", async (req, res) => {
   const records = await Variants.find().skip(skip).limit(parseInt(pageSize));
   const totalRecords = await Variants.countDocuments();
   const totalPages = Math.ceil(totalRecords / pageSize);
-  res.status(200).json({ records, totalPages });
+  res.status(200).json({ totalRecords, records, totalPages });
 });
 module.exports = router;
