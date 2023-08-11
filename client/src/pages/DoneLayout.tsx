@@ -985,10 +985,11 @@ export default function DoneLayout() {
                                         div.innerHTML = html
                                         let textLegalHeading =
                                           div.textContent || div.innerText || ''
-                                        defaultValues[key] = textLegalHeading.slice(
-                                          0,
-                                          Math.round(textLegalHeading.length / 2),
-                                        )
+                                        if (textLegalHeading.toLowerCase() !== 'n/a')
+                                          defaultValues[key] = textLegalHeading.slice(
+                                            0,
+                                            Math.round(textLegalHeading.length / 2),
+                                          )
                                       } else if (template.possibleValues.hasOwnProperty(key))
                                         defaultValues[key] =
                                           possibleValues[possibleValuesKeys[0]][t]
@@ -1013,7 +1014,20 @@ export default function DoneLayout() {
                                       template.defaultDynamicFieldsValues,
                                     )) {
                                       delete defaultValuesTemplate.defaultValues[key]
-                                      if (template.possibleValues.hasOwnProperty(key))
+                                      if (
+                                        key.toLowerCase().includes('text') ||
+                                        key.toLowerCase().includes('headline') ||
+                                        key.toLowerCase().includes('legal') ||
+                                        key.toLowerCase().includes('subheadline')
+                                      ) {
+                                        let html = `${value}`
+                                        let div = document.createElement('div')
+                                        div.innerHTML = html
+                                        let textLegalHeading =
+                                          div.textContent || div.innerText || ''
+                                        if (textLegalHeading.toLowerCase() !== 'n/a')
+                                          defaultValues[key] = textLegalHeading
+                                      } else if (template.possibleValues.hasOwnProperty(key))
                                         defaultValues[key] =
                                           possibleValues[possibleValuesKeys[0]][t]
                                       else defaultValues[key] = value
@@ -1086,10 +1100,11 @@ export default function DoneLayout() {
                                     let div = document.createElement('div')
                                     div.innerHTML = html
                                     let textLegalHeading = div.textContent || div.innerText || ''
-                                    defaultValues[key] = textLegalHeading.slice(
-                                      0,
-                                      Math.round(textLegalHeading.length / 2),
-                                    )
+                                    if (textLegalHeading.toLowerCase() !== 'n/a')
+                                      defaultValues[key] = textLegalHeading.slice(
+                                        0,
+                                        Math.round(textLegalHeading.length / 2),
+                                      )
                                   } else if (template.possibleValues.hasOwnProperty(key))
                                     defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
                                   else defaultValues[key] = value
@@ -1112,7 +1127,19 @@ export default function DoneLayout() {
                                   template.defaultDynamicFieldsValues,
                                 )) {
                                   delete defaultValuesTemplate.defaultValues[key]
-                                  if (template.possibleValues.hasOwnProperty(key))
+                                  if (
+                                    key.toLowerCase().includes('text') ||
+                                    key.toLowerCase().includes('headline') ||
+                                    key.toLowerCase().includes('legal') ||
+                                    key.toLowerCase().includes('subheadline')
+                                  ) {
+                                    let html = `${value}`
+                                    let div = document.createElement('div')
+                                    div.innerHTML = html
+                                    let textLegalHeading = div.textContent || div.innerText || ''
+                                    if (textLegalHeading.toLowerCase() !== 'n/a')
+                                      defaultValues[key] = textLegalHeading
+                                  } else if (template.possibleValues.hasOwnProperty(key))
                                     defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
                                   else defaultValues[key] = value
                                 }
@@ -1152,10 +1179,11 @@ export default function DoneLayout() {
                                   let div = document.createElement('div')
                                   div.innerHTML = html
                                   let textLegalHeading = div.textContent || div.innerText || ''
-                                  defaultValues[key] = textLegalHeading.slice(
-                                    0,
-                                    Math.round(textLegalHeading.length / 2),
-                                  )
+                                  if (textLegalHeading.toLowerCase() !== 'n/a')
+                                    defaultValues[key] = textLegalHeading.slice(
+                                      0,
+                                      Math.round(textLegalHeading.length / 2),
+                                    )
                                 } else if (template.possibleValues.hasOwnProperty(key))
                                   defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
                                 else defaultValues[key] = value
@@ -1178,7 +1206,19 @@ export default function DoneLayout() {
                                 template.defaultDynamicFieldsValues,
                               )) {
                                 delete defaultValuesTemplate.defaultValues[key]
-                                if (template.possibleValues.hasOwnProperty(key))
+                                if (
+                                  key.toLowerCase().includes('text') ||
+                                  key.toLowerCase().includes('headline') ||
+                                  key.toLowerCase().includes('legal') ||
+                                  key.toLowerCase().includes('subheadline')
+                                ) {
+                                  let html = `${value}`
+                                  let div = document.createElement('div')
+                                  div.innerHTML = html
+                                  let textLegalHeading = div.textContent || div.innerText || ''
+                                  if (textLegalHeading.toLowerCase() !== 'n/a')
+                                    defaultValues[key] = textLegalHeading
+                                } else if (template.possibleValues.hasOwnProperty(key))
                                   defaultValues[key] = possibleValues[possibleValuesKeys[0]][t]
                                 else defaultValues[key] = value
                               }
@@ -1226,10 +1266,11 @@ export default function DoneLayout() {
                             let div = document.createElement('div')
                             div.innerHTML = html
                             let textLegalHeading = div.textContent || div.innerText || ''
-                            defaultValues[key] = textLegalHeading.slice(
-                              0,
-                              Math.round(textLegalHeading.length / 2),
-                            )
+                            if (textLegalHeading.toLowerCase() !== 'n/a')
+                              defaultValues[key] = textLegalHeading.slice(
+                                0,
+                                Math.round(textLegalHeading.length / 2),
+                              )
                           } else defaultValues[key] = value
                         }
                         templateVariants.push({
@@ -1250,7 +1291,19 @@ export default function DoneLayout() {
                           template.defaultDynamicFieldsValues,
                         )) {
                           delete defaultValuesTemplate.defaultValues[key]
-                          defaultValues[key] = value
+                          if (
+                            key.toLowerCase().includes('text') ||
+                            key.toLowerCase().includes('headline') ||
+                            key.toLowerCase().includes('legal') ||
+                            key.toLowerCase().includes('subheadline')
+                          ) {
+                            let html = `${value}`
+                            let div = document.createElement('div')
+                            div.innerHTML = html
+                            let textLegalHeading = div.textContent || div.innerText || ''
+                            if (textLegalHeading.toLowerCase() !== 'n/a')
+                              defaultValues[key] = textLegalHeading
+                          } else defaultValues[key] = value
                         }
                         templateVariants.push({
                           variantName: variant,

@@ -937,6 +937,7 @@ export default function ElementsLayout() {
                     </Space>
                     <Space>
                       <InputStyled
+                        disabled={!languageSelected[templateIndex] ? false : true}
                         style={{width: 356}}
                         placeholder={`${dynamicElement}`}
                         value={template.defaultDynamicFieldsValues[dynamicElement]}
@@ -1437,6 +1438,7 @@ export default function ElementsLayout() {
                     </Space>
                     <Space>
                       <InputStyled
+                        disabled={!languageSelected[templateIndex] ? false : true}
                         style={{width: 356}}
                         placeholder={`${dynamicElement}`}
                         value={template.defaultDynamicFieldsValues[dynamicElement]}
@@ -1888,7 +1890,7 @@ export default function ElementsLayout() {
                   state: {
                     templateName: templateName,
                     templates: location.state.templates.map((originalObj: any) => {
-                      const newObj = templates.find((newObj) => newObj._id === originalObj._id)
+                      const newObj = templates.find((newObj: any) => newObj._id === originalObj._id)
                       return newObj ? {...originalObj, ...newObj} : originalObj
                     }),
                     templateDefaultValues: templateDefaultValues,
